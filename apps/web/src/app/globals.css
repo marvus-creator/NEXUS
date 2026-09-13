@@ -1,20 +1,10 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@nexus/ui/styles.css';
 
-@theme {
-  --color-canvas: oklch(0.16 0.012 265);
-  --color-surface: oklch(0.21 0.014 265);
-  --color-border-subtle: oklch(0.29 0.016 265);
-  --color-ink: oklch(0.97 0.003 265);
-  --color-ink-muted: oklch(0.68 0.014 265);
-  --color-accent: oklch(0.72 0.16 252);
-}
+@source '../../../../packages/ui/src';
 
-html {
-  color-scheme: dark;
-}
-
-body {
-  background-color: var(--color-canvas);
-  color: var(--color-ink);
-  -webkit-font-smoothing: antialiased;
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }

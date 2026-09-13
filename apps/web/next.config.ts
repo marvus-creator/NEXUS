@@ -6,8 +6,10 @@ loadEnv({ path: path.resolve(process.cwd(), '../../.env'), quiet: true });
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@nexus/ui'],
   images: {
     formats: ['image/avif', 'image/webp'],
+    remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000',
