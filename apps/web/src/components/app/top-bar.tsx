@@ -14,14 +14,15 @@ import {
   Logo,
   ThemeToggle,
 } from '@nexus/ui';
-import { Bell, LogOut, Search, Settings, ShieldCheck, User } from 'lucide-react';
+import { LogOut, Search, Settings, ShieldCheck, User } from 'lucide-react';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import type { SessionUser } from '@/lib/session';
 
-export function TopBar({ user }: { user: SessionUser }) {
+export function TopBar({ user, unread }: { user: SessionUser; unread: number }) {
   const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -60,9 +61,7 @@ export function TopBar({ user }: { user: SessionUser }) {
             <ThemeToggle />
           </div>
 
-          <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
-            <Bell />
-          </Button>
+          <NotificationBell initialUnread={unread} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -63,13 +63,14 @@ Health check: `http://localhost:4000/api/v1/health`
 pnpm --filter @nexus/db verify   # schema: 11 checks
 node scripts/verify-auth.mjs     # auth flow over HTTP: 29 checks
 node scripts/verify-profile.mjs  # onboarding + profile: 20 checks
+node scripts/verify-planner.mjs  # tasks, goals, calendar, notifications: 26 checks
 node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 ```
 
 ## Build phases
 
 1. Foundation, design system, landing page, auth, app shell, onboarding, profile — **complete**
-2. Home/Pulse, tasks, goals, calendar, notifications
+2. Home/Pulse, tasks, goals, calendar, notifications — **complete**
 3. People, friends, following, social feed
 4. Circles, posts, real-time messaging
 5. Discover, events, nearby, maps

@@ -3,6 +3,7 @@ import {
   Compass,
   GraduationCap,
   Home,
+  ListTodo,
   MapPin,
   MessageSquare,
   Sparkles,
@@ -61,8 +62,9 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Your life',
     items: [
-      { label: 'Calendar', href: '/calendar', icon: CalendarDays, available: false, phase: 'Phase 2' },
-      { label: 'Goals', href: '/goals', icon: Target, available: false, phase: 'Phase 2' },
+      { label: 'Calendar', href: '/calendar', icon: CalendarDays, available: true },
+      { label: 'Tasks', href: '/tasks', icon: ListTodo, available: true },
+      { label: 'Goals', href: '/goals', icon: Target, available: true },
       {
         label: 'Learn',
         href: '/learn',
