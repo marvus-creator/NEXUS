@@ -51,13 +51,7 @@ export const navGroups: NavGroup[] = [
         available: true,
       },
       { label: 'Feed', href: '/feed', icon: Rss, available: true },
-      {
-        label: 'Messages',
-        href: '/messages',
-        icon: MessageSquare,
-        available: false,
-        phase: 'Phase 4',
-      },
+      { label: 'Messages', href: '/messages', icon: MessageSquare, available: true },
     ],
   },
   {
@@ -80,7 +74,7 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Your world',
     items: [
-      { label: 'Circles', href: '/circles', icon: UsersRound, available: false, phase: 'Phase 4' },
+      { label: 'Circles', href: '/circles', icon: UsersRound, available: true },
       {
         label: 'Events',
         href: '/events',
