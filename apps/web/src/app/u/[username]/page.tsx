@@ -3,7 +3,11 @@ import { MapPin } from 'lucide-react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ProfileActions } from '@/components/people/profile-actions';
+import { PostCard } from '@/components/social/post-card';
 import { API_BASE } from '@/lib/api';
+import { getSession } from '@/lib/session';
+import { getPostsBy, getRelationship } from '@/lib/social-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +60,11 @@ export default async function PublicProfilePage({
   if (!response.ok) notFound();
 
   const profile = (await response.json()) as PublicProfile;
+  const viewer = await getSession();
+
+  const [relationship, posts] = viewer
+    ? await Promise.all([getRelationship(profile.username), getPostsBy(profile.username)])
+    : [null, []];
 
   return (
     <div className="min-h-dvh">
@@ -101,6 +110,10 @@ export default async function PublicProfilePage({
             <Button asChild variant="secondary" className="shrink-0">
               <Link href="/profile">Edit your profile</Link>
             </Button>
+          ) : relationship && !relationship.isSelf ? (
+            <div className="shrink-0">
+              <ProfileActions username={profile.username} relationship={relationship} />
+            </div>
           ) : null}
         </div>
 
@@ -142,6 +155,25 @@ export default async function PublicProfilePage({
                 ))}
               </div>
             </Card>
+          ) : null}
+
+          {viewer ? (
+            <section>
+              <h2 className="mb-4 text-lg font-semibold tracking-tight">Posts</h2>
+              {posts.length === 0 ? (
+                <Card className="p-6">
+                  <p className="text-ink-muted text-sm">
+                    Nothing here you can see. Posts respect their visibility setting.
+                  </p>
+                </Card>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
+            </section>
           ) : null}
         </div>
       </div>

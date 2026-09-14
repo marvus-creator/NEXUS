@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED = ['/home', '/discover', '/people', '/circles', '/events', '/nearby', '/learn', '/settings', '/profile', '/onboarding'];
+const PROTECTED = ['/home', '/discover', '/feed', '/people', '/tasks', '/goals', '/calendar', '/notifications', '/circles', '/events', '/nearby', '/learn', '/settings', '/profile', '/onboarding'];
 const AUTH_ROUTES = ['/sign-in', '/create-account'];
 
 export function middleware(request: NextRequest) {
@@ -29,6 +29,11 @@ export const config = {
     '/home/:path*',
     '/discover/:path*',
     '/people/:path*',
+    '/feed/:path*',
+    '/tasks/:path*',
+    '/goals/:path*',
+    '/calendar/:path*',
+    '/notifications/:path*',
     '/circles/:path*',
     '/events/:path*',
     '/nearby/:path*',
