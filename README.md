@@ -40,8 +40,20 @@ pnpm dev        # web on 3000, api on 4000
 Verify the schema end to end:
 
 ```bash
-pnpm --filter @nexus/db verify
+pnpm --filter @nexus/db verify   # schema, constraints, cascades
+node scripts/verify-auth.mjs     # full auth flow over HTTP (API must be running)
 ```
+
+## Auth
+
+Access tokens are short-lived JWTs in an httpOnly cookie. Refresh tokens are
+opaque, stored only as a SHA-256 hash, and rotate on every use. Presenting an
+already-rotated token is treated as a breach: every session for that user is
+revoked immediately.
+
+No SMTP provider is wired up yet, so verification and reset links are written to
+the API log by the dev mail transport, and returned in the response body outside
+production.
 
 Health check: `http://localhost:4000/api/v1/health`
 

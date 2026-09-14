@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../common/decorators/public.decorator.js';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -10,6 +11,7 @@ export class HealthController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @Public()
   @Get()
   async check() {
     const databaseUp = await this.prisma.isHealthy();
