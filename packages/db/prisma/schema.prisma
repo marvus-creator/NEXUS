@@ -81,14 +81,14 @@ enum MessagePolicy {
 model User {
   id              String     @id @default(cuid())
   email           String     @unique
-  emailVerifiedAt DateTime?
-  passwordHash    String
+  emailVerifiedAt DateTime?  @map("email_verified_at")
+  passwordHash    String     @map("password_hash")
   role            UserRole   @default(USER)
   status          UserStatus @default(PENDING)
-  lastLoginAt     DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  deletedAt       DateTime?
+  lastLoginAt     DateTime?  @map("last_login_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
 
   profile            Profile?
   sessions           Session[]
@@ -102,34 +102,34 @@ model User {
 
 model Profile {
   id       String @id @default(cuid())
-  userId   String @unique
+  userId   String @unique @map("user_id")
   username String @unique
 
-  displayName String
-  avatarUrl   String?
-  coverUrl    String?
+  displayName String  @map("display_name")
+  avatarUrl   String? @map("avatar_url")
+  coverUrl    String? @map("cover_url")
   bio         String?
   occupation  String?
 
-  userType UserType @default(OTHER)
+  userType UserType @default(OTHER) @map("user_type")
 
-  countryCode String  @default("RW")
+  countryCode String  @default("RW") @map("country_code")
   city        String?
   timezone    String  @default("Africa/Kigali")
   locale      String  @default("en")
   currency    String  @default("RWF")
 
   skills    String[]   @default([])
-  goalAreas GoalArea[] @default([])
-  helpAreas HelpArea[] @default([])
+  goalAreas GoalArea[] @default([]) @map("goal_areas")
+  helpAreas HelpArea[] @default([]) @map("help_areas")
 
-  onboardingStep Int       @default(0)
-  onboardedAt    DateTime?
+  onboardingStep Int       @default(0) @map("onboarding_step")
+  onboardedAt    DateTime? @map("onboarded_at")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   interests      ProfileInterest[]
   scheduleBlocks ScheduleBlock[]
   privacy        PrivacySettings?
@@ -140,11 +140,11 @@ model Profile {
 }
 
 model Interest {
-  id       String  @id @default(cuid())
-  slug     String  @unique
-  label    String
-  category String
-  tint     String?
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  label     String
+  category  String
+  tint      String?
   sortOrder Int     @default(0) @map("sort_order")
 
   profiles ProfileInterest[]
@@ -154,9 +154,9 @@ model Interest {
 }
 
 model ProfileInterest {
-  profileId  String
-  interestId String
-  createdAt  DateTime @default(now())
+  profileId  String   @map("profile_id")
+  interestId String   @map("interest_id")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   interest Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
@@ -168,16 +168,16 @@ model ProfileInterest {
 
 model ScheduleBlock {
   id        String       @id @default(cuid())
-  profileId String
+  profileId String       @map("profile_id")
   label     String
   kind      ScheduleKind @default(CLASS)
 
-  dayOfWeek   Int
-  startMinute Int
-  endMinute   Int
+  dayOfWeek   Int @map("day_of_week")
+  startMinute Int @map("start_minute")
+  endMinute   Int @map("end_minute")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
@@ -187,16 +187,16 @@ model ScheduleBlock {
 
 model PrivacySettings {
   id        String @id @default(cuid())
-  profileId String @unique
+  profileId String @unique @map("profile_id")
 
-  profileVisibility    ProfileVisibility @default(PUBLIC)
-  messagePolicy        MessagePolicy     @default(EVERYONE)
-  allowFriendRequests  Boolean           @default(true)
-  showActivity         Boolean           @default(true)
-  showInPeopleYouKnow  Boolean           @default(true)
-  personalizationOptIn Boolean           @default(true)
+  profileVisibility    ProfileVisibility @default(PUBLIC) @map("profile_visibility")
+  messagePolicy        MessagePolicy     @default(EVERYONE) @map("message_policy")
+  allowFriendRequests  Boolean           @default(true) @map("allow_friend_requests")
+  showActivity         Boolean           @default(true) @map("show_activity")
+  showInPeopleYouKnow  Boolean           @default(true) @map("show_in_people_you_know")
+  personalizationOptIn Boolean           @default(true) @map("personalization_opt_in")
 
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
@@ -205,14 +205,14 @@ model PrivacySettings {
 
 model Session {
   id               String    @id @default(cuid())
-  userId           String
-  refreshTokenHash String    @unique
-  userAgent        String?
-  ipAddress        String?
-  createdAt        DateTime  @default(now())
-  lastUsedAt       DateTime  @default(now())
-  expiresAt        DateTime
-  revokedAt        DateTime?
+  userId           String    @map("user_id")
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  userAgent        String?   @map("user_agent")
+  ipAddress        String?   @map("ip_address")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  lastUsedAt       DateTime  @default(now()) @map("last_used_at")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -223,12 +223,12 @@ model Session {
 
 model VerificationToken {
   id         String              @id @default(cuid())
-  userId     String
+  userId     String              @map("user_id")
   purpose    VerificationPurpose
-  tokenHash  String              @unique
-  expiresAt  DateTime
-  consumedAt DateTime?
-  createdAt  DateTime            @default(now())
+  tokenHash  String              @unique @map("token_hash")
+  expiresAt  DateTime            @map("expires_at")
+  consumedAt DateTime?           @map("consumed_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -239,14 +239,14 @@ model VerificationToken {
 
 model AuditLog {
   id          String   @id @default(cuid())
-  actorUserId String?
+  actorUserId String?  @map("actor_user_id")
   action      String
-  entityType  String?
-  entityId    String?
+  entityType  String?  @map("entity_type")
+  entityId    String?  @map("entity_id")
   metadata    Json?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   actor User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
