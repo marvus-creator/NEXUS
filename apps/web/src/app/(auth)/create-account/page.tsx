@@ -37,7 +37,7 @@ export default function CreateAccountPage() {
 
     try {
       await authClient.register({ email, password, displayName, username });
-      router.replace('/home');
+      router.replace('/onboarding');
       router.refresh();
     } catch (caught) {
       setError(caught as AuthError);

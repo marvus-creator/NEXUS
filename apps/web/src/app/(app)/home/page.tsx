@@ -1,5 +1,5 @@
-import { Badge, Card, Eyebrow } from '@nexus/ui';
-import { Compass, MailWarning, Sparkles, UserCog } from 'lucide-react';
+import { Badge, Button, Card, Eyebrow } from '@nexus/ui';
+import { ArrowRight, Compass, MailWarning, Sparkles, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { getSession } from '@/lib/session';
 import { navGroups } from '@/components/app/nav-config';
@@ -75,9 +75,11 @@ export default async function HomePage() {
                   what makes everything else personal.
                 </p>
               </div>
-              <div className="shrink-0">
-                <Badge variant="accent">Next checkpoint</Badge>
-              </div>
+              <Button asChild className="shrink-0">
+                <Link href="/onboarding">
+                  Start <ArrowRight />
+                </Link>
+              </Button>
             </div>
           </Card>
         ) : null}

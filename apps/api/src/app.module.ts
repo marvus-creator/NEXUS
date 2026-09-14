@@ -10,6 +10,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { MailModule } from './mail/mail.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProfilesModule } from './profiles/profiles.module.js';
+import { StorageModule } from './storage/storage.module.js';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PrismaModule,
     AuditModule,
     MailModule,
+    StorageModule,
     AuthModule,
+    ProfilesModule,
     HealthModule,
   ],
   providers: [
