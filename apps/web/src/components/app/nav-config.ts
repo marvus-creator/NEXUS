@@ -39,8 +39,7 @@ export const navGroups: NavGroup[] = [
         href: '/discover',
         icon: Compass,
         tint: 'var(--module-discover)',
-        available: false,
-        phase: 'Phase 5',
+        available: true,
       },
       {
         label: 'People',

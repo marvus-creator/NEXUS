@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { API_BASE } from './api';
+import type { ScheduleBlock } from './schedule';
 
 export type SessionUser = {
   id: string;
@@ -27,7 +28,7 @@ export type SessionUser = {
     onboardingStep: number;
     onboardedAt: string | null;
     interests: { slug: string; label: string }[];
-    scheduleBlocks: unknown[];
+    scheduleBlocks: ScheduleBlock[];
     privacy: Record<string, unknown> | null;
   } | null;
 };
