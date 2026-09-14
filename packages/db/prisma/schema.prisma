@@ -154,6 +154,12 @@ model Profile {
   conversations    ConversationParticipant[]
   messages         Message[]
   messageReactions MessageReaction[]
+  placesCreated    Place[]                   @relation("PlacesCreated")
+  placeReviews     PlaceReview[]
+  placeSaves       PlaceSave[]
+  eventsHosted     Event[]                   @relation("EventsHosted")
+  eventAttendance  EventAttendee[]
+  eventReviews     EventReview[]
   reactions        PostReaction[]
   comments         Comment[]
   saves            PostSave[]
@@ -832,4 +838,157 @@ model MessageReaction {
   @@id([messageId, profileId, emoji])
   @@index([profileId])
   @@map("message_reactions")
+}
+
+enum PlaceCategory {
+  CAFE
+  RESTAURANT
+  VENUE
+  STORE
+  SPORT
+  ATTRACTION
+  SERVICE
+  WORKSPACE
+  OTHER
+}
+
+enum EventVisibility {
+  PUBLIC
+  CIRCLE
+  PRIVATE
+}
+
+enum AttendeeStatus {
+  GOING
+  INTERESTED
+  DECLINED
+}
+
+model Place {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  description String?
+  category    PlaceCategory @default(OTHER)
+
+  address     String?
+  city        String?
+  countryCode String  @default("RW") @map("country_code")
+  latitude    Float?
+  longitude   Float?
+
+  coverUrl String? @map("cover_url")
+  website  String?
+  phone    String?
+
+  openingHours Json?   @map("opening_hours")
+  verified     Boolean @default(false)
+
+  createdById String?   @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  createdBy Profile?      @relation("PlacesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  reviews   PlaceReview[]
+  saves     PlaceSave[]
+  events    Event[]
+
+  @@index([city, category])
+  @@index([latitude, longitude])
+  @@map("places")
+}
+
+model PlaceReview {
+  id        String   @id @default(cuid())
+  placeId   String   @map("place_id")
+  profileId String   @map("profile_id")
+  rating    Int
+  body      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  place   Place   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, profileId])
+  @@index([placeId])
+  @@map("place_reviews")
+}
+
+model PlaceSave {
+  placeId   String   @map("place_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  place   Place   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([placeId, profileId])
+  @@index([profileId])
+  @@map("place_saves")
+}
+
+model Event {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  description String?
+  coverUrl    String?         @map("cover_url")
+  visibility  EventVisibility @default(PUBLIC)
+
+  startAt DateTime  @map("start_at")
+  endAt   DateTime? @map("end_at")
+
+  placeId      String? @map("place_id")
+  locationText String? @map("location_text")
+  circleId     String? @map("circle_id")
+
+  hostId      String  @map("host_id")
+  capacity    Int?
+  checkInCode String  @unique @map("check_in_code")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  host      Profile         @relation("EventsHosted", fields: [hostId], references: [id], onDelete: Cascade)
+  place     Place?          @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  attendees EventAttendee[]
+  reviews   EventReview[]
+
+  @@index([startAt, visibility])
+  @@index([circleId])
+  @@index([hostId])
+  @@map("events")
+}
+
+model EventAttendee {
+  eventId     String         @map("event_id")
+  profileId   String         @map("profile_id")
+  status      AttendeeStatus @default(GOING)
+  checkedInAt DateTime?      @map("checked_in_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, profileId])
+  @@index([profileId, status])
+  @@map("event_attendees")
+}
+
+model EventReview {
+  id        String   @id @default(cuid())
+  eventId   String   @map("event_id")
+  profileId String   @map("profile_id")
+  rating    Int
+  body      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, profileId])
+  @@index([eventId])
+  @@map("event_reviews")
 }

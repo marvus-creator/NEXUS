@@ -12,7 +12,9 @@ import { RolesGuard } from './common/guards/roles.guard.js';
 import { MailModule } from './mail/mail.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { CirclesModule } from './circles/circles.module.js';
+import { EventsModule } from './events/events.module.js';
 import { MessagingModule } from './messaging/messaging.module.js';
+import { PlacesModule } from './places/places.module.js';
 import { PeopleModule } from './people/people.module.js';
 import { PlannerModule } from './planner/planner.module.js';
 import { SocialModule } from './social/social.module.js';
@@ -41,6 +43,8 @@ import { StorageModule } from './storage/storage.module.js';
     SocialModule,
     CirclesModule,
     MessagingModule,
+    PlacesModule,
+    EventsModule,
     HealthModule,
   ],
   providers: [
