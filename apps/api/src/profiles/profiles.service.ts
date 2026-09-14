@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { OnboardingStepDto } from './dto/onboarding.dto.js';
 import type { UpdatePrivacyDto, UpdateProfileDto } from './dto/update-profile.dto.js';
@@ -11,6 +12,7 @@ export class ProfilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listInterests() {
@@ -120,6 +122,14 @@ export class ProfilesService {
         onboardingStep: TOTAL_STEPS,
         onboardedAt: profile.onboardedAt ?? new Date(),
       },
+    });
+
+    await this.notifications.notify({
+      userId,
+      category: 'IMPORTANT',
+      title: 'Your Nexus is ready',
+      body: 'Home now works from your real schedule, interests and goals.',
+      href: '/home',
     });
 
     await this.audit.record({

@@ -90,10 +90,12 @@ model User {
   updatedAt       DateTime   @updatedAt @map("updated_at")
   deletedAt       DateTime?  @map("deleted_at")
 
-  profile            Profile?
-  sessions           Session[]
-  verificationTokens VerificationToken[]
-  auditLogs          AuditLog[]          @relation("AuditActor")
+  profile                Profile?
+  sessions               Session[]
+  verificationTokens     VerificationToken[]
+  auditLogs              AuditLog[]              @relation("AuditActor")
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
 
   @@index([status])
   @@index([createdAt])
@@ -133,6 +135,9 @@ model Profile {
   interests      ProfileInterest[]
   scheduleBlocks ScheduleBlock[]
   privacy        PrivacySettings?
+  goals          Goal[]
+  tasks          Task[]
+  calendarEvents CalendarEvent[]
 
   @@index([countryCode, city])
   @@index([userType])
@@ -254,4 +259,189 @@ model AuditLog {
   @@index([action, createdAt])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+enum TaskStatus {
+  TODO
+  DOING
+  DONE
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Recurrence {
+  NONE
+  DAILY
+  WEEKDAYS
+  WEEKLY
+  MONTHLY
+}
+
+enum GoalStatus {
+  ACTIVE
+  ACHIEVED
+  PAUSED
+  DROPPED
+}
+
+enum GoalHorizon {
+  SHORT
+  LONG
+}
+
+enum EventKind {
+  PERSONAL
+  STUDY
+  TASK
+  FIXED
+}
+
+enum NotificationCategory {
+  IMPORTANT
+  SOCIAL
+  EVENTS
+  LEARNING
+  GOALS
+  DISCOVER
+  SYSTEM
+}
+
+model Goal {
+  id          String      @id @default(cuid())
+  profileId   String      @map("profile_id")
+  title       String
+  description String?
+  area        GoalArea    @default(PERSONAL)
+  horizon     GoalHorizon @default(SHORT)
+  status      GoalStatus  @default(ACTIVE)
+  targetDate  DateTime?   @map("target_date")
+  achievedAt  DateTime?   @map("achieved_at")
+  sortOrder   Int         @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  milestones Milestone[]
+  tasks      Task[]
+
+  @@index([profileId, status])
+  @@map("goals")
+}
+
+model Milestone {
+  id        String    @id @default(cuid())
+  goalId    String    @map("goal_id")
+  title     String
+  doneAt    DateTime? @map("done_at")
+  sortOrder Int       @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("milestones")
+}
+
+model Task {
+  id        String       @id @default(cuid())
+  profileId String       @map("profile_id")
+  goalId    String?      @map("goal_id")
+  parentId  String?      @map("parent_id")
+
+  title    String
+  notes    String?
+  category String?
+  status   TaskStatus   @default(TODO)
+  priority TaskPriority @default(MEDIUM)
+
+  dueAt       DateTime?  @map("due_at")
+  completedAt DateTime?  @map("completed_at")
+  recurrence  Recurrence @default(NONE)
+  sortOrder   Int        @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile  Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  goal     Goal?           @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  parent   Task?           @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks Task[]          @relation("Subtasks")
+  events   CalendarEvent[]
+
+  @@index([profileId, status, dueAt])
+  @@index([goalId])
+  @@index([parentId])
+  @@map("tasks")
+}
+
+model CalendarEvent {
+  id        String    @id @default(cuid())
+  profileId String    @map("profile_id")
+  taskId    String?   @map("task_id")
+
+  title       String
+  description String?
+  location    String?
+  kind        EventKind @default(PERSONAL)
+
+  startAt DateTime @map("start_at")
+  endAt   DateTime @map("end_at")
+  allDay  Boolean  @default(false) @map("all_day")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  task    Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, startAt])
+  @@map("calendar_events")
+}
+
+model Notification {
+  id       String               @id @default(cuid())
+  userId   String               @map("user_id")
+  category NotificationCategory @default(SYSTEM)
+
+  title  String
+  body   String?
+  href   String?
+  readAt DateTime? @map("read_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, category])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  importantInApp Boolean @default(true) @map("important_in_app")
+  socialInApp    Boolean @default(true) @map("social_in_app")
+  eventsInApp    Boolean @default(true) @map("events_in_app")
+  learningInApp  Boolean @default(true) @map("learning_in_app")
+  goalsInApp     Boolean @default(true) @map("goals_in_app")
+  discoverInApp  Boolean @default(true) @map("discover_in_app")
+  systemInApp    Boolean @default(true) @map("system_in_app")
+
+  emailDigest Boolean @default(false) @map("email_digest")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }

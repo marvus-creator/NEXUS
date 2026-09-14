@@ -11,6 +11,7 @@ import { hash, verify } from '@node-rs/argon2';
 import type { User } from '@nexus/db';
 import { AuditService } from '../audit/audit.service.js';
 import { MailService } from '../mail/mail.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Env } from '../config/env.js';
 import { TokensService, type AccessTokenPayload } from './tokens.service.js';
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly tokens: TokensService,
     private readonly audit: AuditService,
     private readonly mail: MailService,
+    private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
   ) {}
 
@@ -112,6 +114,14 @@ export class AuthService {
       entityType: 'User',
       entityId: user.id,
       ...context,
+    });
+
+    await this.notifications.notify({
+      userId: user.id,
+      category: 'SYSTEM',
+      title: 'Welcome to Nexus',
+      body: 'Build your Nexus in five short steps and this place becomes yours.',
+      href: '/onboarding',
     });
 
     const session = await this.issueSession(user, context);
