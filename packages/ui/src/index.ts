@@ -10,6 +10,14 @@ export {
   CardContent,
   CardFooter,
 } from './components/card';
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from './components/dropdown';
 export { Input, Textarea, Label, Field, type InputProps } from './components/input';
 export { Avatar, AvatarStack, type AvatarProps } from './components/avatar';
 export { Skeleton } from './components/skeleton';

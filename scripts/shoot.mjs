@@ -18,8 +18,10 @@ function parseArgs(argv) {
 
   for (const arg of argv) {
     if (arg.startsWith('--')) {
-      const [key, value] = arg.slice(2).split('=');
-      flags[key] = value ?? true;
+      const body = arg.slice(2);
+      const split = body.indexOf('=');
+      const key = split === -1 ? body : body.slice(0, split);
+      flags[key] = split === -1 ? true : body.slice(split + 1);
     } else {
       positional.push(arg);
     }
@@ -156,6 +158,30 @@ async function main() {
       deviceScaleFactor: Number(flags.dpr ?? 1),
       mobile: Boolean(flags.mobile),
     });
+
+    if (flags.cookie) {
+      const target = new URL(url);
+      const cookies = String(flags.cookie)
+        .split(';')
+        .map((pair) => pair.trim())
+        .filter(Boolean)
+        .map((pair) => {
+          const index = pair.indexOf('=');
+          return {
+            name: pair.slice(0, index).trim(),
+            value: pair.slice(index + 1).trim(),
+            url: target.origin,
+            domain: target.hostname,
+            path: '/',
+          };
+        });
+
+      await session.send('Network.enable');
+
+      for (const cookie of cookies) {
+        await session.send('Network.setCookie', cookie);
+      }
+    }
 
     const loaded = session.once('Page.loadEventFired');
     await session.send('Page.navigate', { url });
