@@ -139,6 +139,21 @@ model Profile {
   tasks          Task[]
   calendarEvents CalendarEvent[]
 
+  following        Follow[]        @relation("Following")
+  followers        Follow[]        @relation("Followers")
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  friendshipsA     Friendship[]    @relation("FriendshipA")
+  friendshipsB     Friendship[]    @relation("FriendshipB")
+  blocksMade       Block[]         @relation("BlocksMade")
+  blocksReceived   Block[]         @relation("BlocksReceived")
+  reportsMade      Report[]        @relation("ReportsMade")
+  posts            Post[]
+  reactions        PostReaction[]
+  comments         Comment[]
+  saves            PostSave[]
+  pollVotes        PollVote[]
+
   @@index([countryCode, city])
   @@index([userType])
   @@map("profiles")
@@ -444,4 +459,217 @@ model NotificationPreference {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum PostKind {
+  TEXT
+  IMAGE
+  POLL
+  PROJECT
+  ACHIEVEMENT
+  ANNOUNCEMENT
+}
+
+enum PostVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum ReactionType {
+  LIKE
+  CELEBRATE
+  SUPPORT
+  INSIGHTFUL
+}
+
+enum ReportTargetType {
+  PROFILE
+  POST
+  COMMENT
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
+}
+
+model Follow {
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  Profile @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following Profile @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model FriendRequest {
+  id            String              @id @default(cuid())
+  fromProfileId String              @map("from_profile_id")
+  toProfileId   String              @map("to_profile_id")
+  status        FriendRequestStatus @default(PENDING)
+  message       String?
+  createdAt     DateTime            @default(now()) @map("created_at")
+  respondedAt   DateTime?           @map("responded_at")
+
+  from Profile @relation("SentRequests", fields: [fromProfileId], references: [id], onDelete: Cascade)
+  to   Profile @relation("ReceivedRequests", fields: [toProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([fromProfileId, toProfileId])
+  @@index([toProfileId, status])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id         String   @id @default(cuid())
+  profileAId String   @map("profile_a_id")
+  profileBId String   @map("profile_b_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profileA Profile @relation("FriendshipA", fields: [profileAId], references: [id], onDelete: Cascade)
+  profileB Profile @relation("FriendshipB", fields: [profileBId], references: [id], onDelete: Cascade)
+
+  @@unique([profileAId, profileBId])
+  @@index([profileBId])
+  @@map("friendships")
+}
+
+model Block {
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker Profile @relation("BlocksMade", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked Profile @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+model Report {
+  id           String           @id @default(cuid())
+  reporterId   String           @map("reporter_id")
+  targetType   ReportTargetType @map("target_type")
+  targetId     String           @map("target_id")
+  reason       String
+  details      String?
+  status       ReportStatus     @default(OPEN)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  reviewedAt   DateTime?        @map("reviewed_at")
+
+  reporter Profile @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("reports")
+}
+
+model Post {
+  id         String         @id @default(cuid())
+  profileId  String         @map("profile_id")
+  kind       PostKind       @default(TEXT)
+  visibility PostVisibility @default(PUBLIC)
+
+  body     String
+  imageUrl String? @map("image_url")
+  linkUrl  String? @map("link_url")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  profile     Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  reactions   PostReaction[]
+  comments    Comment[]
+  saves       PostSave[]
+  pollOptions PollOption[]
+
+  @@index([profileId, createdAt])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model PollOption {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  label     String
+  sortOrder Int      @default(0) @map("sort_order")
+
+  post  Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@index([postId])
+  @@map("poll_options")
+}
+
+model PollVote {
+  optionId  String   @map("option_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  option  PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  profile Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([optionId, profileId])
+  @@index([profileId])
+  @@map("poll_votes")
+}
+
+model PostReaction {
+  postId    String       @map("post_id")
+  profileId String       @map("profile_id")
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([postId, profileId])
+  @@index([profileId])
+  @@map("post_reactions")
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  postId    String    @map("post_id")
+  profileId String    @map("profile_id")
+  parentId  String?   @map("parent_id")
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("Replies")
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+model PostSave {
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([postId, profileId])
+  @@index([profileId])
+  @@map("post_saves")
 }
