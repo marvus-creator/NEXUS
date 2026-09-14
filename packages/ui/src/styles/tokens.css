@@ -33,9 +33,10 @@
     --overlay: color-mix(in oklab, #06080a 72%, transparent);
     --scrim: linear-gradient(
       to top,
-      color-mix(in oklab, #06080a 92%, transparent) 0%,
-      color-mix(in oklab, #06080a 55%, transparent) 45%,
-      transparent 100%
+      color-mix(in oklab, #06080a 94%, transparent) 0%,
+      color-mix(in oklab, #06080a 72%, transparent) 38%,
+      color-mix(in oklab, #06080a 34%, transparent) 72%,
+      color-mix(in oklab, #06080a 12%, transparent) 100%
     );
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
@@ -231,5 +232,26 @@
   }
   100% {
     box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry var(--reveal-shift, 0%) cover 30%;
+    }
   }
 }
