@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import type { Env } from './config/env.js';
+import { RedisIoAdapter } from './common/redis-io.adapter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
@@ -31,6 +32,14 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const redisAdapter = new RedisIoAdapter(
+    app,
+    config.get('REDIS_URL', { infer: true }),
+    config.get('WEB_ORIGIN', { infer: true }),
+  );
+  await redisAdapter.connect();
+  app.useWebSocketAdapter(redisAdapter);
 
   app.enableShutdownHooks();
 

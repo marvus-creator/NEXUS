@@ -149,6 +149,11 @@ model Profile {
   blocksReceived   Block[]         @relation("BlocksReceived")
   reportsMade      Report[]        @relation("ReportsMade")
   posts            Post[]
+  circleMemberships CircleMember[]
+  circleJoinRequests CircleJoinRequest[]
+  conversations    ConversationParticipant[]
+  messages         Message[]
+  messageReactions MessageReaction[]
   reactions        PostReaction[]
   comments         Comment[]
   saves            PostSave[]
@@ -581,6 +586,7 @@ model Report {
 model Post {
   id         String         @id @default(cuid())
   profileId  String         @map("profile_id")
+  circleId   String?        @map("circle_id")
   kind       PostKind       @default(TEXT)
   visibility PostVisibility @default(PUBLIC)
 
@@ -593,12 +599,14 @@ model Post {
   deletedAt DateTime? @map("deleted_at")
 
   profile     Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  circle      Circle?        @relation(fields: [circleId], references: [id], onDelete: Cascade)
   reactions   PostReaction[]
   comments    Comment[]
   saves       PostSave[]
   pollOptions PollOption[]
 
   @@index([profileId, createdAt])
+  @@index([circleId, createdAt])
   @@index([createdAt])
   @@map("posts")
 }
@@ -672,4 +680,156 @@ model PostSave {
   @@id([postId, profileId])
   @@index([profileId])
   @@map("post_saves")
+}
+
+enum CircleVisibility {
+  PUBLIC
+  PRIVATE
+  INVITE_ONLY
+}
+
+enum CircleRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+}
+
+enum ConversationKind {
+  DIRECT
+  GROUP
+  CIRCLE
+}
+
+model Circle {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  name        String
+  description String?
+  coverUrl    String?          @map("cover_url")
+  visibility  CircleVisibility @default(PUBLIC)
+  rules       String?
+  city        String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  members       CircleMember[]
+  joinRequests  CircleJoinRequest[]
+  posts         Post[]
+  conversations Conversation[]
+
+  @@index([visibility, createdAt])
+  @@map("circles")
+}
+
+model CircleMember {
+  circleId  String     @map("circle_id")
+  profileId String     @map("profile_id")
+  role      CircleRole @default(MEMBER)
+  joinedAt  DateTime   @default(now()) @map("joined_at")
+  mutedAt   DateTime?  @map("muted_at")
+
+  circle  Circle  @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([circleId, profileId])
+  @@index([profileId])
+  @@map("circle_members")
+}
+
+model CircleJoinRequest {
+  id        String            @id @default(cuid())
+  circleId  String            @map("circle_id")
+  profileId String            @map("profile_id")
+  status    JoinRequestStatus @default(PENDING)
+  message   String?
+  createdAt DateTime          @default(now()) @map("created_at")
+  decidedAt DateTime?         @map("decided_at")
+
+  circle  Circle  @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([circleId, profileId])
+  @@index([circleId, status])
+  @@map("circle_join_requests")
+}
+
+model Conversation {
+  id       String           @id @default(cuid())
+  kind     ConversationKind @default(DIRECT)
+  title    String?
+  circleId String?          @map("circle_id")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  lastMessageAt DateTime? @map("last_message_at")
+
+  circle       Circle?                   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([lastMessageAt])
+  @@index([circleId])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId String    @map("conversation_id")
+  profileId      String    @map("profile_id")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+  leftAt         DateTime? @map("left_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, profileId])
+  @@index([profileId, lastReadAt])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String @id @default(cuid())
+  conversationId String @map("conversation_id")
+  profileId      String @map("profile_id")
+
+  body          String
+  attachmentUrl String? @map("attachment_url")
+  replyToId     String? @map("reply_to_id")
+  pinnedAt      DateTime? @map("pinned_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  editedAt  DateTime? @map("edited_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  profile      Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  replyTo      Message?          @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      Message[]         @relation("MessageReplies")
+  reactions    MessageReaction[]
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model MessageReaction {
+  messageId String   @map("message_id")
+  profileId String   @map("profile_id")
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, profileId, emoji])
+  @@index([profileId])
+  @@map("message_reactions")
 }

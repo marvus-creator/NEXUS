@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { validateEnv } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
+import { HttpThrottlerGuard } from './common/guards/http-throttler.guard.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { MailModule } from './mail/mail.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { CirclesModule } from './circles/circles.module.js';
+import { MessagingModule } from './messaging/messaging.module.js';
 import { PeopleModule } from './people/people.module.js';
 import { PlannerModule } from './planner/planner.module.js';
 import { SocialModule } from './social/social.module.js';
@@ -36,10 +39,12 @@ import { StorageModule } from './storage/storage.module.js';
     PlannerModule,
     PeopleModule,
     SocialModule,
+    CirclesModule,
+    MessagingModule,
     HealthModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: HttpThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

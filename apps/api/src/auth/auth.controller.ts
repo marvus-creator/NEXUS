@@ -1,5 +1,12 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import {
+  LOGIN_THROTTLE,
+  RECOVERY_THROTTLE,
+  REFRESH_THROTTLE,
+  REGISTER_THROTTLE,
+  VERIFY_THROTTLE,
+} from '../config/throttle.js';
 import type { Request, Response } from 'express';
 import { Public } from '../common/decorators/public.decorator.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
@@ -28,7 +35,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @Throttle({ default: REGISTER_THROTTLE })
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -46,7 +53,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 8, ttl: 60_000 } })
+  @Throttle({ default: LOGIN_THROTTLE })
   @HttpCode(200)
   @Post('login')
   async login(
@@ -62,7 +69,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Throttle({ default: REFRESH_THROTTLE })
   @HttpCode(200)
   @Post('refresh')
   async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
@@ -116,7 +123,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: VERIFY_THROTTLE })
   @HttpCode(200)
   @Post('verify-email')
   async verifyEmail(@Body() dto: VerifyEmailDto, @Req() request: Request) {
@@ -124,7 +131,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 300_000 } })
+  @Throttle({ default: RECOVERY_THROTTLE })
   @HttpCode(200)
   @Post('resend-verification')
   async resendVerification(@Body() dto: ResendVerificationDto, @Req() request: Request) {
@@ -132,7 +139,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 300_000 } })
+  @Throttle({ default: RECOVERY_THROTTLE })
   @HttpCode(200)
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto, @Req() request: Request) {
@@ -140,7 +147,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 300_000 } })
+  @Throttle({ default: RECOVERY_THROTTLE })
   @HttpCode(200)
   @Post('reset-password')
   async resetPassword(
