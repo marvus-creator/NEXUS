@@ -3,10 +3,11 @@ packages:
   - "packages/*"
 
 allowBuilds:
-  unrs-resolver: set this to true or false
-
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
-  - "esbuild"
-  - "sharp"
-  - "unrs-resolver"
+  '@prisma/engines': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+  msgpackr-extract: false
+  workerd: false

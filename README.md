@@ -20,7 +20,10 @@ goals and planning connected through one interface.
 ```
 apps/web        Next.js application
 apps/api        NestJS API
+packages/ui     Design system (tokens + primitives)
+packages/db     Prisma schema, migrations, seed
 packages/config Shared TypeScript configs
+scripts/        shoot.mjs — headless Chrome visual QA
 ```
 
 ## Getting started
@@ -29,7 +32,15 @@ packages/config Shared TypeScript configs
 pnpm install
 cp .env.example .env
 pnpm db:up      # postgres on 5433, redis on 6380
+pnpm --filter @nexus/db migrate   # apply migrations
+pnpm --filter @nexus/db seed      # interest catalogue
 pnpm dev        # web on 3000, api on 4000
+```
+
+Verify the schema end to end:
+
+```bash
+pnpm --filter @nexus/db verify
 ```
 
 Health check: `http://localhost:4000/api/v1/health`

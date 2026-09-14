@@ -1,0 +1,9 @@
+{
+  "extends": "@nexus/config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext"
+  },
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "prisma.config.ts"]
+}
