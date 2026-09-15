@@ -88,8 +88,8 @@ export const navGroups: NavGroup[] = [
         tint: 'var(--module-nearby)',
         available: true,
       },
-      { label: 'Market', href: '/market', icon: Store, available: false, phase: 'Phase 7' },
-      { label: 'Wallet', href: '/wallet', icon: Wallet, available: false, phase: 'Phase 7' },
+      { label: 'Market', href: '/market', icon: Store, tint: 'var(--module-discover)', available: true },
+      { label: 'Wallet', href: '/wallet', icon: Wallet, available: true },
     ],
   },
 ];

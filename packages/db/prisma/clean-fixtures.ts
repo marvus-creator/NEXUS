@@ -46,7 +46,7 @@ async function main() {
   });
   const keptIds = keptProfiles.map((profile) => profile.id);
 
-  const [places, events, circles] = await Promise.all([
+  const [places, events, circles, businesses, listings] = await Promise.all([
     prisma.$queryRaw<{ id: string; name: string }[]>`
       select id, name from places
        where deleted_at is null and name ~ ${STAMP}
@@ -61,6 +61,16 @@ async function main() {
          and id not in (
            select circle_id from circle_members
             where role = 'OWNER' and profile_id = any(${keptIds}::text[]))`,
+    prisma.$queryRaw<{ id: string; name: string }[]>`
+      select id, name from businesses
+       where deleted_at is null and name ~ ${STAMP}
+         and id not in (
+           select business_id from business_members
+            where role = 'OWNER' and profile_id = any(${keptIds}::text[]))`,
+    prisma.$queryRaw<{ id: string; title: string }[]>`
+      select id, title from listings
+       where deleted_at is null and title ~ ${STAMP}
+         and seller_id <> all(${keptIds}::text[])`,
   ]);
 
   const summary = {
@@ -68,6 +78,8 @@ async function main() {
     places: places.length,
     events: events.length,
     circles: circles.length,
+    businesses: businesses.length,
+    listings: listings.length,
   };
 
   if (!apply) {
@@ -111,6 +123,25 @@ async function main() {
     prisma.post.updateMany({
       where: { profileId: { in: profileIds }, deletedAt: null },
       data: { deletedAt: now },
+    }),
+    prisma.business.updateMany({
+      where: { id: { in: businesses.map((business) => business.id) } },
+      data: { deletedAt: now, status: 'CLOSED' },
+    }),
+    prisma.listing.updateMany({
+      where: { id: { in: listings.map((listing) => listing.id) } },
+      data: { deletedAt: now, status: 'ARCHIVED' },
+    }),
+    prisma.listing.updateMany({
+      where: { sellerId: { in: profileIds }, deletedAt: null },
+      data: { deletedAt: now, status: 'ARCHIVED' },
+    }),
+    prisma.business.updateMany({
+      where: {
+        deletedAt: null,
+        members: { some: { role: 'OWNER', profileId: { in: profileIds } } },
+      },
+      data: { deletedAt: now, status: 'CLOSED' },
     }),
   ]);
 
