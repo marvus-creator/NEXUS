@@ -86,6 +86,8 @@ model User {
   role            UserRole   @default(USER)
   status          UserStatus @default(PENDING)
   lastLoginAt     DateTime?  @map("last_login_at")
+  suspendedUntil  DateTime?  @map("suspended_until")
+  suspendedReason String?    @map("suspended_reason")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
   deletedAt       DateTime?  @map("deleted_at")
@@ -94,6 +96,7 @@ model User {
   sessions               Session[]
   verificationTokens     VerificationToken[]
   auditLogs              AuditLog[]              @relation("AuditActor")
+  reportsReviewed        Report[]                @relation("ReportsReviewed")
   notifications          Notification[]
   notificationPreference NotificationPreference?
 
@@ -590,10 +593,13 @@ model Report {
   reason       String
   details      String?
   status       ReportStatus     @default(OPEN)
+  resolution   String?
+  reviewedById String?          @map("reviewed_by_id")
   createdAt    DateTime         @default(now()) @map("created_at")
   reviewedAt   DateTime?        @map("reviewed_at")
 
-  reporter Profile @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporter   Profile @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy User?   @relation("ReportsReviewed", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([targetType, targetId])

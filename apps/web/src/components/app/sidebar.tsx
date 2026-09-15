@@ -3,7 +3,7 @@
 import { Logo, Tooltip, TooltipContent, TooltipTrigger, cn } from '@nexus/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { aiItem, navGroups, type NavItem } from './nav-config';
+import { aiItem, navGroups, staffItem, type NavItem } from './nav-config';
 
 function NavRow({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
@@ -46,8 +46,9 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
+  const isStaff = role === 'ADMIN' || role === 'MODERATOR';
 
   return (
     <aside className="border-line bg-ground-deep hidden w-64 shrink-0 flex-col border-r lg:flex">
@@ -76,7 +77,10 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-line border-t px-6 py-4">
+      <div className="border-line flex flex-col gap-0.5 border-t px-6 py-4">
+        {isStaff ? (
+          <NavRow item={staffItem} active={pathname.startsWith(staffItem.href)} />
+        ) : null}
         <NavRow item={aiItem} active={pathname.startsWith(aiItem.href)} />
       </div>
     </aside>

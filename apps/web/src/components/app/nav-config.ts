@@ -7,6 +7,7 @@ import {
   MapPin,
   MessageSquare,
   Rss,
+  ShieldCheck,
   Sparkles,
   Store,
   Target,
@@ -99,6 +100,14 @@ export const aiItem: NavItem = {
   href: '/ai',
   icon: Sparkles,
   tint: 'var(--module-ai)',
+  available: true,
+};
+
+export const staffItem: NavItem = {
+  label: 'Moderation',
+  href: '/admin',
+  icon: ShieldCheck,
+  tint: 'var(--module-nearby)',
   available: true,
 };
 

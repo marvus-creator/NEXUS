@@ -3,12 +3,14 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
 import { ACCESS_COOKIE, AccessTokenPayload, TokensService } from '../../auth/tokens.service.js';
+import { SecurityStore } from '../security-store.service.js';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly tokens: TokensService,
+    private readonly revocations: SecurityStore,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -42,6 +44,10 @@ export class JwtAuthGuard implements CanActivate {
 
     if (payload.status === 'SUSPENDED' || payload.status === 'DEACTIVATED') {
       throw new UnauthorizedException('This account is not active');
+    }
+
+    if (await this.revocations.isRevoked(payload.sub)) {
+      throw new UnauthorizedException('This session is no longer valid');
     }
 
     request.user = payload;

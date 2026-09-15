@@ -69,6 +69,7 @@ node scripts/verify-circles.mjs  # circles, roles, messaging, websockets: 38 che
 node scripts/verify-events.mjs   # places, distance, events, check-in: 42 checks
 node scripts/verify-learning.mjs # learning, progress, day planning: 54 checks
 node scripts/verify-market.mjs   # businesses, listings, orders, ledger: 79 checks
+node scripts/verify-admin.mjs    # roles, moderation, suspension, analytics: 39 checks
 node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 ```
 
@@ -81,5 +82,5 @@ node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 5. Discover, events, nearby, maps
 6. Learning, progress, day planning — **complete** (planning is rule-based; no LLM key configured)
 7. Businesses, marketplace, wallet — **complete** (ledger is real; no payment rails connected)
-8. Admin, moderation, analytics, security hardening
+8. Admin, moderation, analytics, security hardening — **complete**
 9. Personalization, recommendations, virtual experiences

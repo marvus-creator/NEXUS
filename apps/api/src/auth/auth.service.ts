@@ -2,20 +2,25 @@ import { randomBytes } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { hash, verify } from '@node-rs/argon2';
-import type { User } from '@nexus/db';
+import type { User, UserStatus } from '@nexus/db';
 import { AuditService } from '../audit/audit.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Env } from '../config/env.js';
+import { SecurityStore } from '../common/security-store.service.js';
 import { TokensService, type AccessTokenPayload } from './tokens.service.js';
 import type { RegisterDto } from './dto/register.dto.js';
+
+const MAX_LOGIN_FAILURES = Number(process.env.MAX_LOGIN_FAILURES ?? 6);
 import type { LoginDto } from './dto/login.dto.js';
 
 const ARGON_OPTIONS = {
@@ -43,7 +48,12 @@ export class AuthService {
     private readonly mail: MailService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
+    private readonly security: SecurityStore,
   ) {}
+
+  private failureKey(email: string, ip?: string) {
+    return `${email.toLowerCase()}|${ip ?? 'unknown'}`;
+  }
 
   private get isProduction() {
     return this.config.get('NODE_ENV', { infer: true }) === 'production';
@@ -132,11 +142,54 @@ export class AuthService {
     };
   }
 
+  private async liftExpiredSuspension(user: {
+    id: string;
+    status: UserStatus;
+    suspendedUntil: Date | null;
+  }) {
+    if (
+      user.status !== 'SUSPENDED' ||
+      !user.suspendedUntil ||
+      user.suspendedUntil.getTime() > Date.now()
+    ) {
+      return { status: user.status, suspendedUntil: user.suspendedUntil };
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { status: 'ACTIVE', suspendedUntil: null, suspendedReason: null },
+    });
+
+    await this.audit.record({
+      action: 'moderation.user.suspension_expired',
+      actorUserId: null,
+      entityType: 'user',
+      entityId: user.id,
+    });
+
+    return { status: 'ACTIVE' as UserStatus, suspendedUntil: null };
+  }
+
   async login(dto: LoginDto, context: RequestContext) {
+    const key = this.failureKey(dto.email, context.ipAddress);
+
+    if ((await this.security.failureCount(key)) >= MAX_LOGIN_FAILURES) {
+      await this.audit.record({
+        action: 'auth.login.locked',
+        metadata: { email: dto.email },
+        ...context,
+      });
+      throw new HttpException(
+        'Too many failed attempts. Wait a few minutes and try again.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
 
     if (!user || user.deletedAt) {
       await this.simulateHashWork();
+      await this.security.recordFailure(key);
       await this.audit.record({
         action: 'auth.login.failed',
         metadata: { email: dto.email, reason: 'no_account' },
@@ -148,6 +201,7 @@ export class AuthService {
     const valid = await verify(user.passwordHash, dto.password);
 
     if (!valid) {
+      await this.security.recordFailure(key);
       await this.audit.record({
         action: 'auth.login.failed',
         actorUserId: user.id,
@@ -157,15 +211,25 @@ export class AuthService {
       throw new UnauthorizedException('Email or password is incorrect');
     }
 
-    if (user.status === 'SUSPENDED' || user.status === 'DEACTIVATED') {
+    await this.security.clearFailures(key);
+
+    const served = await this.liftExpiredSuspension(user);
+
+    if (served.status === 'SUSPENDED' || served.status === 'DEACTIVATED') {
       await this.audit.record({
         action: 'auth.login.blocked',
         actorUserId: user.id,
-        metadata: { status: user.status },
+        metadata: { status: served.status, until: served.suspendedUntil },
         ...context,
       });
-      throw new UnauthorizedException('This account is not active');
+      throw new UnauthorizedException(
+        served.status === 'SUSPENDED' && served.suspendedUntil
+          ? `This account is suspended until ${served.suspendedUntil.toISOString().slice(0, 10)}`
+          : 'This account is not active',
+      );
     }
+
+    user.status = served.status;
 
     await this.prisma.user.update({
       where: { id: user.id },

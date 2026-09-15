@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex min-h-dvh">
-        <Sidebar />
+        <Sidebar role={user.role} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar user={user} unread={notifications.unread} />

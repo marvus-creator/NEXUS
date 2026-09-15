@@ -3,12 +3,14 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './audit/audit.module.js';
+import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { validateEnv } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
+import { CommonModule } from './common/common.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { CirclesModule } from './circles/circles.module.js';
@@ -34,6 +36,7 @@ import { StorageModule } from './storage/storage.module.js';
       validate: validateEnv,
     }),
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
+    CommonModule,
     PrismaModule,
     AuditModule,
     MailModule,
@@ -45,6 +48,7 @@ import { StorageModule } from './storage/storage.module.js';
     LearningModule,
     WalletModule,
     MarketModule,
+    AdminModule,
     PeopleModule,
     SocialModule,
     CirclesModule,

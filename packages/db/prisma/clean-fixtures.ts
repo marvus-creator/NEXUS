@@ -40,6 +40,14 @@ async function main() {
   );
   const profileIds = fixtures.flatMap((user) => (user.profile ? [user.profile.id] : []));
 
+  const [fixturePosts, fixtureComments] = await Promise.all([
+    prisma.post.findMany({ where: { profileId: { in: profileIds } }, select: { id: true } }),
+    prisma.comment.findMany({ where: { profileId: { in: profileIds } }, select: { id: true } }),
+  ]);
+
+  const fixturePostIds = fixturePosts.map((post) => post.id);
+  const fixtureCommentIds = fixtureComments.map((comment) => comment.id);
+
   const keptProfiles = await prisma.profile.findMany({
     where: { user: { email: { in: [...keep] } } },
     select: { id: true },
@@ -142,6 +150,16 @@ async function main() {
         members: { some: { role: 'OWNER', profileId: { in: profileIds } } },
       },
       data: { deletedAt: now, status: 'CLOSED' },
+    }),
+    prisma.report.deleteMany({
+      where: {
+        OR: [
+          { reporterId: { in: profileIds } },
+          { targetType: 'PROFILE', targetId: { in: profileIds } },
+          { targetType: 'POST', targetId: { in: fixturePostIds } },
+          { targetType: 'COMMENT', targetId: { in: fixtureCommentIds } },
+        ],
+      },
     }),
   ]);
 
