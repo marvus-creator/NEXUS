@@ -1,6 +1,25 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED = ['/home', '/discover', '/feed', '/people', '/tasks', '/goals', '/calendar', '/notifications', '/circles', '/messages', '/events', '/nearby', '/events', '/nearby', '/learn', '/settings', '/profile', '/onboarding'];
+const PROTECTED = [
+  '/home',
+  '/discover',
+  '/feed',
+  '/people',
+  '/tasks',
+  '/goals',
+  '/calendar',
+  '/notifications',
+  '/circles',
+  '/messages',
+  '/events',
+  '/nearby',
+  '/learn',
+  '/progress',
+  '/ai',
+  '/settings',
+  '/profile',
+  '/onboarding',
+];
 const AUTH_ROUTES = ['/sign-in', '/create-account'];
 
 export function middleware(request: NextRequest) {
@@ -28,8 +47,8 @@ export const config = {
   matcher: [
     '/home/:path*',
     '/discover/:path*',
-    '/people/:path*',
     '/feed/:path*',
+    '/people/:path*',
     '/tasks/:path*',
     '/goals/:path*',
     '/calendar/:path*',
@@ -38,9 +57,9 @@ export const config = {
     '/messages/:path*',
     '/events/:path*',
     '/nearby/:path*',
-    '/events/:path*',
-    '/nearby/:path*',
     '/learn/:path*',
+    '/progress/:path*',
+    '/ai/:path*',
     '/settings/:path*',
     '/profile/:path*',
     '/onboarding/:path*',

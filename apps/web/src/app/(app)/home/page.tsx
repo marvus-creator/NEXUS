@@ -162,8 +162,8 @@ export default async function HomePage() {
         {greeting(timezone)}, {firstName}.
       </h1>
       <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
-        {today && today.fixed.length + today.events.length > 0
-          ? `${today.fixed.length + today.events.length} on your calendar today, ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`
+        {today && today.fixed.length + today.events.length + today.attending.length > 0
+          ? `${today.fixed.length + today.events.length + today.attending.length} on your calendar today, ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`
           : `Nothing fixed today. ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`}
         {myEvents.length > 0
           ? ` ${myEvents.length} ${myEvents.length === 1 ? 'event' : 'events'} you are going to.`
@@ -193,7 +193,9 @@ export default async function HomePage() {
             />
 
             <Card className="p-6">
-              {today && today.fixed.length + today.events.length + today.gaps.length > 0 ? (
+              {today &&
+              today.fixed.length + today.events.length + today.attending.length + today.gaps.length >
+                0 ? (
                 <div className="flex flex-col">
                   {[
                     ...today.fixed.map((block) => ({
@@ -210,6 +212,14 @@ export default async function HomePage() {
                       end: event.endMinute,
                       title: event.title,
                       tint: 'var(--accent)',
+                      kind: 'event' as const,
+                    })),
+                    ...today.attending.map((event) => ({
+                      key: `a-${event.id}`,
+                      start: event.startMinute,
+                      end: event.endMinute,
+                      title: event.title,
+                      tint: 'var(--module-events)',
                       kind: 'event' as const,
                     })),
                     ...today.gaps.map((gap) => ({
@@ -420,8 +430,13 @@ export default async function HomePage() {
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">Nexus AI</p>
                   <p className="text-ink-muted mt-2 text-sm leading-relaxed">{aiMessage}</p>
-                  <p className="text-ink-subtle mt-3 text-xs leading-relaxed">
-                    Automatic planning arrives in Phase 6. Nothing moves without your confirmation.
+                  <Button asChild variant="ghost" size="sm" className="mt-3 -ml-2">
+                    <Link href="/ai">
+                      Plan my day <ArrowRight />
+                    </Link>
+                  </Button>
+                  <p className="text-ink-subtle mt-1 text-xs leading-relaxed">
+                    Nothing reaches your calendar without your confirmation.
                   </p>
                 </div>
               </div>

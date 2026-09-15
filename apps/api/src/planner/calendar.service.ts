@@ -110,7 +110,7 @@ export class CalendarService {
       throw new BadRequestException('Ranges are limited to about two months');
     }
 
-    const [events, blocks, tasks] = await Promise.all([
+    const [events, blocks, tasks, attending] = await Promise.all([
       this.prisma.calendarEvent.findMany({
         where: { profileId: profile.id, startAt: { gte: from, lt: to } },
         orderBy: { startAt: 'asc' },
@@ -124,6 +124,16 @@ export class CalendarService {
           status: { in: ['TODO', 'DOING'] },
         },
         select: { id: true, title: true, dueAt: true, priority: true, status: true },
+      }),
+      this.prisma.eventAttendee.findMany({
+        where: {
+          profileId: profile.id,
+          status: 'GOING',
+          event: { deletedAt: null, startAt: { gte: from, lt: to } },
+        },
+        select: {
+          event: { select: { id: true, slug: true, title: true, startAt: true, endAt: true } },
+        },
       }),
     ]);
 
@@ -142,6 +152,14 @@ export class CalendarService {
         location: string | null;
       }[];
       tasks: { id: string; title: string; minutes: number; priority: string }[];
+      attending: {
+        id: string;
+        slug: string;
+        title: string;
+        startMinute: number;
+        endMinute: number;
+        startAt: string;
+      }[];
       gaps: { startMinute: number; endMinute: number; minutes: number }[];
     }[] = [];
 
@@ -187,9 +205,34 @@ export class CalendarService {
           priority: task.priority,
         }));
 
+      const dayAttending = attending
+        .filter((row) => localParts(row.event.startAt, profile.timezone).dateKey === parts.dateKey)
+        .map((row) => {
+          const start = localParts(row.event.startAt, profile.timezone);
+          const end = row.event.endAt ? localParts(row.event.endAt, profile.timezone) : null;
+
+          return {
+            id: row.event.id,
+            slug: row.event.slug,
+            title: row.event.title,
+            startMinute: start.minutes,
+            endMinute: !end
+              ? Math.min(DAY_END, start.minutes + 120)
+              : end.dateKey === start.dateKey
+                ? end.minutes
+                : DAY_END,
+            startAt: row.event.startAt.toISOString(),
+          };
+        })
+        .sort((a, b) => a.startMinute - b.startMinute);
+
       const busy = [
         ...fixed.map((block) => ({ startMinute: block.startMinute, endMinute: block.endMinute })),
         ...dayEvents.map((event) => ({ startMinute: event.startMinute, endMinute: event.endMinute })),
+        ...dayAttending.map((event) => ({
+          startMinute: event.startMinute,
+          endMinute: event.endMinute,
+        })),
       ];
 
       days.push({
@@ -198,6 +241,7 @@ export class CalendarService {
         fixed,
         events: dayEvents,
         tasks: dayTasks,
+        attending: dayAttending,
         gaps: gapsAround(busy),
       });
     }

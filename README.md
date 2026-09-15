@@ -67,6 +67,7 @@ node scripts/verify-planner.mjs  # tasks, goals, calendar, notifications: 26 che
 node scripts/verify-social.mjs   # follows, friends, blocks, posts, feed: 40 checks
 node scripts/verify-circles.mjs  # circles, roles, messaging, websockets: 38 checks
 node scripts/verify-events.mjs   # places, distance, events, check-in: 42 checks
+node scripts/verify-learning.mjs # learning, progress, day planning: 54 checks
 node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 ```
 
@@ -77,7 +78,7 @@ node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 3. People, friends, following, social feed
 4. Circles, posts, real-time messaging
 5. Discover, events, nearby, maps
-6. Learning, progress, AI planning
+6. Learning, progress, day planning — **complete** (planning is rule-based; no LLM key configured)
 7. Businesses, marketplace, wallet
 8. Admin, moderation, analytics, security hardening
 9. Personalization, recommendations, virtual experiences

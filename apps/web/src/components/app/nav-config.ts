@@ -65,10 +65,9 @@ export const navGroups: NavGroup[] = [
         href: '/learn',
         icon: GraduationCap,
         tint: 'var(--module-learn)',
-        available: false,
-        phase: 'Phase 6',
+        available: true,
       },
-      { label: 'Progress', href: '/progress', icon: Trophy, available: false, phase: 'Phase 6' },
+      { label: 'Progress', href: '/progress', icon: Trophy, available: true },
     ],
   },
   {
@@ -100,8 +99,7 @@ export const aiItem: NavItem = {
   href: '/ai',
   icon: Sparkles,
   tint: 'var(--module-ai)',
-  available: false,
-  phase: 'Phase 6',
+  available: true,
 };
 
 export const mobilePrimary: NavItem[] = [

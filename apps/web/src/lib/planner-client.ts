@@ -68,6 +68,14 @@ export type CalendarDay = {
     location: string | null;
   }[];
   tasks: { id: string; title: string; minutes: number; priority: string }[];
+  attending: {
+    id: string;
+    slug: string;
+    title: string;
+    startMinute: number;
+    endMinute: number;
+    startAt: string;
+  }[];
   gaps: { startMinute: number; endMinute: number; minutes: number }[];
 };
 
