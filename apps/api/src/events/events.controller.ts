@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -79,6 +79,22 @@ class CreateEventDto {
   @IsOptional()
   @IsEnum(['PUBLIC', 'CIRCLE', 'PRIVATE'])
   visibility?: 'PUBLIC' | 'CIRCLE' | 'PRIVATE';
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  capacity?: number;
+}
+
+class UpdateEventDto {
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(120) title?: string;
+  @IsOptional() @IsString() @MaxLength(2000) description?: string;
+  @IsOptional() @IsDateString() startAt?: string;
+  @IsOptional() @IsDateString() endAt?: string;
+  @IsOptional() @IsString() @MaxLength(200) locationText?: string;
+  @IsOptional() @IsString() placeSlug?: string;
 
   @IsOptional()
   @Type(() => Number)
@@ -180,6 +196,15 @@ export class EventsController {
   @Get(':slug')
   detail(@CurrentUser('sub') userId: string, @Param('slug') slug: string) {
     return this.events.detail(userId, slug);
+  }
+
+  @Patch(':slug')
+  update(
+    @CurrentUser('sub') userId: string,
+    @Param('slug') slug: string,
+    @Body() dto: UpdateEventDto,
+  ) {
+    return this.events.update(userId, slug, dto);
   }
 
   @Get(':slug/attendees')

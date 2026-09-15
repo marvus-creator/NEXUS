@@ -66,6 +66,7 @@ node scripts/verify-profile.mjs  # onboarding + profile: 20 checks
 node scripts/verify-planner.mjs  # tasks, goals, calendar, notifications: 26 checks
 node scripts/verify-social.mjs   # follows, friends, blocks, posts, feed: 40 checks
 node scripts/verify-circles.mjs  # circles, roles, messaging, websockets: 38 checks
+node scripts/verify-events.mjs   # places, distance, events, check-in: 42 checks
 node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 ```
 

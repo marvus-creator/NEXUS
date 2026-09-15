@@ -1,265 +1,314 @@
 'use client';
 
-import { AvatarStack, Badge, Button, Card, Tabs, TabsContent, TabsList, TabsTrigger } from '@nexus/ui';
-import { Bookmark, Clock, MapPin, Share2, Users } from 'lucide-react';
-import Image from 'next/image';
+import { Avatar, AvatarStack, Badge, Button, Card, EmptyState, Tabs, TabsContent, TabsList, TabsTrigger, cn } from '@nexus/ui';
+import { CalendarDays, Compass, MapPin, Navigation, Star, UsersRound } from 'lucide-react';
+import Link from 'next/link';
 import { useMemo } from 'react';
-import { imagery, type Imagery } from '@/lib/imagery';
+import type { CircleSummary } from '@/lib/community-client';
+import type { EventSummary, PlaceSummary } from '@/lib/places-client';
+import type { PersonSummary } from '@/lib/social-client';
 
-type Item = {
-  id: string;
-  tab: string;
-  image: Imagery;
-  tag: string;
-  title: string;
-  blurb: string;
-  meta: string;
-  interests: string[];
+export type DiscoverData = {
+  places: PlaceSummary[];
+  events: EventSummary[];
+  circles: CircleSummary[];
+  people: PersonSummary[];
 };
 
-const ITEMS: Item[] = [
-  {
-    id: 'kigali-devs',
-    tab: 'circles',
-    image: imagery.team,
-    tag: 'Circle',
-    title: 'Kigali Developers',
-    blurb: 'Engineers, students and founders building software across Rwanda.',
-    meta: '2,481 members',
-    interests: ['technology', 'software-engineering', 'startups'],
-  },
-  {
-    id: 'tech-night',
-    tab: 'events',
-    image: imagery.liveEvent,
-    tag: 'Event',
-    title: 'Kigali Tech Night',
-    blurb: 'Talks, demos and the part afterwards where the real conversations happen.',
-    meta: 'Saturday · 18:00 · Norrsken',
-    interests: ['technology', 'startups', 'music'],
-  },
-  {
-    id: 'question-coffee',
-    tab: 'places',
-    image: imagery.cafeFriends,
-    tag: 'Place',
-    title: 'Question Coffee',
-    blurb: 'Quiet enough to work, good enough to stay. Open until 22:00.',
-    meta: '650 m away · 4.8',
-    interests: ['food', 'education', 'technology'],
-  },
-  {
-    id: 'study-group',
-    tab: 'circles',
-    image: imagery.students,
-    tag: 'Circle',
-    title: 'Year 2 Software',
-    blurb: 'Notes, past papers and a channel that stays awake before exams.',
-    meta: '86 members',
-    interests: ['education', 'software-engineering'],
-  },
-  {
-    id: 'five-a-side',
-    tab: 'events',
-    image: imagery.community,
-    tag: 'Event',
-    title: 'Five-a-side, Saturday',
-    blurb: 'Regular pickup game. Two spots left this week.',
-    meta: 'Saturday · 16:00 · Remera',
-    interests: ['football', 'fitness'],
-  },
-  {
-    id: 'internship',
-    tab: 'opportunities',
-    image: imagery.coworking,
-    tag: 'Opportunity',
-    title: 'Backend internship',
-    blurb: 'Six months, Java and Postgres, open to second-year students.',
-    meta: 'Closes Friday',
-    interests: ['software-engineering', 'technology'],
-  },
-  {
-    id: 'photo-walk',
-    tab: 'experiences',
-    image: imagery.travel,
-    tag: 'Experience',
-    title: 'Sunrise photo walk',
-    blurb: 'Two hours across the city as it wakes up. Any camera welcome.',
-    meta: 'Sunday · 05:30',
-    interests: ['photography', 'travel', 'nature'],
-  },
-  {
-    id: 'founders',
-    tab: 'circles',
-    image: imagery.meeting,
-    tag: 'Circle',
-    title: 'Startup Founders Rwanda',
-    blurb: 'Weekly threads on hiring, funding and the unglamorous parts.',
-    meta: '640 members',
-    interests: ['startups', 'business', 'entrepreneurship'],
-  },
-  {
-    id: 'shops',
-    tab: 'businesses',
-    image: imagery.storefront,
-    tag: 'Business',
-    title: 'Independent shops to know',
-    blurb: 'Twelve places that opened in Kigali this month.',
-    meta: 'Updated weekly',
-    interests: ['business', 'fashion', 'food'],
-  },
-  {
-    id: 'run-club',
-    tab: 'events',
-    image: imagery.outdoors,
-    tag: 'Event',
-    title: 'Morning run club',
-    blurb: 'Five kilometres before work, every weekday. All paces.',
-    meta: 'Weekdays · 06:00',
-    interests: ['fitness', 'running', 'health'],
-  },
-  {
-    id: 'library',
-    tab: 'places',
-    image: imagery.classroom,
-    tag: 'Place',
-    title: 'Kigali Public Library',
-    blurb: 'Long tables, good light and silence you can actually rely on.',
-    meta: '2.1 km away',
-    interests: ['education', 'reading'],
-  },
-  {
-    id: 'design-jam',
-    tab: 'experiences',
-    image: imagery.workspace,
-    tag: 'Experience',
-    title: 'Weekend design jam',
-    blurb: 'Build something small in a day with people you have not met.',
-    meta: 'Next Saturday',
-    interests: ['design', 'technology', 'art'],
-  },
-];
+function when(startAt: string) {
+  const start = new Date(startAt);
+  return `${start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+}
 
-const TABS = [
-  { value: 'for-you', label: 'For You' },
-  { value: 'trending', label: 'Trending' },
-  { value: 'places', label: 'Places' },
-  { value: 'events', label: 'Events' },
-  { value: 'circles', label: 'Circles' },
-  { value: 'opportunities', label: 'Opportunities' },
-  { value: 'businesses', label: 'Businesses' },
-  { value: 'experiences', label: 'Experiences' },
-];
-
-const PEOPLE = [
-  { name: 'Aline Uwase' },
-  { name: 'Kevin Mugisha' },
-  { name: 'Sandrine Ingabire' },
-  { name: 'Eric Habimana' },
-];
-
-function ItemCard({ item, matched }: { item: Item; matched: number }) {
+function EventItem({ event }: { event: EventSummary }) {
   return (
-    <article className="group border-line bg-surface hover:border-line-strong overflow-hidden rounded-xl border transition-all duration-300 hover:shadow-[var(--shadow-md)]">
-      <div className="relative h-44 overflow-hidden">
-        <Image
-          src={item.image.src}
-          alt={item.image.alt}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-[1.1s] ease-[var(--ease-out-soft)] group-hover:scale-105"
-        />
-        <div className="scrim-bottom absolute inset-0" />
-        <Badge variant="accent" size="sm" className="absolute top-3 left-3">
-          {item.tag}
-        </Badge>
-        {matched > 0 ? (
-          <span className="border-line bg-surface/85 text-ink-muted absolute top-3 right-3 rounded-full border px-2.5 py-1 text-[0.6875rem] backdrop-blur">
-            {matched} {matched === 1 ? 'match' : 'matches'}
+    <Card interactive className="p-5">
+      <div className="flex items-start gap-4">
+        <div className="border-line bg-surface-raised flex size-12 shrink-0 flex-col items-center justify-center rounded-lg border">
+          <span className="text-micro text-ink-subtle font-semibold uppercase">
+            {new Date(event.startAt).toLocaleDateString('en-GB', { month: 'short' })}
           </span>
-        ) : null}
-      </div>
-
-      <div className="p-5">
-        <h3 className="text-[0.9375rem] font-semibold tracking-tight">{item.title}</h3>
-        <p className="text-ink-muted mt-2 text-sm leading-relaxed">{item.blurb}</p>
-
-        <div className="text-ink-subtle mt-4 flex items-center gap-2 text-xs">
-          {item.tab === 'places' || item.tab === 'businesses' ? (
-            <MapPin className="size-3.5" />
-          ) : (
-            <Clock className="size-3.5" />
-          )}
-          {item.meta}
+          <span className="font-mono text-base leading-none font-semibold">
+            {new Date(event.startAt).getDate()}
+          </span>
         </div>
 
-        <div className="border-line mt-4 flex items-center justify-between border-t pt-4">
-          {item.tab === 'circles' ? (
-            <AvatarStack people={PEOPLE} max={3} size="xs" />
-          ) : (
-            <span className="text-ink-subtle inline-flex items-center gap-1.5 text-xs">
-              <Users className="size-3.5" /> Open to everyone
-            </span>
-          )}
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon-sm" aria-label={`Save ${item.title}`}>
-              <Bookmark />
-            </Button>
-            <Button variant="ghost" size="icon-sm" aria-label={`Share ${item.title}`}>
-              <Share2 />
-            </Button>
+        <div className="min-w-0 flex-1">
+          <Link href={`/events/${event.slug}`} className="truncate text-sm font-semibold hover:underline">
+            {event.title}
+          </Link>
+          <p className="text-ink-subtle mt-1 truncate text-xs">
+            {when(event.startAt)}
+            {event.place ? ` · ${event.place.name}` : event.locationText ? ` · ${event.locationText}` : ''}
+          </p>
+          <div className="mt-2.5 flex items-center gap-3">
+            {event.attendees.length > 0 ? (
+              <AvatarStack
+                people={event.attendees.map((person) => ({
+                  name: person.displayName,
+                  src: person.avatarUrl ?? undefined,
+                }))}
+                max={3}
+                size="xs"
+              />
+            ) : null}
+            <span className="text-ink-subtle text-xs">{event.goingCount} going</span>
           </div>
         </div>
       </div>
-    </article>
+    </Card>
   );
 }
 
-export function DiscoverBoard({ interests }: { interests: string[] }) {
-  const scored = useMemo(() => {
-    return ITEMS.map((item) => ({
-      item,
-      matched: item.interests.filter((slug) => interests.includes(slug)).length,
-    })).sort((a, b) => b.matched - a.matched);
-  }, [interests]);
+function PlaceItem({ place }: { place: PlaceSummary }) {
+  return (
+    <Card interactive className="p-5">
+      <div className="flex items-start gap-3.5">
+        <span className="bg-accent-soft text-module-nearby flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <MapPin className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{place.name}</p>
+          <p className="text-ink-subtle mt-0.5 truncate text-xs capitalize">
+            {place.category.toLowerCase()}
+            {place.address ? ` · ${place.address}` : ''}
+          </p>
+          <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs">
+            {place.rating !== null ? (
+              <span className="inline-flex items-center gap-1">
+                <Star className="text-warning size-3 fill-current" />
+                <span className="font-mono">{place.rating}</span>
+              </span>
+            ) : null}
+            {place.distanceKm !== null ? (
+              <span className="text-ink-muted inline-flex items-center gap-1">
+                <Navigation className="size-3" />
+                {place.distanceKm < 1 ? `${Math.round(place.distanceKm * 1000)} m` : `${place.distanceKm} km`}
+              </span>
+            ) : null}
+            {place.eventCount > 0 ? <Badge size="sm">{place.eventCount} upcoming</Badge> : null}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
-  function itemsFor(tab: string) {
-    if (tab === 'for-you') return scored;
-    if (tab === 'trending') return [...scored].reverse();
-    return scored.filter((entry) => entry.item.tab === tab);
-  }
+function CircleItem({ circle }: { circle: CircleSummary }) {
+  return (
+    <Card interactive className="p-5">
+      <div className="flex items-start gap-3.5">
+        <span className="bg-accent-soft text-accent flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <UsersRound className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <Link href={`/circles/${circle.slug}`} className="truncate text-sm font-semibold hover:underline">
+            {circle.name}
+          </Link>
+          <p className="text-ink-subtle mt-0.5 text-xs">
+            {circle.members} {circle.members === 1 ? 'member' : 'members'} · {circle.posts} posts
+          </p>
+          {circle.description ? (
+            <p className="text-ink-muted mt-2 line-clamp-2 text-sm leading-relaxed">
+              {circle.description}
+            </p>
+          ) : null}
+        </div>
+        {circle.myRole ? <Badge size="sm" className="capitalize">{circle.myRole.toLowerCase()}</Badge> : null}
+      </div>
+    </Card>
+  );
+}
+
+function PersonItem({ person }: { person: PersonSummary }) {
+  return (
+    <Card interactive className="p-5">
+      <div className="flex items-center gap-3.5">
+        <Link href={`/u/${person.username}`}>
+          <Avatar name={person.displayName} src={person.avatarUrl ?? undefined} size="md" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <Link href={`/u/${person.username}`} className="truncate text-sm font-semibold hover:underline">
+            {person.displayName}
+          </Link>
+          <p className="text-ink-subtle truncate text-xs">
+            @{person.username}
+            {person.occupation ? ` · ${person.occupation}` : ''}
+          </p>
+          {person.reasons && person.reasons.length > 0 ? (
+            <p className="text-ink-muted mt-1.5 truncate text-xs">{person.reasons.join(' · ')}</p>
+          ) : null}
+        </div>
+        <Button asChild size="sm" variant="secondary">
+          <Link href={`/u/${person.username}`}>View</Link>
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+export function DiscoverBoard({ data }: { data: DiscoverData }) {
+  const forYou = useMemo(() => {
+    const entries: { key: string; node: React.ReactNode; score: number }[] = [];
+
+    for (const event of data.events.slice(0, 8)) {
+      const hours = (new Date(event.startAt).getTime() - Date.now()) / 3600000;
+      entries.push({
+        key: `event-${event.id}`,
+        node: <EventItem event={event} />,
+        score: 40 + event.goingCount * 2 - Math.max(0, hours) * 0.05,
+      });
+    }
+
+    for (const person of data.people.slice(0, 6)) {
+      entries.push({
+        key: `person-${person.id}`,
+        node: <PersonItem person={person} />,
+        score: 20 + (person.mutualFriends ?? 0) * 8 + (person.sharedInterests ?? 0) * 2,
+      });
+    }
+
+    for (const circle of data.circles.slice(0, 6)) {
+      entries.push({
+        key: `circle-${circle.id}`,
+        node: <CircleItem circle={circle} />,
+        score: 18 + circle.members * 0.4 + circle.posts * 0.6,
+      });
+    }
+
+    for (const place of data.places.slice(0, 8)) {
+      entries.push({
+        key: `place-${place.id}`,
+        node: <PlaceItem place={place} />,
+        score: 12 + (place.rating ?? 0) * 3 + place.eventCount * 4,
+      });
+    }
+
+    return entries.sort((a, b) => b.score - a.score);
+  }, [data]);
+
+  const tabs = [
+    { value: 'for-you', label: 'For You', count: forYou.length },
+    { value: 'events', label: 'Events', count: data.events.length },
+    { value: 'places', label: 'Places', count: data.places.length },
+    { value: 'circles', label: 'Circles', count: data.circles.length },
+    { value: 'people', label: 'People', count: data.people.length },
+  ];
 
   return (
     <Tabs defaultValue="for-you">
       <TabsList>
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
             {tab.label}
+            {tab.count > 0 ? (
+              <span className="bg-surface-hover ml-2 rounded-full px-1.5 text-[0.625rem] font-semibold">
+                {tab.count}
+              </span>
+            ) : null}
           </TabsTrigger>
         ))}
       </TabsList>
 
-      {TABS.map((tab) => {
-        const entries = itemsFor(tab.value);
+      <TabsContent value="for-you" className="pt-7">
+        {forYou.length === 0 ? (
+          <EmptyState
+            icon={<Compass />}
+            title="Nothing to discover yet"
+            description="Add a place, create an event or start a circle and this page fills in."
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {forYou.map((entry) => (
+              <div key={entry.key}>{entry.node}</div>
+            ))}
+          </div>
+        )}
+      </TabsContent>
 
-        return (
-          <TabsContent key={tab.value} value={tab.value} className="pt-7">
-            {entries.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-ink-muted text-sm">
-                  Nothing here yet. This fills in once Phase 5 wires real places and events.
-                </p>
-              </Card>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {entries.map((entry) => (
-                  <ItemCard key={entry.item.id} item={entry.item} matched={entry.matched} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        );
-      })}
+      <TabsContent value="events" className="pt-7">
+        {data.events.length === 0 ? (
+          <EmptyState
+            icon={<CalendarDays />}
+            title="No events coming up"
+            description="Create one and invite the people who should be there."
+            action={
+              <Button asChild size="sm">
+                <Link href="/events">Go to events</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.events.map((event) => (
+              <EventItem key={event.id} event={event} />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="places" className="pt-7">
+        {data.places.length === 0 ? (
+          <EmptyState
+            icon={<MapPin />}
+            title="No places yet"
+            description="Add the cafés and venues you actually use."
+            action={
+              <Button asChild size="sm">
+                <Link href="/nearby">Go to nearby</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.places.map((place) => (
+              <PlaceItem key={place.id} place={place} />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="circles" className="pt-7">
+        {data.circles.length === 0 ? (
+          <EmptyState
+            icon={<UsersRound />}
+            title="No circles yet"
+            description="Start a community around something you care about."
+            action={
+              <Button asChild size="sm">
+                <Link href="/circles">Go to circles</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.circles.map((circle) => (
+              <CircleItem key={circle.id} circle={circle} />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="people" className="pt-7">
+        {data.people.length === 0 ? (
+          <EmptyState
+            icon={<Compass />}
+            title="No suggestions yet"
+            description="Suggestions come from mutual friends, shared interests and your city."
+            action={
+              <Button asChild size="sm">
+                <Link href="/people">Go to people</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.people.map((person) => (
+              <PersonItem key={person.id} person={person} />
+            ))}
+          </div>
+        )}
+      </TabsContent>
     </Tabs>
   );
 }

@@ -276,6 +276,43 @@ async function main() {
   });
   record('a host cannot decline their own event', hostDecline.status === 400, `status ${hostDecline.status}`);
 
+  const moved = await call(`/events/${eventSlug}`, {
+    method: 'PATCH',
+    jar: host.jar,
+    body: { startAt: new Date(Date.now() + 96 * HOUR).toISOString(), endAt: new Date(Date.now() + 100 * HOUR).toISOString() },
+  });
+  record('the host can move their own event', moved.status === 200 && moved.body?.movedTime === true);
+
+  const attendeeNotified = await call('/notifications', { jar: guest.jar });
+  record(
+    'attendees are told when an event moves',
+    (attendeeNotified.body?.notifications ?? []).some((item) => item.title.includes('moved')),
+  );
+
+  const foreignEdit = await call(`/events/${eventSlug}`, {
+    method: 'PATCH',
+    jar: guest.jar,
+    body: { title: 'Hijacked' },
+  });
+  record('only the host can edit an event', foreignEdit.status === 403, `status ${foreignEdit.status}`);
+
+  const shrink = await call(`/events/${eventSlug}`, {
+    method: 'PATCH',
+    jar: host.jar,
+    body: { capacity: 1 },
+  });
+  record(
+    'capacity cannot drop below the people already going',
+    shrink.status === 400,
+    `status ${shrink.status}`,
+  );
+
+  await call(`/events/${eventSlug}`, {
+    method: 'PATCH',
+    jar: host.jar,
+    body: { startAt: new Date(Date.now() + 48 * HOUR).toISOString(), endAt: new Date(Date.now() + 52 * HOUR).toISOString() },
+  });
+
   const wrongCode = await call(`/events/${eventSlug}/check-in`, {
     method: 'POST',
     jar: guest.jar,

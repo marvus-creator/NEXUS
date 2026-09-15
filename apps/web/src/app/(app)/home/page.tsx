@@ -1,48 +1,25 @@
-import { Badge, Button, Card, Eyebrow, Progress, Ring, cn } from '@nexus/ui';
-import { ArrowRight, Check, ListTodo, Sparkles, Target } from 'lucide-react';
+import { Avatar, Badge, Button, Card, Eyebrow, Progress, Ring, cn } from '@nexus/ui';
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  ListTodo,
+  MapPin,
+  Navigation,
+  Sparkles,
+  Star,
+  Target,
+  UsersRound,
+} from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import {
-  ForYouRail,
-  NearYouCard,
-  PriorityList,
-  PulseHeading,
-} from '@/components/pulse/pulse-sections';
-import { imagery } from '@/lib/imagery';
+import { PriorityList, PulseHeading } from '@/components/pulse/pulse-sections';
+import { getCircles } from '@/lib/community-server';
 import { getCalendar, getGoals, getTaskCounts, getTasks } from '@/lib/planner-server';
+import { getEvents, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
-
-const INTEREST_CARDS: Record<
-  string,
-  { image: keyof typeof imagery; tag: string; title: string; meta: string }
-> = {
-  technology: { image: 'team', tag: 'Circles', title: 'Kigali Developers', meta: '2,481 members' },
-  'software-engineering': {
-    image: 'coworking',
-    tag: 'Opportunity',
-    title: 'Backend internship',
-    meta: 'Closes Friday',
-  },
-  football: { image: 'community', tag: 'Event', title: 'Five-a-side, Saturday', meta: '8 going' },
-  music: { image: 'liveEvent', tag: 'Event', title: 'Live session downtown', meta: 'Friday · 20:00' },
-  startups: { image: 'meeting', tag: 'Circles', title: 'Startup Founders Rwanda', meta: '640 members' },
-  education: { image: 'classroom', tag: 'Learning', title: 'Algorithms study group', meta: 'Tuesdays' },
-  photography: { image: 'travel', tag: 'Experience', title: 'Sunrise photo walk', meta: 'Sunday · 05:30' },
-  travel: { image: 'travel', tag: 'Places', title: 'Weekend trips near Kigali', meta: '6 saved nearby' },
-  food: { image: 'cafeFriends', tag: 'Places', title: 'New places to eat', meta: '12 this month' },
-  fitness: { image: 'outdoors', tag: 'Event', title: 'Morning run club', meta: 'Weekdays · 06:00' },
-  business: { image: 'storefront', tag: 'Businesses', title: 'Local shops to know', meta: 'Weekly' },
-};
-
-const FALLBACK_CARDS = ['technology', 'football', 'music', 'education'];
-
-const SAMPLE_PLACES = [
-  { name: 'Question Coffee', category: 'Café', distance: '650 m', open: true },
-  { name: 'Norrsken House', category: 'Workspace', distance: '1.2 km', open: true },
-  { name: 'Kigali Public Library', category: 'Study', distance: '2.1 km', open: false },
-];
 
 function label(minutes: number) {
   const hours = Math.floor(minutes / 60);
@@ -85,11 +62,14 @@ export default async function HomePage() {
   dayStart.setHours(0, 0, 0, 0);
   const dayEnd = new Date(dayStart.getTime() + 86400000);
 
-  const [calendar, tasks, goals, counts] = await Promise.all([
+  const [calendar, tasks, goals, counts, events, places, circles] = await Promise.all([
     getCalendar(dayStart, dayEnd),
     getTasks(),
     getGoals(),
     getTaskCounts(),
+    getEvents('upcoming'),
+    getPlaces(),
+    getCircles('mine'),
   ]);
 
   const today = calendar.days[0];
@@ -111,22 +91,10 @@ export default async function HomePage() {
     .slice(0, 4);
 
   const bestGap = [...(today?.gaps ?? [])].sort((a, b) => b.minutes - a.minutes)[0];
-
-  const interestSlugs = profile?.interests.map((interest) => interest.slug) ?? [];
   const interestLabels = profile?.interests.map((interest) => interest.label) ?? [];
-  const chosen = interestSlugs.filter((slug) => INTEREST_CARDS[slug]).slice(0, 6);
-  const cardKeys =
-    chosen.length >= 3 ? chosen : [...new Set([...chosen, ...FALLBACK_CARDS])].slice(0, 5);
 
-  const cards = cardKeys
-    .map((key) => INTEREST_CARDS[key])
-    .filter((card): card is NonNullable<typeof card> => Boolean(card))
-    .map((card) => ({
-      image: imagery[card.image],
-      tag: card.tag,
-      title: card.title,
-      meta: card.meta,
-    }));
+  const myEvents = events.filter((event) => event.myStatus === 'GOING' || event.isHost);
+  const nextEvent = myEvents[0] ?? events[0] ?? null;
 
   const priorities = [
     !user.emailVerified
@@ -148,10 +116,7 @@ export default async function HomePage() {
     overdue.length > 0
       ? {
           title: `${overdue.length} ${overdue.length === 1 ? 'task is' : 'tasks are'} overdue`,
-          blurb: overdue
-            .slice(0, 3)
-            .map((task) => task.title)
-            .join(' · '),
+          blurb: overdue.slice(0, 3).map((task) => task.title).join(' · '),
           href: '/tasks',
           cta: 'Open tasks',
           tone: 'warning' as const,
@@ -170,15 +135,25 @@ export default async function HomePage() {
 
   const aiMessage = bestGap
     ? `You have ${duration(bestGap.minutes)} free from ${label(bestGap.startMinute)} today.${
-        dueSoon.length > 0
-          ? ` "${dueSoon[0]!.title}" is your next deadline — that window would cover it.`
-          : interestLabels.length > 0
-            ? ` Enough for a focused session on ${interestLabels[0]}.`
-            : ''
+        nextEvent && new Date(nextEvent.startAt).toDateString() === now.toDateString()
+          ? ` "${nextEvent.title}" is on tonight, so that window is your only clear stretch.`
+          : dueSoon.length > 0
+            ? ` "${dueSoon[0]!.title}" is your next deadline — that window would cover it.`
+            : interestLabels.length > 0
+              ? ` Enough for a focused session on ${interestLabels[0]}.`
+              : ''
       }`
     : (today?.fixed.length ?? 0) > 0
       ? 'Your day is fully committed. Nothing worth scheduling into it.'
       : 'Add your fixed commitments and Nexus can find the gaps worth using.';
+
+  const completeness = Math.min(
+    (onboarded ? 40 : 0) +
+      (user.emailVerified ? 20 : 0) +
+      Math.min(profile?.interests.length ?? 0, 5) * 4 +
+      Math.min(profile?.scheduleBlocks.length ?? 0, 5) * 4,
+    100,
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 sm:py-10">
@@ -190,6 +165,7 @@ export default async function HomePage() {
         {today && today.fixed.length + today.events.length > 0
           ? `${today.fixed.length + today.events.length} on your calendar today, ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`
           : `Nothing fixed today. ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`}
+        {myEvents.length > 0 ? ` ${myEvents.length} ${myEvents.length === 1 ? 'event' : 'events'} coming up.` : ''}
       </p>
 
       {priorities.length > 0 ? (
@@ -330,16 +306,12 @@ export default async function HomePage() {
                     <div key={task.id} className="flex items-center gap-4 p-4">
                       <span
                         className="size-2 shrink-0 rounded-full"
-                        style={{
-                          backgroundColor: isOverdue ? 'var(--danger)' : 'var(--accent)',
-                        }}
+                        style={{ backgroundColor: isOverdue ? 'var(--danger)' : 'var(--accent)' }}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{task.title}</p>
                         {task.goal ? (
-                          <p className="text-ink-subtle mt-0.5 truncate text-xs">
-                            {task.goal.title}
-                          </p>
+                          <p className="text-ink-subtle mt-0.5 truncate text-xs">{task.goal.title}</p>
                         ) : null}
                       </div>
                       {due ? (
@@ -356,20 +328,72 @@ export default async function HomePage() {
 
           <section>
             <PulseHeading
-              title="For you"
-              caption={
-                interestLabels.length > 0
-                  ? `Matched to ${interestLabels.slice(0, 3).join(', ')}${interestLabels.length > 3 ? ' and more' : ''}.`
-                  : 'Pick some interests and this becomes yours.'
+              title="Coming up"
+              caption="Events you are going to, and what is open near you."
+              action={
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/events">
+                    All events <ArrowRight />
+                  </Link>
+                </Button>
               }
-              sample="Sample content until Phase 5"
             />
-            <ForYouRail cards={cards} />
-          </section>
 
-          <section>
-            <PulseHeading title="Near you" caption="Places worth knowing about." sample="Sample content until Phase 5" />
-            <NearYouCard places={SAMPLE_PLACES} />
+            {events.length === 0 ? (
+              <Card className="p-6">
+                <p className="text-ink-muted text-sm leading-relaxed">
+                  No events coming up. Create one and invite the people who should be there.
+                </p>
+                <Button asChild variant="secondary" size="sm" className="mt-5">
+                  <Link href="/events">
+                    <CalendarDays /> Create an event
+                  </Link>
+                </Button>
+              </Card>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {events.slice(0, 3).map((event) => (
+                  <Card key={event.id} interactive className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="border-line bg-surface-raised flex size-12 shrink-0 flex-col items-center justify-center rounded-lg border">
+                        <span className="text-micro text-ink-subtle font-semibold uppercase">
+                          {new Date(event.startAt).toLocaleDateString('en-GB', { month: 'short' })}
+                        </span>
+                        <span className="font-mono text-base leading-none font-semibold">
+                          {new Date(event.startAt).getDate()}
+                        </span>
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/events/${event.slug}`}
+                            className="truncate text-sm font-semibold hover:underline"
+                          >
+                            {event.title}
+                          </Link>
+                          {event.isHost ? (
+                            <Badge variant="accent" size="sm">Hosting</Badge>
+                          ) : event.myStatus === 'GOING' ? (
+                            <Badge variant="success" size="sm">Going</Badge>
+                          ) : null}
+                        </div>
+                        <p className="text-ink-subtle mt-1 truncate text-xs">
+                          {new Date(event.startAt).toLocaleString('en-GB', {
+                            weekday: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                          {event.place ? ` · ${event.place.name}` : event.locationText ? ` · ${event.locationText}` : ''}
+                          {' · '}
+                          {event.goingCount} going
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </section>
         </div>
 
@@ -452,37 +476,106 @@ export default async function HomePage() {
           </section>
 
           <section>
+            <PulseHeading
+              title="Near you"
+              caption={places.length > 0 ? 'Places people have added.' : undefined}
+              action={
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/nearby">
+                    Nearby <ArrowRight />
+                  </Link>
+                </Button>
+              }
+            />
+
+            {places.length === 0 ? (
+              <Card className="p-6">
+                <p className="text-ink-muted text-sm leading-relaxed">
+                  No places yet. Add the cafés and venues you actually use.
+                </p>
+                <Button asChild variant="secondary" size="sm" className="mt-5">
+                  <Link href="/nearby">
+                    <MapPin /> Add a place
+                  </Link>
+                </Button>
+              </Card>
+            ) : (
+              <Card className="divide-y divide-[var(--border)]">
+                {places.slice(0, 4).map((place) => (
+                  <div key={place.id} className="flex items-center gap-4 p-4">
+                    <span className="bg-accent-soft text-module-nearby flex size-9 shrink-0 items-center justify-center rounded-md">
+                      <MapPin className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{place.name}</p>
+                      <p className="text-ink-muted mt-0.5 truncate text-xs capitalize">
+                        {place.category.toLowerCase()}
+                        {place.distanceKm !== null
+                          ? ` · ${place.distanceKm < 1 ? `${Math.round(place.distanceKm * 1000)} m` : `${place.distanceKm} km`}`
+                          : ''}
+                      </p>
+                    </div>
+                    {place.rating !== null ? (
+                      <span className="inline-flex shrink-0 items-center gap-1 font-mono text-xs">
+                        <Star className="text-warning size-3 fill-current" />
+                        {place.rating}
+                      </span>
+                    ) : null}
+                  </div>
+                ))}
+              </Card>
+            )}
+          </section>
+
+          {circles.length > 0 ? (
+            <section>
+              <PulseHeading
+                title="Your circles"
+                action={
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href="/circles">
+                      All <ArrowRight />
+                    </Link>
+                  </Button>
+                }
+              />
+              <Card className="divide-y divide-[var(--border)]">
+                {circles.slice(0, 3).map((circle) => (
+                  <Link
+                    key={circle.id}
+                    href={`/circles/${circle.slug}`}
+                    className="hover:bg-surface-hover flex items-center gap-4 p-4 transition-colors"
+                  >
+                    <span className="bg-accent-soft text-accent flex size-9 shrink-0 items-center justify-center rounded-md">
+                      <UsersRound className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{circle.name}</p>
+                      <p className="text-ink-muted mt-0.5 text-xs">
+                        {circle.members} members · {circle.posts} posts
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </Card>
+            </section>
+          ) : null}
+
+          <section>
             <PulseHeading title="Your Nexus" />
             <Card className="p-6">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm font-medium">Setup</p>
-                <span className="font-mono text-sm">
-                  {Math.min(
-                    (onboarded ? 40 : 0) +
-                      (user.emailVerified ? 20 : 0) +
-                      Math.min(interestSlugs.length, 5) * 4 +
-                      Math.min(profile?.scheduleBlocks.length ?? 0, 5) * 4,
-                    100,
-                  )}
-                  %
-                </span>
+                <span className="font-mono text-sm">{completeness}%</span>
               </div>
-              <Progress
-                value={Math.min(
-                  (onboarded ? 40 : 0) +
-                    (user.emailVerified ? 20 : 0) +
-                    Math.min(interestSlugs.length, 5) * 4 +
-                    Math.min(profile?.scheduleBlocks.length ?? 0, 5) * 4,
-                  100,
-                )}
-                className="mt-4"
-              />
+              <Progress value={completeness} className="mt-4" />
               <dl className="mt-5 flex flex-col gap-2.5 text-sm">
                 {[
-                  ['Interests', interestSlugs.length],
+                  ['Interests', profile?.interests.length ?? 0],
                   ['Fixed blocks', profile?.scheduleBlocks.length ?? 0],
                   ['Open tasks', counts.open],
                   ['Active goals', activeGoals.length],
+                  ['Circles', circles.length],
                 ].map(([key, value]) => (
                   <div key={String(key)} className="flex items-center justify-between">
                     <dt className="text-ink-muted">{key}</dt>

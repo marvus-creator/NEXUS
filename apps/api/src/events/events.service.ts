@@ -241,6 +241,96 @@ export class EventsService {
     return { id: event.id, slug: event.slug, checkInCode: event.checkInCode };
   }
 
+  async update(
+    userId: string,
+    slug: string,
+    input: {
+      title?: string;
+      description?: string;
+      startAt?: string;
+      endAt?: string | null;
+      locationText?: string;
+      placeSlug?: string;
+      capacity?: number;
+    },
+  ) {
+    const me = await this.people.profileFor(userId);
+
+    const event = await this.prisma.event.findFirst({
+      where: { slug: slug.toLowerCase(), deletedAt: null },
+      include: { attendees: { include: { profile: { select: { userId: true } } } } },
+    });
+
+    if (!event) throw new NotFoundException('No such event');
+    if (event.hostId !== me.id) throw new ForbiddenException('Only the host can change this event');
+
+    const startAt = input.startAt ? new Date(input.startAt) : event.startAt;
+    const endAt =
+      input.endAt === null ? null : input.endAt ? new Date(input.endAt) : event.endAt;
+
+    if (Number.isNaN(startAt.getTime())) {
+      throw new BadRequestException('Give the event a valid start time');
+    }
+
+    if (endAt && endAt <= startAt) {
+      throw new BadRequestException('An event has to end after it starts');
+    }
+
+    if (input.capacity !== undefined) {
+      const going = event.attendees.filter((attendee) => attendee.status === 'GOING').length;
+
+      if (input.capacity < going) {
+        throw new BadRequestException(
+          `${going} people are already going, so capacity cannot drop below that`,
+        );
+      }
+    }
+
+    let placeId = event.placeId;
+
+    if (input.placeSlug) {
+      const place = await this.prisma.place.findFirst({
+        where: { slug: input.placeSlug.toLowerCase(), deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!place) throw new BadRequestException('That place does not exist');
+
+      placeId = place.id;
+    }
+
+    const movedTime = input.startAt && startAt.getTime() !== event.startAt.getTime();
+
+    const updated = await this.prisma.event.update({
+      where: { id: event.id },
+      data: {
+        title: input.title,
+        description: input.description,
+        locationText: input.locationText,
+        capacity: input.capacity,
+        placeId,
+        startAt,
+        endAt,
+      },
+    });
+
+    if (movedTime) {
+      for (const attendee of event.attendees) {
+        if (attendee.profileId === me.id) continue;
+
+        await this.notifications.notify({
+          userId: attendee.profile.userId,
+          category: 'EVENTS',
+          title: `${event.title} moved`,
+          body: startAt.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }),
+          href: `/events/${event.slug}`,
+        });
+      }
+    }
+
+    return { id: updated.id, slug: updated.slug, startAt: updated.startAt, movedTime };
+  }
+
   async rsvp(userId: string, slug: string, status: AttendeeStatus) {
     const me = await this.people.profileFor(userId);
 
