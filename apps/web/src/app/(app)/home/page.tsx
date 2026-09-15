@@ -165,7 +165,9 @@ export default async function HomePage() {
         {today && today.fixed.length + today.events.length > 0
           ? `${today.fixed.length + today.events.length} on your calendar today, ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`
           : `Nothing fixed today. ${counts.open} open ${counts.open === 1 ? 'task' : 'tasks'}.`}
-        {myEvents.length > 0 ? ` ${myEvents.length} ${myEvents.length === 1 ? 'event' : 'events'} coming up.` : ''}
+        {myEvents.length > 0
+          ? ` ${myEvents.length} ${myEvents.length === 1 ? 'event' : 'events'} you are going to.`
+          : ''}
       </p>
 
       {priorities.length > 0 ? (

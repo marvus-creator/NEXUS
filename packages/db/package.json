@@ -15,7 +15,8 @@
     "studio": "prisma studio",
     "seed": "prisma db seed",
     "typecheck": "tsc --noEmit",
-    "verify": "node --import tsx prisma/verify.ts"
+    "verify": "node --import tsx prisma/verify.ts",
+    "clean": "node --import tsx prisma/clean-fixtures.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

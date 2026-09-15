@@ -167,7 +167,7 @@ export class PeopleService {
     const profiles = await this.prisma.profile.findMany({
       where: {
         id: { notIn: [me.id, ...blocked] },
-        user: { status: { not: 'DEACTIVATED' } },
+        user: { deletedAt: null, status: { not: 'DEACTIVATED' } },
         privacy: { is: { profileVisibility: { not: 'PRIVATE' } } },
         OR: [
           { username: { contains: term, mode: 'insensitive' } },
@@ -230,7 +230,7 @@ export class PeopleService {
     const candidates = await this.prisma.profile.findMany({
       where: {
         id: { notIn: exclude },
-        user: { status: { not: 'DEACTIVATED' } },
+        user: { deletedAt: null, status: { not: 'DEACTIVATED' } },
         privacy: { is: { profileVisibility: 'PUBLIC', showInPeopleYouKnow: true } },
       },
       select: {
