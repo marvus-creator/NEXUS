@@ -167,6 +167,12 @@ model Profile {
   learningPaths    LearningPath[]
   studySessions    StudySession[]
   planProposals    PlanProposal[]
+  businesses       BusinessMember[]
+  listings         Listing[]
+  listingSaves     ListingSave[]
+  ordersPlaced     Order[]          @relation("OrdersPlaced")
+  ordersReceived   Order[]          @relation("OrdersReceived")
+  wallet           Wallet?
 
   @@index([countryCode, city])
   @@index([userType])
@@ -895,9 +901,10 @@ model Place {
   deletedAt   DateTime? @map("deleted_at")
 
   createdBy Profile?      @relation("PlacesCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  reviews   PlaceReview[]
-  saves     PlaceSave[]
-  events    Event[]
+  reviews    PlaceReview[]
+  saves      PlaceSave[]
+  events     Event[]
+  businesses Business[]
 
   @@index([city, category])
   @@index([latitude, longitude])
@@ -1126,4 +1133,272 @@ model PlanProposal {
   @@index([profileId, status, startAt])
   @@index([profileId, planFor])
   @@map("plan_proposals")
+}
+
+enum BusinessCategory {
+  RETAIL
+  FOOD
+  SERVICES
+  TECH
+  EDUCATION
+  HEALTH
+  CRAFTS
+  AGRICULTURE
+  TRANSPORT
+  OTHER
+}
+
+enum BusinessStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum BusinessRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum ListingKind {
+  PRODUCT
+  SERVICE
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  ARCHIVED
+}
+
+enum ListingCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  FOR_PARTS
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  FULFILLED
+  CANCELLED
+}
+
+enum EntryDirection {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTxKind {
+  TRANSFER
+  ORDER_PAYMENT
+  ORDER_REFUND
+  ADJUSTMENT
+}
+
+enum WalletKind {
+  USER
+  TREASURY
+}
+
+enum WalletTxStatus {
+  POSTED
+  REVERSED
+}
+
+model Business {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  placeId String? @map("place_id")
+
+  name        String
+  tagline     String?
+  description String?
+  category    BusinessCategory @default(OTHER)
+  status      BusinessStatus   @default(ACTIVE)
+
+  logoUrl  String? @map("logo_url")
+  coverUrl String? @map("cover_url")
+  phone    String?
+  email    String?
+  website  String?
+
+  city        String?
+  countryCode String  @default("RW") @map("country_code")
+  currency    String  @default("RWF")
+
+  verified Boolean @default(false)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  place    Place?           @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  members  BusinessMember[]
+  listings Listing[]
+  orders   Order[]
+
+  @@index([category, status])
+  @@index([countryCode, city])
+  @@map("businesses")
+}
+
+model BusinessMember {
+  businessId String       @map("business_id")
+  profileId  String       @map("profile_id")
+  role       BusinessRole @default(STAFF)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  profile  Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([businessId, profileId])
+  @@index([profileId])
+  @@map("business_members")
+}
+
+model Listing {
+  id         String  @id @default(cuid())
+  slug       String  @unique
+  sellerId   String  @map("seller_id")
+  businessId String? @map("business_id")
+
+  title       String
+  description String?
+  kind        ListingKind       @default(PRODUCT)
+  status      ListingStatus     @default(ACTIVE)
+  condition   ListingCondition?
+
+  priceMinor Int    @map("price_minor")
+  currency   String @default("RWF")
+  negotiable Boolean @default(false)
+
+  quantity Int @default(1)
+
+  category BusinessCategory @default(OTHER)
+  city     String?
+  coverUrl String?          @map("cover_url")
+  images   String[]         @default([])
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  seller   Profile       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  business Business?     @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  saves    ListingSave[]
+  orders   Order[]
+
+  @@index([status, createdAt])
+  @@index([category, status])
+  @@index([sellerId])
+  @@map("listings")
+}
+
+model ListingSave {
+  listingId String   @map("listing_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, profileId])
+  @@index([profileId])
+  @@map("listing_saves")
+}
+
+model Order {
+  id         String  @id @default(cuid())
+  code       String  @unique
+  listingId  String  @map("listing_id")
+  buyerId    String  @map("buyer_id")
+  sellerId   String  @map("seller_id")
+  businessId String? @map("business_id")
+
+  quantity       Int
+  unitPriceMinor Int    @map("unit_price_minor")
+  totalMinor     Int    @map("total_minor")
+  currency       String
+
+  status OrderStatus @default(PENDING)
+  note   String?
+
+  paidTransactionId String? @unique @map("paid_transaction_id")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  decidedAt   DateTime? @map("decided_at")
+  fulfilledAt DateTime? @map("fulfilled_at")
+
+  listing  Listing            @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer    Profile            @relation("OrdersPlaced", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller   Profile            @relation("OrdersReceived", fields: [sellerId], references: [id], onDelete: Cascade)
+  business Business?          @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  payment  WalletTransaction? @relation(fields: [paidTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([buyerId, status])
+  @@index([sellerId, status])
+  @@map("orders")
+}
+
+model Wallet {
+  id        String     @id @default(cuid())
+  profileId String?    @unique @map("profile_id")
+  kind      WalletKind @default(USER)
+  label     String?
+  currency  String     @default("RWF")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile?      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  entries LedgerEntry[]
+
+  @@index([kind])
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id        String         @id @default(cuid())
+  reference String         @unique
+  kind      WalletTxKind
+  status    WalletTxStatus @default(POSTED)
+  currency  String
+  memo      String?
+
+  reversalOfId String? @unique @map("reversal_of_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  entries    LedgerEntry[]
+  order      Order?
+  reversalOf WalletTransaction? @relation("Reversal", fields: [reversalOfId], references: [id], onDelete: SetNull)
+  reversedBy WalletTransaction? @relation("Reversal")
+
+  @@index([kind, createdAt])
+  @@map("wallet_transactions")
+}
+
+model LedgerEntry {
+  id            String         @id @default(cuid())
+  transactionId String         @map("transaction_id")
+  walletId      String         @map("wallet_id")
+  direction     EntryDirection
+  amountMinor   Int            @map("amount_minor")
+  currency      String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  transaction WalletTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([transactionId])
+  @@map("ledger_entries")
 }

@@ -17,6 +17,8 @@ import { MessagingModule } from './messaging/messaging.module.js';
 import { PlacesModule } from './places/places.module.js';
 import { PeopleModule } from './people/people.module.js';
 import { LearningModule } from './learning/learning.module.js';
+import { MarketModule } from './market/market.module.js';
+import { WalletModule } from './wallet/wallet.module.js';
 import { PlannerModule } from './planner/planner.module.js';
 import { SocialModule } from './social/social.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -41,6 +43,8 @@ import { StorageModule } from './storage/storage.module.js';
     ProfilesModule,
     PlannerModule,
     LearningModule,
+    WalletModule,
+    MarketModule,
     PeopleModule,
     SocialModule,
     CirclesModule,

@@ -121,6 +121,42 @@ async function main() {
 
   await prisma.auditLog.deleteMany({ where: { action: 'schema.verify' } });
 
+  const ledgerTotals = await prisma.ledgerEntry.groupBy({
+    by: ['direction', 'currency'],
+    _sum: { amountMinor: true },
+  });
+
+  const netByCurrency = new Map<string, number>();
+
+  for (const row of ledgerTotals) {
+    const amount = row._sum.amountMinor ?? 0;
+    const signed = row.direction === 'CREDIT' ? amount : -amount;
+    netByCurrency.set(row.currency, (netByCurrency.get(row.currency) ?? 0) + signed);
+  }
+
+  const unbalanced = [...netByCurrency.entries()].filter(([, net]) => net !== 0);
+
+  record(
+    'every ledger entry nets to zero across all wallets',
+    unbalanced.length === 0,
+    unbalanced.length === 0
+      ? [...netByCurrency.keys()].join(', ') || 'no entries yet'
+      : unbalanced.map(([currency, net]) => `${currency} off by ${net}`).join('; '),
+  );
+
+  const lopsided = await prisma.$queryRaw<{ transaction_id: string; net: bigint }[]>`
+    SELECT transaction_id,
+           SUM(CASE WHEN direction = 'CREDIT' THEN amount_minor ELSE -amount_minor END) AS net
+      FROM ledger_entries
+     GROUP BY transaction_id
+    HAVING SUM(CASE WHEN direction = 'CREDIT' THEN amount_minor ELSE -amount_minor END) <> 0`;
+
+  record(
+    'no single transaction is lopsided',
+    lopsided.length === 0,
+    lopsided.length === 0 ? 'all transactions balance' : `${lopsided.length} unbalanced`,
+  );
+
   const failed = checks.filter((check) => !check.ok);
 
   for (const check of checks) {
