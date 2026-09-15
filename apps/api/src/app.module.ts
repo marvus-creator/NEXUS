@@ -16,6 +16,7 @@ import { EventsModule } from './events/events.module.js';
 import { MessagingModule } from './messaging/messaging.module.js';
 import { PlacesModule } from './places/places.module.js';
 import { PeopleModule } from './people/people.module.js';
+import { LearningModule } from './learning/learning.module.js';
 import { PlannerModule } from './planner/planner.module.js';
 import { SocialModule } from './social/social.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -39,6 +40,7 @@ import { StorageModule } from './storage/storage.module.js';
     AuthModule,
     ProfilesModule,
     PlannerModule,
+    LearningModule,
     PeopleModule,
     SocialModule,
     CirclesModule,

@@ -164,6 +164,9 @@ model Profile {
   comments         Comment[]
   saves            PostSave[]
   pollVotes        PollVote[]
+  learningPaths    LearningPath[]
+  studySessions    StudySession[]
+  planProposals    PlanProposal[]
 
   @@index([countryCode, city])
   @@index([userType])
@@ -353,9 +356,10 @@ model Goal {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile    Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   milestones Milestone[]
   tasks      Task[]
+  paths      LearningPath[]
 
   @@index([profileId, status])
   @@map("goals")
@@ -401,6 +405,7 @@ model Task {
   parent   Task?           @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
   subtasks Task[]          @relation("Subtasks")
   events   CalendarEvent[]
+  plans    PlanProposal[]
 
   @@index([profileId, status, dueAt])
   @@index([goalId])
@@ -991,4 +996,134 @@ model EventReview {
   @@unique([eventId, profileId])
   @@index([eventId])
   @@map("event_reviews")
+}
+
+enum LearningSource {
+  SELF
+  COURSE
+  BOOK
+  VIDEO
+  CLASS
+  OTHER
+}
+
+enum LearningStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum PlanStatus {
+  PROPOSED
+  ACCEPTED
+  DECLINED
+  SUPERSEDED
+}
+
+enum PlanEngine {
+  RULES
+  ASSISTED
+}
+
+model LearningPath {
+  id        String @id @default(cuid())
+  profileId String @map("profile_id")
+  goalId    String? @map("goal_id")
+
+  title       String
+  subject     String?
+  description String?
+  coverUrl    String? @map("cover_url")
+
+  source LearningSource @default(SELF)
+  status LearningStatus @default(ACTIVE)
+
+  targetDate  DateTime? @map("target_date")
+  completedAt DateTime? @map("completed_at")
+  sortOrder   Int       @default(0) @map("sort_order")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  profile  Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  goal     Goal?            @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  modules  LearningModule[]
+  sessions StudySession[]
+  plans    PlanProposal[]
+
+  @@index([profileId, status])
+  @@index([goalId])
+  @@map("learning_paths")
+}
+
+model LearningModule {
+  id     String @id @default(cuid())
+  pathId String @map("path_id")
+
+  title            String
+  notes            String?
+  estimatedMinutes Int       @default(45) @map("estimated_minutes")
+  sortOrder        Int       @default(0) @map("sort_order")
+  completedAt      DateTime? @map("completed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  path     LearningPath   @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  sessions StudySession[]
+
+  @@index([pathId, sortOrder])
+  @@map("learning_modules")
+}
+
+model StudySession {
+  id        String  @id @default(cuid())
+  profileId String  @map("profile_id")
+  pathId    String? @map("path_id")
+  moduleId  String? @map("module_id")
+
+  minutes   Int
+  note      String?
+  startedAt DateTime @map("started_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  path    LearningPath?   @relation(fields: [pathId], references: [id], onDelete: SetNull)
+  module  LearningModule? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, startedAt])
+  @@index([pathId])
+  @@map("study_sessions")
+}
+
+model PlanProposal {
+  id        String @id @default(cuid())
+  profileId String @map("profile_id")
+
+  title     String
+  rationale String
+  status    PlanStatus @default(PROPOSED)
+  engine    PlanEngine @default(RULES)
+
+  startAt DateTime @map("start_at")
+  endAt   DateTime @map("end_at")
+  planFor String   @map("plan_for")
+
+  taskId          String? @map("task_id")
+  pathId          String? @map("path_id")
+  calendarEventId String? @map("calendar_event_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  decidedAt DateTime? @map("decided_at")
+
+  profile Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  task    Task?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  path    LearningPath? @relation(fields: [pathId], references: [id], onDelete: SetNull)
+
+  @@index([profileId, status, startAt])
+  @@index([profileId, planFor])
+  @@map("plan_proposals")
 }
