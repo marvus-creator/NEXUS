@@ -2,7 +2,7 @@ import { Eyebrow } from '@nexus/ui';
 import { redirect } from 'next/navigation';
 import { DiscoverBoard } from '@/components/discover/discover-board';
 import { getCircles } from '@/lib/community-server';
-import { getEvents, getPlaces } from '@/lib/places-server';
+import { getEvents, getForYou, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
 import { getSuggestions } from '@/lib/social-server';
 
@@ -13,11 +13,12 @@ export default async function DiscoverPage() {
 
   if (!user) redirect('/sign-in');
 
-  const [places, events, circles, people] = await Promise.all([
+  const [places, events, circles, people, feed] = await Promise.all([
     getPlaces(),
     getEvents('upcoming'),
     getCircles('discover'),
     getSuggestions(),
+    getForYou(),
   ]);
 
   const labels = user.profile?.interests.map((interest) => interest.label) ?? [];
@@ -41,7 +42,7 @@ export default async function DiscoverPage() {
       </p>
 
       <div className="mt-9">
-        <DiscoverBoard data={{ places, events, circles, people }} />
+        <DiscoverBoard data={{ places, events, circles, people }} feed={feed} />
       </div>
     </div>
   );

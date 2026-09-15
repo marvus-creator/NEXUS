@@ -11,6 +11,7 @@ import { HttpThrottlerGuard } from './common/guards/http-throttler.guard.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { CommonModule } from './common/common.module.js';
+import { DiscoverModule } from './discover/discover.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { CirclesModule } from './circles/circles.module.js';
@@ -49,6 +50,7 @@ import { StorageModule } from './storage/storage.module.js';
     WalletModule,
     MarketModule,
     AdminModule,
+    DiscoverModule,
     PeopleModule,
     SocialModule,
     CirclesModule,

@@ -50,6 +50,8 @@ export class EventsService {
       startAt: event.startAt,
       endAt: event.endAt,
       locationText: event.locationText,
+      isOnline: event.isOnline,
+      joinUrl: event.joinUrl,
       place: event.place,
       host: event.host,
       isHost: event.hostId === viewerProfileId,
@@ -161,6 +163,8 @@ export class EventsService {
       endAt?: string;
       placeSlug?: string;
       locationText?: string;
+      isOnline?: boolean;
+      joinUrl?: string;
       circleId?: string;
       visibility?: 'PUBLIC' | 'CIRCLE' | 'PRIVATE';
       capacity?: number;
@@ -222,6 +226,8 @@ export class EventsService {
         endAt,
         placeId,
         locationText: input.locationText,
+        isOnline: input.isOnline ?? false,
+        joinUrl: input.joinUrl,
         circleId: input.circleId,
         visibility: input.visibility ?? 'PUBLIC',
         capacity: input.capacity,
@@ -250,6 +256,8 @@ export class EventsService {
       startAt?: string;
       endAt?: string | null;
       locationText?: string;
+      isOnline?: boolean;
+      joinUrl?: string;
       placeSlug?: string;
       capacity?: number;
     },

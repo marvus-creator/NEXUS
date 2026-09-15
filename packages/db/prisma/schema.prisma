@@ -961,6 +961,9 @@ model Event {
   locationText String? @map("location_text")
   circleId     String? @map("circle_id")
 
+  isOnline Boolean @default(false) @map("is_online")
+  joinUrl  String? @map("join_url")
+
   hostId      String  @map("host_id")
   capacity    Int?
   checkInCode String  @unique @map("check_in_code")

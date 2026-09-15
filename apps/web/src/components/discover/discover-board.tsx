@@ -3,7 +3,7 @@
 import { Avatar, AvatarStack, Badge, Button, Card, EmptyState, Tabs, TabsContent, TabsList, TabsTrigger, cn } from '@nexus/ui';
 import { CalendarDays, Compass, MapPin, Navigation, Star, UsersRound } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { ForYou, type ForYouFeed } from './for-you';
 import type { CircleSummary } from '@/lib/community-client';
 import type { EventSummary, PlaceSummary } from '@/lib/places-client';
 import type { PersonSummary } from '@/lib/social-client';
@@ -147,48 +147,10 @@ function PersonItem({ person }: { person: PersonSummary }) {
   );
 }
 
-export function DiscoverBoard({ data }: { data: DiscoverData }) {
-  const forYou = useMemo(() => {
-    const entries: { key: string; node: React.ReactNode; score: number }[] = [];
-
-    for (const event of data.events.slice(0, 8)) {
-      const hours = (new Date(event.startAt).getTime() - Date.now()) / 3600000;
-      entries.push({
-        key: `event-${event.id}`,
-        node: <EventItem event={event} />,
-        score: 40 + event.goingCount * 2 - Math.max(0, hours) * 0.05,
-      });
-    }
-
-    for (const person of data.people.slice(0, 6)) {
-      entries.push({
-        key: `person-${person.id}`,
-        node: <PersonItem person={person} />,
-        score: 20 + (person.mutualFriends ?? 0) * 8 + (person.sharedInterests ?? 0) * 2,
-      });
-    }
-
-    for (const circle of data.circles.slice(0, 6)) {
-      entries.push({
-        key: `circle-${circle.id}`,
-        node: <CircleItem circle={circle} />,
-        score: 18 + circle.members * 0.4 + circle.posts * 0.6,
-      });
-    }
-
-    for (const place of data.places.slice(0, 8)) {
-      entries.push({
-        key: `place-${place.id}`,
-        node: <PlaceItem place={place} />,
-        score: 12 + (place.rating ?? 0) * 3 + place.eventCount * 4,
-      });
-    }
-
-    return entries.sort((a, b) => b.score - a.score);
-  }, [data]);
+export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYouFeed }) {
 
   const tabs = [
-    { value: 'for-you', label: 'For You', count: forYou.length },
+    { value: 'for-you', label: 'For You', count: feed.items.length },
     { value: 'events', label: 'Events', count: data.events.length },
     { value: 'places', label: 'Places', count: data.places.length },
     { value: 'circles', label: 'Circles', count: data.circles.length },
@@ -211,19 +173,7 @@ export function DiscoverBoard({ data }: { data: DiscoverData }) {
       </TabsList>
 
       <TabsContent value="for-you" className="pt-7">
-        {forYou.length === 0 ? (
-          <EmptyState
-            icon={<Compass />}
-            title="Nothing to discover yet"
-            description="Add a place, create an event or start a circle and this page fills in."
-          />
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {forYou.map((entry) => (
-              <div key={entry.key}>{entry.node}</div>
-            ))}
-          </div>
-        )}
+        <ForYou feed={feed} />
       </TabsContent>
 
       <TabsContent value="events" className="pt-7">

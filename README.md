@@ -70,6 +70,7 @@ node scripts/verify-events.mjs   # places, distance, events, check-in: 42 checks
 node scripts/verify-learning.mjs # learning, progress, day planning: 54 checks
 node scripts/verify-market.mjs   # businesses, listings, orders, ledger: 79 checks
 node scripts/verify-admin.mjs    # roles, moderation, suspension, analytics: 39 checks
+node scripts/verify-discover.mjs # affinity, recommendations, opt-out: 30 checks
 node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 ```
 

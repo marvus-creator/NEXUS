@@ -75,6 +75,8 @@ class CreateEventDto {
   @IsOptional() @IsString() placeSlug?: string;
   @IsOptional() @IsString() @MaxLength(200) locationText?: string;
   @IsOptional() @IsString() circleId?: string;
+  @IsOptional() @IsBoolean() isOnline?: boolean;
+  @IsOptional() @IsString() @MaxLength(500) joinUrl?: string;
 
   @IsOptional()
   @IsEnum(['PUBLIC', 'CIRCLE', 'PRIVATE'])
@@ -95,6 +97,8 @@ class UpdateEventDto {
   @IsOptional() @IsDateString() endAt?: string;
   @IsOptional() @IsString() @MaxLength(200) locationText?: string;
   @IsOptional() @IsString() placeSlug?: string;
+  @IsOptional() @IsBoolean() isOnline?: boolean;
+  @IsOptional() @IsString() @MaxLength(500) joinUrl?: string;
 
   @IsOptional()
   @Type(() => Number)

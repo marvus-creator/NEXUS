@@ -48,3 +48,13 @@ export function getEventAttendees(slug: string) {
     }[]
   >(`/events/${slug}/attendees`, []);
 }
+
+export function getForYou() {
+  return get<import('@/components/discover/for-you').ForYouFeed>('/discover/for-you?limit=24', {
+    personalized: true,
+    signals: 0,
+    note: '',
+    topCategories: [],
+    items: [],
+  });
+}
