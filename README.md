@@ -5,6 +5,25 @@
 A personalized digital-world platform: people, places, communities, events, learning,
 goals and planning connected through one interface.
 
+![Home](shots/p6-home.png)
+
+## What it does
+
+- **Home and Pulse**: your day at a glance, built from your real tasks, goals and events
+- **People and Feed**: follows, friends, posts with visibility, polls, reactions, threaded comments
+- **Circles**: public, private and invite-only communities with roles and live chat
+- **Events and Nearby**: RSVPs, capacity, host check-in codes, and a live map of places
+- **Planner**: tasks, goals with milestones, a calendar that finds your real free time
+- **Learn and Progress**: learning paths, study streaks, a twelve-week heatmap, and Plan my day
+- **Market and Wallet**: businesses, listings, orders, and a double-entry wallet
+- **Discover**: recommendations that learn from what you do and say why
+- **Admin**: moderation queue, suspensions, analytics, and a full audit trail
+
+| | |
+| --- | --- |
+| ![Discover](shots/p9-discover.png) | ![Events](shots/p5-events.png) |
+| ![Learn](shots/p6-learn.png) | ![Wallet](shots/p7-wallet.png) |
+
 ## Stack
 
 | Layer | Choice |
@@ -37,6 +56,17 @@ pnpm --filter @nexus/db seed      # interest catalogue
 pnpm dev        # web on 3000, api on 4000
 ```
 
+On a machine short on memory, `pnpm lite` builds once and serves the compiled
+app under capped heaps (about 270 MB for web and API together). Add
+`--no-build` to skip the build on later runs.
+
+Optional keys in `.env` switch on extra features:
+
+| Key | Turns on |
+| --- | --- |
+| `RESEND_API_KEY` | Real verification and password-reset emails |
+| `ANTHROPIC_API_KEY` | Claude-assisted day planning (falls back to rules without it) |
+
 Verify the schema end to end:
 
 ```bash
@@ -51,9 +81,9 @@ opaque, stored only as a SHA-256 hash, and rotate on every use. Presenting an
 already-rotated token is treated as a breach: every session for that user is
 revoked immediately.
 
-No SMTP provider is wired up yet, so verification and reset links are written to
-the API log by the dev mail transport, and returned in the response body outside
-production.
+With `RESEND_API_KEY` set, verification and reset emails go out through Resend.
+Without it, links are written to the API log by the dev mail transport, and
+returned in the response body outside production.
 
 Health check: `http://localhost:4000/api/v1/health`
 
@@ -76,12 +106,7 @@ node scripts/shoot.mjs <url> <out.png> --width=390 --mobile=1
 
 ## Build phases
 
-1. Foundation, design system, landing page, auth, app shell, onboarding, profile — **complete**
-2. Home/Pulse, tasks, goals, calendar, notifications — **complete**
-3. People, friends, following, social feed
-4. Circles, posts, real-time messaging
-5. Discover, events, nearby, maps
-6. Learning, progress, day planning — **complete** (planning is rule-based; no LLM key configured)
-7. Businesses, marketplace, wallet — **complete** (ledger is real; no payment rails connected)
-8. Admin, moderation, analytics, security hardening — **complete**
-9. Personalization, recommendations, virtual experiences
+All nine phases are built: foundation and auth, planner, social, circles and
+messaging, places and events, learning, marketplace and wallet, admin and
+moderation, and personalization. The Nearby map uses MapLibre with OpenFreeMap
+tiles, so it needs no map token.
