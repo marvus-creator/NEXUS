@@ -131,6 +131,9 @@ async function main() {
   ];
 
   if (flags.reduced) args.unshift('--force-prefers-reduced-motion');
+  if (flags.gl) {
+    args.splice(args.indexOf('--disable-gpu'), 1, '--use-angle=swiftshader', '--enable-unsafe-swiftshader');
+  }
 
   const child = spawn(chrome, args, { stdio: 'ignore', detached: false });
 
@@ -149,6 +152,13 @@ async function main() {
     });
 
     const session = new Session(socket);
+
+    if (flags.console) {
+      const print = (method, format) =>
+        session.listeners.set(method, [...(session.listeners.get(method) ?? []), (p) => console.log(format(p))]);
+      print('Runtime.consoleAPICalled', (p) => `[console.${p.type}] ${p.args.map((a) => a.value ?? a.description ?? '').join(' ')}`);
+      print('Runtime.exceptionThrown', (p) => `[exception] ${p.exceptionDetails.exception?.description ?? p.exceptionDetails.text}`);
+    }
 
     await session.send('Page.enable');
     await session.send('Runtime.enable');

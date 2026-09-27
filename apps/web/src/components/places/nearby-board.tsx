@@ -6,7 +6,6 @@ import {
   Coffee,
   Dumbbell,
   Landmark,
-  Map as MapIcon,
   MapPin,
   Navigation,
   Plus,
@@ -17,8 +16,9 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { placesClient, type PlaceSummary } from '@/lib/places-client';
+import { PlacesMap } from './places-map';
 
 const CATEGORIES = [
   { value: '', label: 'All', icon: MapPin },
@@ -43,13 +43,7 @@ const CATEGORY_TINT: Record<string, string> = {
   OTHER: 'var(--ink-subtle)',
 };
 
-export function NearbyBoard({
-  places,
-  city,
-}: {
-  places: PlaceSummary[];
-  city: string | null;
-}) {
+export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: string | null }) {
   const router = useRouter();
 
   const [items, setItems] = useState(places);
@@ -64,6 +58,19 @@ export function NearbyBoard({
   const [newCategory, setNewCategory] = useState('CAFE');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
+  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
+  const cardRefs = useRef(new Map<string, HTMLDivElement>());
+
+  useEffect(() => {
+    setItems(places);
+  }, [places]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    cardRefs.current.get(selectedId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [selectedId]);
 
   const visible = items.filter((place) => {
     if (category && place.category !== category) return false;
@@ -89,6 +96,7 @@ export function NearbyBoard({
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        setMe({ lat: position.coords.latitude, lng: position.coords.longitude });
         try {
           const nearby = await placesClient.nearby({
             lat: String(position.coords.latitude),
@@ -140,8 +148,11 @@ export function NearbyBoard({
         address: address.trim() || undefined,
         description: description.trim() || undefined,
         city: city ?? undefined,
+        latitude: picked?.lat,
+        longitude: picked?.lng,
       });
 
+      setPicked(null);
       setName('');
       setAddress('');
       setDescription('');
@@ -156,23 +167,22 @@ export function NearbyBoard({
 
   return (
     <div>
-      <div className="border-line bg-surface relative overflow-hidden rounded-xl border">
-        <div
-          className="flex h-40 items-center justify-center"
-          style={{
-            background:
-              'linear-gradient(135deg, color-mix(in oklab, var(--module-nearby) 16%, var(--surface)) 0%, color-mix(in oklab, var(--accent) 12%, var(--surface)) 100%)',
-          }}
-        >
-          <div className="px-6 text-center">
-            <MapIcon className="text-ink-subtle mx-auto size-6" />
-            <p className="mt-3 text-sm font-medium">The map arrives with a Mapbox key</p>
-            <p className="text-ink-muted mx-auto mt-1.5 max-w-sm text-xs leading-relaxed">
-              Every place below already stores real coordinates, so this becomes a live map without
-              touching the data.
-            </p>
+      <div className="border-line bg-surface relative h-[22rem] overflow-hidden rounded-xl border sm:h-[26rem]">
+        <PlacesMap
+          places={visible}
+          tints={CATEGORY_TINT}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          me={me}
+          picking={composing}
+          picked={picked}
+          onPick={setPicked}
+        />
+        {composing ? (
+          <div className="bg-surface-raised/95 border-line pointer-events-none absolute left-3 top-3 rounded-lg border px-3 py-2 text-xs backdrop-blur">
+            {picked ? 'Pinned. Tap again to move it.' : 'Tap the map to pin where it is.'}
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -198,7 +208,10 @@ export function NearbyBoard({
           size="sm"
           className="ml-auto"
           variant={composing ? 'secondary' : 'primary'}
-          onClick={() => setComposing((value) => !value)}
+          onClick={() => {
+            setComposing((value) => !value);
+            setPicked(null);
+          }}
         >
           {composing ? <X /> : <Plus />}
           {composing ? 'Cancel' : 'Add place'}
@@ -282,7 +295,12 @@ export function NearbyBoard({
 
             {error ? <p className="text-danger text-sm">{error}</p> : null}
 
-            <Button onClick={addPlace} loading={busy} disabled={!name.trim()} className="self-start">
+            <Button
+              onClick={addPlace}
+              loading={busy}
+              disabled={!name.trim()}
+              className="self-start"
+            >
               Add place
             </Button>
           </div>
@@ -307,74 +325,95 @@ export function NearbyBoard({
           </div>
         ) : (
           visible.map((place) => (
-            <Card key={place.id} interactive className="p-5">
-              <div className="flex items-start gap-3.5">
-                <span
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{
-                    backgroundColor: `color-mix(in oklab, ${CATEGORY_TINT[place.category] ?? 'var(--accent)'} 14%, transparent)`,
-                    color: CATEGORY_TINT[place.category] ?? 'var(--accent)',
-                  }}
-                >
-                  <MapPin className="size-4" />
-                </span>
+            <div
+              key={place.id}
+              ref={(node) => {
+                if (node) cardRefs.current.set(place.id, node);
+                else cardRefs.current.delete(place.id);
+              }}
+              onClick={() => setSelectedId(place.id)}
+              className={cn(
+                'rounded-xl transition-shadow',
+                selectedId === place.id &&
+                  'ring-accent ring-2 ring-offset-2 ring-offset-[var(--ground)]',
+              )}
+            >
+              <Card interactive className="p-5">
+                <div className="flex items-start gap-3.5">
+                  <span
+                    className="flex size-10 shrink-0 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: `color-mix(in oklab, ${CATEGORY_TINT[place.category] ?? 'var(--accent)'} 14%, transparent)`,
+                      color: CATEGORY_TINT[place.category] ?? 'var(--accent)',
+                    }}
+                  >
+                    <MapPin className="size-4" />
+                  </span>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-[0.9375rem] font-semibold">{place.name}</p>
-                    {place.verified ? <Badge variant="success" size="sm">Verified</Badge> : null}
-                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-[0.9375rem] font-semibold">{place.name}</p>
+                      {place.verified ? (
+                        <Badge variant="success" size="sm">
+                          Verified
+                        </Badge>
+                      ) : null}
+                    </div>
 
-                  <p className="text-ink-subtle mt-0.5 truncate text-xs capitalize">
-                    {place.category.toLowerCase()}
-                    {place.address ? ` · ${place.address}` : ''}
-                  </p>
-
-                  {place.description ? (
-                    <p className="text-ink-muted mt-2 line-clamp-2 text-sm leading-relaxed">
-                      {place.description}
+                    <p className="text-ink-subtle mt-0.5 truncate text-xs capitalize">
+                      {place.category.toLowerCase()}
+                      {place.address ? ` · ${place.address}` : ''}
                     </p>
-                  ) : null}
 
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-                    {place.rating !== null ? (
-                      <span className="inline-flex items-center gap-1">
-                        <Star className="text-warning size-3 fill-current" />
-                        <span className="font-mono">{place.rating}</span>
-                        <span className="text-ink-subtle">({place.reviewCount})</span>
-                      </span>
-                    ) : (
-                      <span className="text-ink-subtle">No reviews yet</span>
-                    )}
-
-                    {place.distanceKm !== null ? (
-                      <span className="text-ink-muted inline-flex items-center gap-1">
-                        <Navigation className="size-3" />
-                        {place.distanceKm < 1
-                          ? `${Math.round(place.distanceKm * 1000)} m`
-                          : `${place.distanceKm} km`}
-                      </span>
+                    {place.description ? (
+                      <p className="text-ink-muted mt-2 line-clamp-2 text-sm leading-relaxed">
+                        {place.description}
+                      </p>
                     ) : null}
 
-                    {place.eventCount > 0 ? (
-                      <Badge size="sm">{place.eventCount} upcoming</Badge>
-                    ) : null}
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                      {place.rating !== null ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Star className="text-warning size-3 fill-current" />
+                          <span className="font-mono">{place.rating}</span>
+                          <span className="text-ink-subtle">({place.reviewCount})</span>
+                        </span>
+                      ) : (
+                        <span className="text-ink-subtle">No reviews yet</span>
+                      )}
+
+                      {place.distanceKm !== null ? (
+                        <span className="text-ink-muted inline-flex items-center gap-1">
+                          <Navigation className="size-3" />
+                          {place.distanceKm < 1
+                            ? `${Math.round(place.distanceKm * 1000)} m`
+                            : `${place.distanceKm} km`}
+                        </span>
+                      ) : null}
+
+                      {place.eventCount > 0 ? (
+                        <Badge size="sm">{place.eventCount} upcoming</Badge>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  type="button"
-                  onClick={() => void save(place)}
-                  aria-label={place.saved ? `Unsave ${place.name}` : `Save ${place.name}`}
-                  className={cn(
-                    'transition-colors',
-                    place.saved ? 'text-accent' : 'text-ink-subtle hover:text-ink',
-                  )}
-                >
-                  <Bookmark className={cn('size-4', place.saved && 'fill-current')} />
-                </button>
-              </div>
-            </Card>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void save(place);
+                    }}
+                    aria-label={place.saved ? `Unsave ${place.name}` : `Save ${place.name}`}
+                    className={cn(
+                      'transition-colors',
+                      place.saved ? 'text-accent' : 'text-ink-subtle hover:text-ink',
+                    )}
+                  >
+                    <Bookmark className={cn('size-4', place.saved && 'fill-current')} />
+                  </button>
+                </div>
+              </Card>
+            </div>
           ))
         )}
       </div>
