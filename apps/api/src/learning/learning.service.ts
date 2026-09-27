@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { LearningSource, LearningStatus } from '@nexus/db';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -31,9 +35,16 @@ type PathRecord = {
 
 export function shapePath(path: PathRecord, minutesLogged = 0) {
   const total = path.modules.length;
-  const done = path.modules.filter((module) => module.completedAt !== null).length;
-  const remaining = path.modules.filter((module) => module.completedAt === null);
-  const minutesLeft = remaining.reduce((sum, module) => sum + module.estimatedMinutes, 0);
+  const done = path.modules.filter(
+    (module) => module.completedAt !== null,
+  ).length;
+  const remaining = path.modules.filter(
+    (module) => module.completedAt === null,
+  );
+  const minutesLeft = remaining.reduce(
+    (sum, module) => sum + module.estimatedMinutes,
+    0,
+  );
 
   return {
     id: path.id,
@@ -89,7 +100,9 @@ export class LearningService {
       _sum: { minutes: true },
     });
 
-    return new Map(grouped.map((row) => [row.pathId as string, row._sum.minutes ?? 0]));
+    return new Map(
+      grouped.map((row) => [row.pathId as string, row._sum.minutes ?? 0]),
+    );
   }
 
   async list(userId: string, status?: LearningStatus) {
@@ -97,9 +110,17 @@ export class LearningService {
 
     const [paths, minutes] = await Promise.all([
       this.prisma.learningPath.findMany({
-        where: { profileId: profile.id, deletedAt: null, ...(status ? { status } : {}) },
+        where: {
+          profileId: profile.id,
+          deletedAt: null,
+          ...(status ? { status } : {}),
+        },
         include: PATH_INCLUDE,
-        orderBy: [{ status: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
+        orderBy: [
+          { status: 'asc' },
+          { sortOrder: 'asc' },
+          { createdAt: 'desc' },
+        ],
       }),
       this.minutesByPath(profile.id),
     ]);
@@ -112,7 +133,10 @@ export class LearningService {
     await this.ownedPath(profile.id, id);
 
     const [path, sessions, logged] = await Promise.all([
-      this.prisma.learningPath.findUniqueOrThrow({ where: { id }, include: PATH_INCLUDE }),
+      this.prisma.learningPath.findUniqueOrThrow({
+        where: { id },
+        include: PATH_INCLUDE,
+      }),
       this.prisma.studySession.findMany({
         where: { profileId: profile.id, pathId: id },
         orderBy: { startedAt: 'desc' },
@@ -213,7 +237,11 @@ export class LearningService {
         description: input.description,
         status: input.status,
         completedAt:
-          input.status === undefined ? undefined : input.status === 'COMPLETED' ? new Date() : null,
+          input.status === undefined
+            ? undefined
+            : input.status === 'COMPLETED'
+              ? new Date()
+              : null,
         targetDate:
           input.targetDate === null
             ? null
@@ -265,11 +293,18 @@ export class LearningService {
     });
   }
 
-  async setModuleDone(userId: string, pathId: string, moduleId: string, done: boolean) {
+  async setModuleDone(
+    userId: string,
+    pathId: string,
+    moduleId: string,
+    done: boolean,
+  ) {
     const profile = await this.profileFor(userId);
     await this.ownedPath(profile.id, pathId);
 
-    const module = await this.prisma.learningModule.findFirst({ where: { id: moduleId, pathId } });
+    const module = await this.prisma.learningModule.findFirst({
+      where: { id: moduleId, pathId },
+    });
 
     if (!module) throw new NotFoundException('Module not found');
 
@@ -283,9 +318,15 @@ export class LearningService {
       include: PATH_INCLUDE,
     });
 
-    const remaining = path.modules.filter((entry) => entry.completedAt === null).length;
+    const remaining = path.modules.filter(
+      (entry) => entry.completedAt === null,
+    ).length;
 
-    if (remaining === 0 && path.modules.length > 0 && path.status === 'ACTIVE') {
+    if (
+      remaining === 0 &&
+      path.modules.length > 0 &&
+      path.status === 'ACTIVE'
+    ) {
       await this.prisma.learningPath.update({
         where: { id: pathId },
         data: { status: 'COMPLETED', completedAt: new Date() },
@@ -306,7 +347,9 @@ export class LearningService {
     const profile = await this.profileFor(userId);
     await this.ownedPath(profile.id, pathId);
 
-    const module = await this.prisma.learningModule.findFirst({ where: { id: moduleId, pathId } });
+    const module = await this.prisma.learningModule.findFirst({
+      where: { id: moduleId, pathId },
+    });
 
     if (!module) throw new NotFoundException('Module not found');
 
@@ -317,7 +360,13 @@ export class LearningService {
 
   async logSession(
     userId: string,
-    input: { pathId?: string; moduleId?: string; minutes: number; note?: string; startedAt?: string },
+    input: {
+      pathId?: string;
+      moduleId?: string;
+      minutes: number;
+      note?: string;
+      startedAt?: string;
+    },
   ) {
     const profile = await this.profileFor(userId);
 
@@ -325,14 +374,19 @@ export class LearningService {
 
     if (input.moduleId) {
       const module = await this.prisma.learningModule.findFirst({
-        where: { id: input.moduleId, path: { profileId: profile.id, deletedAt: null } },
+        where: {
+          id: input.moduleId,
+          path: { profileId: profile.id, deletedAt: null },
+        },
         select: { id: true, pathId: true },
       });
 
       if (!module) throw new NotFoundException('Module not found');
 
       if (input.pathId && module.pathId !== input.pathId) {
-        throw new BadRequestException('That module belongs to a different path');
+        throw new BadRequestException(
+          'That module belongs to a different path',
+        );
       }
 
       input.pathId ??= module.pathId;
@@ -345,7 +399,9 @@ export class LearningService {
     }
 
     if (startedAt.getTime() > Date.now() + 60_000) {
-      throw new BadRequestException('A study session cannot start in the future');
+      throw new BadRequestException(
+        'A study session cannot start in the future',
+      );
     }
 
     return this.prisma.studySession.create({

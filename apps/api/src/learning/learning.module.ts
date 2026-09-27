@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PlannerModule } from '../planner/planner.module.js';
-import { LearningController, PlannerAiController, ProgressController } from './learning.controller.js';
+import {
+  LearningController,
+  PlannerAiController,
+  ProgressController,
+} from './learning.controller.js';
 import { LearningService } from './learning.service.js';
 import { PlannerAiService } from './planner-ai.service.js';
 import { ProgressService } from './progress.service.js';

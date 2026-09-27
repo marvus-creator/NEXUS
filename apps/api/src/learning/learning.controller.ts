@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -95,7 +104,9 @@ class LogSessionDto {
 
 class PlanDayDto {
   @IsOptional()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'planFor must look like 2026-09-15' })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'planFor must look like 2026-09-15',
+  })
   planFor?: string;
 }
 
@@ -104,7 +115,10 @@ export class LearningController {
   constructor(private readonly learning: LearningService) {}
 
   @Get('paths')
-  list(@CurrentUser('sub') userId: string, @Query('status') status?: LearningStatus) {
+  list(
+    @CurrentUser('sub') userId: string,
+    @Query('status') status?: LearningStatus,
+  ) {
     return this.learning.list(userId, status);
   }
 

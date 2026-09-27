@@ -9,7 +9,9 @@ function dayKeysBack(days: number, timezone: string, from = new Date()) {
   const keys: string[] = [];
 
   for (let index = days - 1; index >= 0; index -= 1) {
-    keys.push(localParts(new Date(from.getTime() - index * DAY_MS), timezone).dateKey);
+    keys.push(
+      localParts(new Date(from.getTime() - index * DAY_MS), timezone).dateKey,
+    );
   }
 
   return keys;
@@ -26,9 +28,16 @@ function countByDay(dates: Date[], timezone: string) {
   return counts;
 }
 
-export function streakFrom(activeDays: Set<string>, timezone: string, now = new Date()) {
+export function streakFrom(
+  activeDays: Set<string>,
+  timezone: string,
+  now = new Date(),
+) {
   const today = localParts(now, timezone).dateKey;
-  const yesterday = localParts(new Date(now.getTime() - DAY_MS), timezone).dateKey;
+  const yesterday = localParts(
+    new Date(now.getTime() - DAY_MS),
+    timezone,
+  ).dateKey;
 
   if (!activeDays.has(today) && !activeDays.has(yesterday)) return 0;
 
@@ -71,7 +80,11 @@ export class ProgressService {
       eventsAttended,
     ] = await Promise.all([
       this.prisma.task.findMany({
-        where: { profileId: profile.id, status: 'DONE', completedAt: { not: null, gte: since } },
+        where: {
+          profileId: profile.id,
+          status: 'DONE',
+          completedAt: { not: null, gte: since },
+        },
         select: { completedAt: true, goalId: true },
       }),
       this.prisma.studySession.findMany({
@@ -79,7 +92,10 @@ export class ProgressService {
         select: { startedAt: true, minutes: true, pathId: true },
       }),
       this.prisma.milestone.findMany({
-        where: { goal: { profileId: profile.id }, doneAt: { not: null, gte: since } },
+        where: {
+          goal: { profileId: profile.id },
+          doneAt: { not: null, gte: since },
+        },
         select: { doneAt: true },
       }),
       this.prisma.goal.findMany({
@@ -95,7 +111,10 @@ export class ProgressService {
       }),
       this.prisma.eventAttendee.findMany({
         where: { profileId: profile.id, checkedInAt: { not: null } },
-        select: { checkedInAt: true, event: { select: { title: true, startAt: true } } },
+        select: {
+          checkedInAt: true,
+          event: { select: { title: true, startAt: true } },
+        },
         orderBy: { checkedInAt: 'desc' },
         take: 10,
       }),
@@ -106,7 +125,9 @@ export class ProgressService {
       this.prisma.task.count({
         where: { profileId: profile.id, status: { in: ['TODO', 'DOING'] } },
       }),
-      this.prisma.post.count({ where: { profileId: profile.id, deletedAt: null } }),
+      this.prisma.post.count({
+        where: { profileId: profile.id, deletedAt: null },
+      }),
       this.prisma.eventAttendee.count({
         where: { profileId: profile.id, checkedInAt: { not: null } },
       }),
@@ -141,16 +162,23 @@ export class ProgressService {
     }));
 
     const activeDays = new Set(
-      series.filter((day) => day.tasks + day.sessions + day.modules > 0).map((day) => day.date),
+      series
+        .filter((day) => day.tasks + day.sessions + day.modules > 0)
+        .map((day) => day.date),
     );
 
     const last7 = series.slice(-7);
     const prev7 = series.slice(-14, -7);
 
-    const sum = (rows: typeof series, field: 'tasks' | 'sessions' | 'modules' | 'minutes') =>
-      rows.reduce((total, row) => total + row[field], 0);
+    const sum = (
+      rows: typeof series,
+      field: 'tasks' | 'sessions' | 'modules' | 'minutes',
+    ) => rows.reduce((total, row) => total + row[field], 0);
 
-    const totalMinutes = sessions.reduce((total, session) => total + session.minutes, 0);
+    const totalMinutes = sessions.reduce(
+      (total, session) => total + session.minutes,
+      0,
+    );
 
     return {
       timezone,
@@ -178,7 +206,8 @@ export class ProgressService {
         goalsActive: goals.filter((goal) => goal.status === 'ACTIVE').length,
         goalsAchieved: goals.filter((goal) => goal.achievedAt !== null).length,
         pathsActive: paths.filter((path) => path.status === 'ACTIVE').length,
-        pathsCompleted: paths.filter((path) => path.status === 'COMPLETED').length,
+        pathsCompleted: paths.filter((path) => path.status === 'COMPLETED')
+          .length,
         eventsAttended,
         posts,
       },
