@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,6 +25,26 @@ async function waitFor(url, label, tries = 240) {
   }
   console.error(`[lite] ${label} did not come up at ${url}`);
   return false;
+}
+
+function portFree(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => server.close(() => resolve(true)));
+    server.listen(port);
+  });
+}
+
+for (const port of [3000, 4000]) {
+  if (!(await portFree(port))) {
+    console.error(
+      `[lite] port ${port} is already in use, probably an older NEXUS still running.
+` +
+        `       Find it with: netstat -ano | findstr :${port}  then stop it with: taskkill /PID <pid> /T /F`,
+    );
+    process.exit(1);
+  }
 }
 
 const docker = spawnSync('docker', ['info'], { stdio: 'ignore', shell });
