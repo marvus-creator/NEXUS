@@ -2,7 +2,7 @@
 
 import { cn } from '@nexus/ui';
 import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 export function Reveal({
   children,
@@ -29,21 +29,23 @@ export function Reveal({
 }
 
 export function Spark({ className }: { className?: string }) {
+  const id = `nx-spark-${useId().replace(/:/g, '')}`;
+
   return (
     <svg viewBox="0 0 24 24" className={cn('size-4', className)} aria-hidden="true">
       <defs>
-        <linearGradient id="nx-spark" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#C084FC" />
           <stop offset="1" stopColor="#60A5FA" />
         </linearGradient>
       </defs>
       <path
         d="M12 2c.6 4.6 2.4 6.9 7 8-4.6 1.1-6.4 3.4-7 8-.6-4.6-2.4-6.9-7-8 4.6-1.1 6.4-3.4 7-8Z"
-        fill="url(#nx-spark)"
+        fill={`url(#${id})`}
       />
       <path
         d="M19 15c.3 1.9 1 2.8 3 3.3-2 .4-2.7 1.3-3 3.2-.3-1.9-1-2.8-3-3.2 2-.5 2.7-1.4 3-3.3Z"
-        fill="url(#nx-spark)"
+        fill={`url(#${id})`}
         opacity=".8"
       />
     </svg>
