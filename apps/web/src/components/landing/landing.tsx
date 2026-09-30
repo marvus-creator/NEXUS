@@ -15,13 +15,14 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
-import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { IMG, PEOPLE } from '@/lib/photos';
 import { Faces, Reveal, Ring, Spark } from './bits';
+import { Constellation } from './constellation';
+import { GlobeHero } from './globe-hero';
 
-const WORDS = ['Your world.', 'Your people.', 'Your places.', 'Your life.'];
 const NAV = ['People', 'Places', 'Planner', 'Market', 'AI'];
 const MARQUEE = [
   'People',
@@ -126,13 +127,6 @@ const SAMPLE_EVENTS = [
 ];
 
 export function Landing() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.18]);
-  const textY = useTransform(scrollYProgress, [0, 1], [0, -120]);
-  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
     <div className="bg-ground text-ink">
@@ -168,114 +162,7 @@ export function Landing() {
         </div>
       </header>
 
-      <section ref={heroRef} className="relative h-[100svh] min-h-[680px] overflow-hidden">
-        <motion.img
-          src={IMG.hero}
-          alt="Friends on a rooftop in Kigali at night"
-          style={reduce ? undefined : { y: imgY, scale: imgScale }}
-          className="absolute inset-0 size-full object-cover"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.35)_0%,rgba(11,13,16,.05)_35%,rgba(11,13,16,.55)_70%,#0B0D10_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(90%_60%_at_20%_80%,rgba(11,13,16,.7),transparent_60%)]" />
-        <motion.div
-          style={reduce ? undefined : { y: textY, opacity: fade }}
-          className="relative mx-auto flex h-full max-w-[1280px] flex-col justify-end px-5 pb-16 md:px-10 md:pb-24"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[12.5px] font-medium text-white backdrop-blur-md"
-          >
-            <span className="bg-module-nearby size-1.5 rounded-full" /> Built in Kigali, Rwanda
-          </motion.div>
-          <h1 className="t-hero max-w-[1100px] text-white">
-            {WORDS.map((word, index) => (
-              <motion.span
-                key={word}
-                className={cn(
-                  'mr-[0.22em] inline-block',
-                  index > 0 && index < 3 && 'text-white/55',
-                )}
-                initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ delay: 0.35 + index * 0.14, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {word}
-              </motion.span>
-            ))}
-          </h1>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
-          >
-            <p className="max-w-md text-[17px] leading-relaxed text-white/80">
-              One place for your friends, your city, your plans and your growth. Built in Kigali for
-              people who are going somewhere.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button size="xl" asChild>
-                <Link href="/create-account">
-                  Create your world <ArrowRight />
-                </Link>
-              </Button>
-              <Button size="xl" variant="glass" asChild>
-                <Link href="/sign-in">
-                  <Play className="fill-current" /> See it live
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1.3, duration: 0.8 }}
-          className="floaty absolute right-10 top-32 hidden w-[300px] xl:block"
-        >
-          <div className="ai-border ai-glow rounded-2xl bg-[#14171C]/85 p-4 backdrop-blur-xl">
-            <div className="flex items-center gap-2 text-[13px] font-semibold">
-              <Spark />
-              <span className="text-ai-gradient">Nexus AI</span>
-              <span className="ml-auto font-mono text-[11px] text-[#8A93A3]">13:58</span>
-            </div>
-            <p className="mt-2 text-[14px] leading-snug text-white">
-              You have <b className="text-[#60A5FA]">3h free</b> from 14:00. Enough for a focused
-              session on Java.
-            </p>
-            <div className="mt-3 flex gap-2">
-              <span className="rounded-lg bg-[#3B82F6] px-3 py-1.5 text-xs font-semibold text-white">
-                Block it
-              </span>
-              <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
-                Later
-              </span>
-            </div>
-          </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-          className="absolute right-40 top-[330px] hidden w-[270px] xl:block"
-          style={{ animation: 'floaty 7s ease-in-out infinite 1s' }}
-        >
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#14171C]/85 p-3 backdrop-blur-xl">
-            <img src={IMG.techMeetup} className="size-12 rounded-xl object-cover" alt="" />
-            <div className="min-w-0">
-              <div className="truncate text-[13px] font-semibold text-white">
-                Kigali Tech Meetup
-              </div>
-              <div className="text-[11.5px] text-[#F5A524]">
-                3 friends are going · 12 spots left
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
+      <GlobeHero />
 
       <div className="border-line bg-surface relative overflow-hidden border-y py-5">
         <div className="marquee flex w-max gap-10 whitespace-nowrap">
@@ -293,49 +180,7 @@ export function Landing() {
         </div>
       </div>
 
-      <section className="mx-auto max-w-[1280px] px-5 py-24 md:px-10 md:py-36">
-        <Reveal>
-          <div className="t-eyebrow text-accent mb-5">One connected ecosystem</div>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <h2 className="t-d1 max-w-5xl">
-            Six apps you juggle every day,{' '}
-            <span className="text-ink-muted">finally talking to each other.</span>
-          </h2>
-        </Reveal>
-        <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              t: 'Your calendar knows your friends',
-              b: 'Events your people RSVP to appear beside your lectures.',
-              c: '#FF7A59',
-            },
-            {
-              t: 'Your map knows your goals',
-              b: 'Study spots surface when a deadline is close.',
-              c: '#22C55E',
-            },
-            {
-              t: 'Your tasks know your free time',
-              b: 'Plan my day slots work into the gaps you actually have.',
-              c: '#A855F7',
-            },
-            {
-              t: 'Your wallet knows your city',
-              b: 'Pay local businesses and split with friends in RWF.',
-              c: '#F5A524',
-            },
-          ].map((item, index) => (
-            <Reveal key={item.t} delay={index * 0.08}>
-              <Card className="h-full p-6" tint={item.c}>
-                <span className="block h-1 w-8 rounded-full" style={{ background: item.c }} />
-                <h3 className="mt-5 text-lg font-semibold tracking-tight">{item.t}</h3>
-                <p className="text-ink-muted mt-2 text-[13px] leading-relaxed">{item.b}</p>
-              </Card>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Constellation />
 
       <Feature
         id="people"
