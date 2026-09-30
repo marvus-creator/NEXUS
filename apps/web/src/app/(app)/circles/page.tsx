@@ -14,9 +14,9 @@ export default async function CirclesPage() {
   const [discover, mine] = await Promise.all([getCircles('discover'), getCircles('mine')]);
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your world</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Circles</h1>
+    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
+      <Eyebrow tint="var(--accent)">Circles</Eyebrow>
+      <h1 className="t-h1 mt-3">Your circles.</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         Communities with real structure — posts, members, roles, moderation and a chat of their own.
         Public circles anyone can join, private ones approve requests.

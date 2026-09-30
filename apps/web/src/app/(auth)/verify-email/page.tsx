@@ -51,7 +51,7 @@ function VerifyInner() {
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--success)_16%,transparent)] text-success">
           <MailCheck className="size-5" />
         </span>
-        <h1 className="text-3xl font-semibold tracking-tight">Email confirmed</h1>
+        <h1 className="t-h1">Email confirmed</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
           Your account is fully active. Everything in Nexus is open to you now.
         </p>
@@ -67,7 +67,7 @@ function VerifyInner() {
       <span className="border-danger/35 mb-6 flex size-12 items-center justify-center rounded-full border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] text-danger">
         <AlertCircle className="size-5" />
       </span>
-      <h1 className="text-3xl font-semibold tracking-tight">
+      <h1 className="t-h1">
         {state === 'missing' ? 'Link not valid' : 'Could not confirm'}
       </h1>
       <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">

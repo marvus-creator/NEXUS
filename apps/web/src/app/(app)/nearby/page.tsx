@@ -15,9 +15,9 @@ export default async function NearbyPage() {
   const city = user.profile?.city ?? null;
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your world</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
+      <Eyebrow tint="var(--module-nearby)">Nearby</Eyebrow>
+      <h1 className="t-h1 mt-3">
         {city ? `Nearby in ${city}` : 'Nearby'}
       </h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">

@@ -3,14 +3,22 @@ import { cn } from '../lib/cn';
 
 export const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }
->(({ className, interactive = false, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean; tint?: string }
+>(({ className, interactive = false, tint, style, ...props }, ref) => (
   <div
     ref={ref}
+    style={
+      tint
+        ? {
+            backgroundImage: `radial-gradient(120% 80% at 100% 0%, color-mix(in oklab, ${tint} 12%, transparent), transparent 55%)`,
+            ...style,
+          }
+        : style
+    }
     className={cn(
-      'border-line bg-surface rounded-lg border',
+      'border-line bg-surface rounded-[14px] border shadow-[var(--shadow-md)]',
       interactive &&
-        'hover:border-line-strong hover:bg-surface-raised transition-all duration-300 ease-[var(--ease-out-soft)] hover:shadow-[var(--shadow-md)]',
+        'hover:border-line-strong cursor-pointer transition duration-200 ease-[var(--ease-out-soft)] hover:-translate-y-0.5',
       className,
     )}
     {...props}

@@ -6,7 +6,7 @@
     --surface-raised: #1a1e25;
     --surface-hover: #1f242c;
     --border: #232830;
-    --border-strong: #2e343e;
+    --border-strong: #2e3440;
 
     --ink: #f5f7fa;
     --ink-muted: #8a93a3;
@@ -23,12 +23,12 @@
     --danger: #ef4444;
 
     --module-home: #3b82f6;
-    --module-discover: #22d3ee;
-    --module-people: #f472b6;
-    --module-events: #fb923c;
-    --module-nearby: #34d399;
-    --module-learn: #818cf8;
-    --module-ai: #a78bfa;
+    --module-discover: #8b5cf6;
+    --module-people: #ff7a59;
+    --module-events: #f5a524;
+    --module-nearby: #22c55e;
+    --module-learn: #14b8a6;
+    --module-ai: #a855f7;
 
     --overlay: color-mix(in oklab, #06080a 72%, transparent);
     --scrim: linear-gradient(
@@ -39,22 +39,22 @@
       color-mix(in oklab, #06080a 12%, transparent) 100%
     );
 
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.45);
-    --shadow-lg: 0 18px 48px rgb(0 0 0 / 0.55);
+    --shadow-sm: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 24px 64px rgb(0 0 0 / 0.6);
     --shadow-glow: 0 0 0 1px var(--accent-line), 0 10px 40px color-mix(in oklab, var(--accent) 18%, transparent);
 
     color-scheme: dark;
   }
 
   .light {
-    --ground: #ffffff;
-    --ground-deep: #f4f6f9;
+    --ground: #f4f5f8;
+    --ground-deep: #eceef3;
     --surface: #ffffff;
-    --surface-raised: #f7f9fb;
-    --surface-hover: #eef1f6;
-    --border: #e3e8ef;
-    --border-strong: #cfd6e0;
+    --surface-raised: #eef0f4;
+    --surface-hover: #e6e9ef;
+    --border: #e2e5eb;
+    --border-strong: #cfd4dc;
 
     --ink: #0b0d10;
     --ink-muted: #5c6675;
@@ -71,12 +71,12 @@
     --danger: #dc2626;
 
     --module-home: #2563eb;
-    --module-discover: #0891b2;
-    --module-people: #db2777;
-    --module-events: #ea580c;
-    --module-nearby: #059669;
-    --module-learn: #4f46e5;
-    --module-ai: #7c3aed;
+    --module-discover: #7c3aed;
+    --module-people: #e8562f;
+    --module-events: #d97706;
+    --module-nearby: #16a34a;
+    --module-learn: #0d9488;
+    --module-ai: #9333ea;
 
     --overlay: color-mix(in oklab, #0b0d10 55%, transparent);
 
@@ -138,6 +138,8 @@
   --text-display--line-height: 0.96;
   --text-display--letter-spacing: -0.035em;
 
+  --font-display: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -153,6 +155,13 @@
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
   }
 
   ::selection {
@@ -254,4 +263,184 @@
       animation-range: entry var(--reveal-shift, 0%) cover 30%;
     }
   }
+}
+
+@utility t-hero {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 8.4vw, 7.75rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+}
+
+@utility t-d1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 5.4vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+@utility t-d2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+@utility t-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+@utility t-h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+@utility t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@property --ai-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes ai-spin {
+  to {
+    --ai-angle: 360deg;
+  }
+}
+
+.ai-border {
+  position: relative;
+  isolation: isolate;
+}
+
+.ai-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--ai-angle), #a855f7, #3b82f6, #22d3ee, #a855f7);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ai-spin 6s linear infinite;
+  z-index: -1;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.ai-glow {
+  box-shadow:
+    0 0 0 1px rgb(168 85 247 / 0.15),
+    0 10px 50px -10px rgb(124 58 237 / 0.45),
+    0 0 80px -20px rgb(59 130 246 / 0.4);
+}
+
+.text-ai-gradient {
+  background: linear-gradient(90deg, #c084fc, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes auth-zoom {
+  from {
+    transform: scale(1.1);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typing 1.2s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.floaty {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }

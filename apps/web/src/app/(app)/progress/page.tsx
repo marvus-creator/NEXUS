@@ -17,7 +17,7 @@ export default async function ProgressPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Progress</h1>
+      <h1 className="t-h1 mt-3">Progress</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         Not a score. Just what you have actually done — tasks finished, modules completed, hours
         studied, and the events you turned up to.

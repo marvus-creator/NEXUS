@@ -26,11 +26,9 @@ export default async function DiscoverPage() {
   const total = places.length + events.length + circles.length + people.length;
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-accent">Discover</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-        {city ? `What is worth finding in ${city}` : 'What is worth finding'}
-      </h1>
+    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
+      <Eyebrow tint="var(--module-discover)">Discover</Eyebrow>
+      <h1 className="t-h1 mt-3">{city ? `For you, in ${city}.` : 'For you.'}</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         {total > 0
           ? `${total} things across events, places, circles and people${

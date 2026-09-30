@@ -15,8 +15,8 @@ export default async function PeoplePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Nexus</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">People</h1>
+      <Eyebrow tint="var(--module-people)">People</Eyebrow>
+      <h1 className="t-h1 mt-3">Your people.</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         Following is one way. Friendship is mutual and has to be accepted. Suggestions come from
         mutual friends, shared interests and your city — never from anything private.

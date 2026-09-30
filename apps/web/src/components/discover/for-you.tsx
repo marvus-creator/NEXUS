@@ -1,19 +1,20 @@
 'use client';
 
-import { Badge, Card, cn } from '@nexus/ui';
+import { Card, cn } from '@nexus/ui';
 import {
   CalendarDays,
-  Compass,
   Info,
   MapPin,
   ShoppingBag,
   Sparkles,
+  Star,
   UserPlus,
   UsersRound,
   Video,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { circleImage, eventImage, listingImage, placeImage } from '@/lib/photos';
 
 export type Recommendation = {
   kind: 'EVENT' | 'PLACE' | 'CIRCLE' | 'PERSON' | 'LISTING';
@@ -38,9 +39,9 @@ export type ForYouFeed = {
 const KIND = {
   EVENT: { icon: CalendarDays, tint: 'var(--module-events)', label: 'Event', href: '/events/' },
   PLACE: { icon: MapPin, tint: 'var(--module-nearby)', label: 'Place', href: '/nearby' },
-  CIRCLE: { icon: UsersRound, tint: 'var(--module-people)', label: 'Circle', href: '/circles/' },
-  PERSON: { icon: UserPlus, tint: 'var(--accent)', label: 'Person', href: '/u/' },
-  LISTING: { icon: ShoppingBag, tint: 'var(--module-discover)', label: 'For sale', href: '/market' },
+  CIRCLE: { icon: UsersRound, tint: '#60A5FA', label: 'Circle', href: '/circles/' },
+  PERSON: { icon: UserPlus, tint: 'var(--module-people)', label: 'Person', href: '/u/' },
+  LISTING: { icon: ShoppingBag, tint: '#C084FC', label: 'Listing', href: '/market' },
 } as const;
 
 function hrefFor(item: Recommendation) {
@@ -52,9 +53,32 @@ function hrefFor(item: Recommendation) {
   return '/nearby';
 }
 
-function RecommendationCard({ item }: { item: Recommendation }) {
+function imageFor(item: Recommendation) {
+  if (item.kind === 'EVENT')
+    return eventImage({ title: item.title, slug: item.slug, coverUrl: item.imageUrl });
+  if (item.kind === 'CIRCLE')
+    return circleImage({ name: item.title, slug: item.slug, coverUrl: item.imageUrl });
+  if (item.kind === 'LISTING')
+    return listingImage({ title: item.title, id: item.id, imageUrl: item.imageUrl });
+  if (item.kind === 'PLACE')
+    return placeImage({
+      category: typeof item.meta.category === 'string' ? item.meta.category : 'OTHER',
+      slug: item.slug,
+      coverUrl: item.imageUrl,
+    });
+  return item.imageUrl;
+}
+
+function ordered(items: Recommendation[]) {
+  const lead = items.findIndex((item) => item.kind !== 'PERSON' && imageFor(item));
+  if (lead <= 0) return items;
+  return [items[lead]!, ...items.slice(0, lead), ...items.slice(lead + 1)];
+}
+
+function RecommendationCard({ item, featured }: { item: Recommendation; featured?: boolean }) {
   const kind = KIND[item.kind];
   const Icon = item.kind === 'EVENT' && item.meta.isOnline ? Video : kind.icon;
+  const image = imageFor(item);
 
   const when =
     item.kind === 'EVENT' && typeof item.meta.startAt === 'string'
@@ -73,42 +97,93 @@ function RecommendationCard({ item }: { item: Recommendation }) {
       ? (item.meta.price as { display: string }).display
       : null;
 
+  const rating =
+    item.kind === 'PLACE' && typeof item.meta.rating === 'number' ? item.meta.rating : null;
+  const initials = item.title
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <Card className="p-4 transition-colors hover:border-[color:var(--ink-subtle)]">
-      <Link href={hrefFor(item)} className="flex items-start gap-3.5">
-        <span
-          className="grid size-10 shrink-0 place-items-center rounded-xl"
-          style={{ background: `color-mix(in oklab, ${kind.tint} 14%, transparent)` }}
+    <Link
+      href={hrefFor(item)}
+      className={cn(
+        'group relative block overflow-hidden rounded-2xl',
+        featured ? 'h-[440px] sm:col-span-2' : 'h-[360px]',
+      )}
+    >
+      {image ? (
+        <img
+          src={image}
+          alt=""
+          className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
+        />
+      ) : (
+        <div
+          className="absolute inset-0 grid place-items-center"
+          style={{
+            background: `radial-gradient(120% 90% at 30% 20%, color-mix(in oklab, ${kind.tint} 55%, #0b0d10), #0b0d10)`,
+          }}
         >
-          <Icon className="size-4.5" style={{ color: kind.tint }} />
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="min-w-0 text-[0.9375rem] font-semibold">{item.title}</h3>
-            <Badge style={{ color: kind.tint }}>{kind.label}</Badge>
-          </div>
-
-          {when || item.subtitle || price ? (
-            <p className="text-ink-muted mt-0.5 truncate text-[0.8125rem]">
-              {[when, item.subtitle, price].filter(Boolean).join(' · ')}
-            </p>
-          ) : null}
-
-          <ul className="mt-2.5 space-y-1">
-            {item.reasons.slice(0, 2).map((reason) => (
-              <li
-                key={reason}
-                className="text-ink-subtle flex items-start gap-1.5 text-xs leading-relaxed"
-              >
-                <Sparkles className="mt-0.5 size-3 shrink-0" style={{ color: kind.tint }} />
-                {reason}
-              </li>
-            ))}
-          </ul>
+          <span className="font-display text-7xl font-extrabold text-white/85">{initials}</span>
         </div>
-      </Link>
-    </Card>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+      <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-semibold text-white backdrop-blur-md">
+        <Icon className="size-3.5" style={{ color: kind.tint }} />
+        {kind.label}
+      </span>
+      {price ? (
+        <span className="num absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-semibold text-black">
+          {price}
+        </span>
+      ) : null}
+
+      <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-5">
+        {item.reasons[0] ? (
+          <div
+            className="flex items-center gap-1.5 text-[12.5px] font-semibold"
+            style={{ color: kind.tint }}
+          >
+            <Sparkles className="size-3.5 shrink-0" />
+            <span className="line-clamp-1 first-letter:uppercase">{item.reasons[0]}</span>
+          </div>
+        ) : null}
+        <h3
+          className={cn(
+            'font-display mt-1 font-bold leading-tight tracking-tight',
+            featured ? 'text-3xl sm:text-4xl' : 'text-2xl',
+          )}
+        >
+          {item.title}
+        </h3>
+        {when || item.subtitle ? (
+          <p className="mt-1 line-clamp-1 text-sm text-white/75">
+            {[when, item.subtitle].filter(Boolean).join(' · ')}
+          </p>
+        ) : null}
+        <div className="mt-3 flex items-center gap-3 text-xs text-white/80">
+          {rating !== null ? (
+            <span className="flex items-center gap-1">
+              <Star className="fill-module-events text-module-events size-3.5" />
+              <span className="num font-semibold">{rating}</span>
+            </span>
+          ) : null}
+          {item.kind === 'EVENT' && typeof item.meta.goingCount === 'number' ? (
+            <span className="num">{item.meta.goingCount} going</span>
+          ) : null}
+          {item.kind === 'CIRCLE' && typeof item.meta.members === 'number' ? (
+            <span className="num">{item.meta.members} members</span>
+          ) : null}
+          {item.reasons[1] ? (
+            <span className="line-clamp-1 text-white/60">{item.reasons[1]}</span>
+          ) : null}
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -170,9 +245,9 @@ export function ForYou({ feed }: { feed: ForYouFeed }) {
         </Card>
       ) : null}
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {feed.items.map((item) => (
-          <RecommendationCard key={`${item.kind}-${item.id}`} item={item} />
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {ordered(feed.items).map((item, index) => (
+          <RecommendationCard key={`${item.kind}-${item.id}`} item={item} featured={index === 0} />
         ))}
       </div>
     </div>

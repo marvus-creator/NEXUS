@@ -41,18 +41,18 @@ export function TopBar({ user, unread }: { user: SessionUser; unread: number }) 
   }
 
   return (
-    <header className="border-line bg-ground/85 sticky top-0 z-30 border-b backdrop-blur-xl">
-      <div className="flex items-center gap-3 px-5 py-3 sm:gap-4 sm:px-6">
-        <Link href="/home" className="lg:hidden" aria-label="Nexus home">
+    <header className="border-line bg-ground/80 sticky top-0 z-30 border-b backdrop-blur-xl">
+      <div className="flex h-14 items-center gap-3 px-4 sm:gap-4 md:h-16 md:px-6">
+        <Link href="/home" className="lg:hidden" aria-label="NEXUS home">
           <Logo showWordmark={false} />
         </Link>
 
         <div className="max-w-md flex-1">
           <Input
             icon={<Search />}
-            placeholder="Search people, circles, events, places"
-            aria-label="Search Nexus"
-            className="h-10"
+            placeholder="Search people, places, events…"
+            aria-label="Search NEXUS"
+            className="bg-surface h-10 rounded-xl"
           />
         </div>
 
@@ -68,7 +68,7 @@ export function TopBar({ user, unread }: { user: SessionUser; unread: number }) 
               <button
                 type="button"
                 aria-label="Account menu"
-                className="focus-visible:ring-accent-line rounded-full focus-visible:ring-2 focus-visible:outline-none"
+                className="focus-visible:ring-accent-line rounded-full focus-visible:outline-none focus-visible:ring-2"
               >
                 <Avatar name={name} src={user.profile?.avatarUrl ?? undefined} size="sm" />
               </button>

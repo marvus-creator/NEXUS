@@ -16,7 +16,7 @@ export default async function OrdersPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Market</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Orders</h1>
+      <h1 className="t-h1 mt-3">Orders</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         Every request, both directions. Sellers accept or decline; buyers pay once accepted.
       </p>

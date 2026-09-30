@@ -22,7 +22,7 @@ export default async function MessagesPage({
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Nexus</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Messages</h1>
+      <h1 className="t-h1 mt-3">Messages</h1>
       <p className="text-ink-muted mt-2.5 text-[0.9375rem] leading-relaxed">
         Live over a websocket, with typing indicators and read receipts. Falls back to plain
         requests if the connection drops.

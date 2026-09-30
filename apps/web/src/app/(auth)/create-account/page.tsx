@@ -47,7 +47,7 @@ export default function CreateAccountPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Create your Nexus</h1>
+      <h1 className="t-h1">Create your Nexus</h1>
       <p className="text-ink-muted mt-2.5 text-sm">
         Three minutes of setup, then a version of the internet that is actually yours.
       </p>

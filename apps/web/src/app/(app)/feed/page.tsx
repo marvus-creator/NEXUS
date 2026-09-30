@@ -21,8 +21,8 @@ export default async function FeedPage({
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Nexus</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Feed</h1>
+      <Eyebrow tint="var(--accent)">Feed</Eyebrow>
+      <h1 className="t-h1 mt-3">Feed</h1>
       <p className="text-ink-muted mt-2.5 text-[0.9375rem] leading-relaxed">
         Ranked by who you are connected to and what you care about, not by whatever is loudest.
       </p>

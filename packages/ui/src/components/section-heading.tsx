@@ -1,12 +1,22 @@
 import * as React from 'react';
 import { cn } from '../lib/cn';
 
-export function Eyebrow({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+export function Eyebrow({
+  className,
+  tint,
+  children,
+  style,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement> & { tint?: string }) {
   return (
     <p
-      className={cn('text-micro text-ink-subtle font-semibold uppercase', className)}
+      className={cn('t-eyebrow text-ink-subtle flex items-center gap-2', className)}
+      style={tint ? { color: tint, ...style } : style}
       {...props}
-    />
+    >
+      {tint ? <span className="size-1.5 rounded-full" style={{ background: tint }} /> : null}
+      {children}
+    </p>
   );
 }
 
@@ -27,7 +37,7 @@ export function SectionHeading({
     <div className={cn('flex items-end justify-between gap-6', className)}>
       <div className="min-w-0">
         {eyebrow ? <Eyebrow className="mb-2">{eyebrow}</Eyebrow> : null}
-        <h2 className="text-balance-heading text-xl font-semibold tracking-tight sm:text-2xl">
+        <h2 className="text-balance-heading text-xl font-bold tracking-tight sm:text-2xl">
           {title}
         </h2>
         {description ? (

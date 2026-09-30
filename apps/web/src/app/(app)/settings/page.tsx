@@ -38,7 +38,7 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Settings</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Privacy and security</h1>
+      <h1 className="t-h1 mt-3">Privacy and security</h1>
       <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
         You control what Nexus shares and what it learns from.
       </p>

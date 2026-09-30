@@ -47,7 +47,7 @@ export default async function CalendarPage({
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Calendar</h1>
+      <h1 className="t-h1 mt-3">Calendar</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         {rangeLabel} · {calendar.timezone}. Your fixed commitments come from onboarding, events sit
         on top, and the pale green is what is genuinely left.

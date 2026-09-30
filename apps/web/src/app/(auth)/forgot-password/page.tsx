@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
         <span className="bg-accent-soft text-accent mb-6 flex size-12 items-center justify-center rounded-full">
           <MailCheck className="size-5" />
         </span>
-        <h1 className="text-3xl font-semibold tracking-tight">Check your email</h1>
+        <h1 className="t-h1">Check your email</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
           If an account exists for <span className="text-ink font-medium">{email}</span>, a reset
           link is on its way. The link expires in one hour.
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Reset your password</h1>
+      <h1 className="t-h1">Reset your password</h1>
       <p className="text-ink-muted mt-2.5 text-sm">
         Enter your email and we will send you a link to set a new one.
       </p>

@@ -16,8 +16,8 @@ export default async function LearnPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Learn</h1>
+      <Eyebrow tint="var(--module-learn)">Learn</Eyebrow>
+      <h1 className="t-h1 mt-3">Learn</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         {active.length > 0
           ? 'What you are working through, broken into pieces small enough to finish in one sitting.'

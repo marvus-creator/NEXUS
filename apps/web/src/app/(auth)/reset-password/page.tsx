@@ -36,7 +36,7 @@ function ResetForm() {
   if (!token) {
     return (
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Link not valid</h1>
+        <h1 className="t-h1">Link not valid</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
           This reset link is missing its token. Request a new one and try again.
         </p>
@@ -53,7 +53,7 @@ function ResetForm() {
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--success)_16%,transparent)] text-success">
           <ShieldCheck className="size-5" />
         </span>
-        <h1 className="text-3xl font-semibold tracking-tight">Password updated</h1>
+        <h1 className="t-h1">Password updated</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
           For safety, every device that was signed in has been signed out. Use your new password to
           sign back in.
@@ -67,7 +67,7 @@ function ResetForm() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Set a new password</h1>
+      <h1 className="t-h1">Set a new password</h1>
       <p className="text-ink-muted mt-2.5 text-sm">Choose something only you would pick.</p>
 
       {error ? (

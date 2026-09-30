@@ -34,7 +34,7 @@ function SignInForm() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
+      <h1 className="t-h1">Welcome back</h1>
       <p className="text-ink-muted mt-2.5 text-sm">Sign in to pick up where your world left off.</p>
 
       {error ? (

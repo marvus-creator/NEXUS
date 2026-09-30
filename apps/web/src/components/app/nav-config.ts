@@ -1,19 +1,20 @@
 import {
-  CalendarDays,
+  BookOpen,
+  Calendar,
+  CheckSquare,
+  CircleDot,
   Compass,
-  GraduationCap,
+  Flag,
   Home,
-  ListTodo,
   MapPin,
-  MessageSquare,
-  Rss,
+  MessageCircle,
+  Newspaper,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
-  Store,
-  Target,
-  Trophy,
+  Ticket,
+  TrendingUp,
   Users,
-  UsersRound,
   Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -34,7 +35,7 @@ export type NavGroup = {
 
 export const navGroups: NavGroup[] = [
   {
-    label: 'Nexus',
+    label: 'NEXUS',
     items: [
       { label: 'Home', href: '/home', icon: Home, tint: 'var(--module-home)', available: true },
       {
@@ -51,34 +52,34 @@ export const navGroups: NavGroup[] = [
         tint: 'var(--module-people)',
         available: true,
       },
-      { label: 'Feed', href: '/feed', icon: Rss, available: true },
-      { label: 'Messages', href: '/messages', icon: MessageSquare, available: true },
+      { label: 'Feed', href: '/feed', icon: Newspaper, available: true },
+      { label: 'Messages', href: '/messages', icon: MessageCircle, available: true },
     ],
   },
   {
     label: 'Your life',
     items: [
-      { label: 'Calendar', href: '/calendar', icon: CalendarDays, available: true },
-      { label: 'Tasks', href: '/tasks', icon: ListTodo, available: true },
-      { label: 'Goals', href: '/goals', icon: Target, available: true },
+      { label: 'Calendar', href: '/calendar', icon: Calendar, available: true },
+      { label: 'Tasks', href: '/tasks', icon: CheckSquare, available: true },
+      { label: 'Goals', href: '/goals', icon: Flag, available: true },
       {
         label: 'Learn',
         href: '/learn',
-        icon: GraduationCap,
+        icon: BookOpen,
         tint: 'var(--module-learn)',
         available: true,
       },
-      { label: 'Progress', href: '/progress', icon: Trophy, available: true },
+      { label: 'Progress', href: '/progress', icon: TrendingUp, available: true },
     ],
   },
   {
     label: 'Your world',
     items: [
-      { label: 'Circles', href: '/circles', icon: UsersRound, available: true },
+      { label: 'Circles', href: '/circles', icon: CircleDot, available: true },
       {
         label: 'Events',
         href: '/events',
-        icon: CalendarDays,
+        icon: Ticket,
         tint: 'var(--module-events)',
         available: true,
       },
@@ -89,14 +90,14 @@ export const navGroups: NavGroup[] = [
         tint: 'var(--module-nearby)',
         available: true,
       },
-      { label: 'Market', href: '/market', icon: Store, tint: 'var(--module-discover)', available: true },
+      { label: 'Market', href: '/market', icon: ShoppingBag, available: true },
       { label: 'Wallet', href: '/wallet', icon: Wallet, available: true },
     ],
   },
 ];
 
 export const aiItem: NavItem = {
-  label: 'Nexus AI',
+  label: 'Plan my day',
   href: '/ai',
   icon: Sparkles,
   tint: 'var(--module-ai)',

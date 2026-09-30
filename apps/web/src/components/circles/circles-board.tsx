@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { communityClient, type CircleSummary } from '@/lib/community-client';
+import { circleImage } from '@/lib/photos';
 
 const VISIBILITIES = [
   { value: 'PUBLIC', label: 'Public', icon: Globe, blurb: 'Anyone can find and join' },
@@ -134,7 +135,11 @@ export function CirclesBoard({
             </Field>
 
             <Field label="City" hint="Optional">
-              <Input value={city} placeholder="Kigali" onChange={(event) => setCity(event.target.value)} />
+              <Input
+                value={city}
+                placeholder="Kigali"
+                onChange={(event) => setCity(event.target.value)}
+              />
             </Field>
 
             <div>
@@ -151,7 +156,9 @@ export function CirclesBoard({
                       onClick={() => setVisibility(option.value)}
                       className={cn(
                         'flex flex-col items-start gap-1.5 rounded-lg border p-3.5 text-left transition-colors',
-                        active ? 'border-accent bg-accent-soft' : 'border-line hover:border-line-strong',
+                        active
+                          ? 'border-accent bg-accent-soft'
+                          : 'border-line hover:border-line-strong',
                       )}
                     >
                       <Icon className={cn('size-4', active ? 'text-accent' : 'text-ink-subtle')} />
@@ -174,7 +181,7 @@ export function CirclesBoard({
 
       {error && !composing ? <p className="text-danger mt-4 text-sm">{error}</p> : null}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {circles.length === 0 ? (
           <div className="md:col-span-2">
             <EmptyState
@@ -197,60 +204,78 @@ export function CirclesBoard({
             const Icon = VISIBILITY_ICON[circle.visibility];
 
             return (
-              <Card key={circle.id} interactive className="flex flex-col p-5">
-                <div className="flex items-start gap-3">
-                  <span className="bg-accent-soft text-accent flex size-10 shrink-0 items-center justify-center rounded-lg">
-                    <UsersRound className="size-4.5" />
+              <Card key={circle.id} className="group flex flex-col overflow-hidden">
+                <Link
+                  href={`/circles/${circle.slug}`}
+                  className="relative block h-36 overflow-hidden"
+                >
+                  <img
+                    src={circleImage(circle)}
+                    alt=""
+                    className="size-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                  <div className="from-surface absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+                  <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold capitalize text-white backdrop-blur-md">
+                    <Icon className="size-3" />
+                    {circle.visibility === 'INVITE_ONLY'
+                      ? 'Invite only'
+                      : circle.visibility.toLowerCase()}
                   </span>
+                  {circle.myRole ? (
+                    <span className="bg-accent absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize text-white">
+                      {circle.myRole.toLowerCase()}
+                    </span>
+                  ) : null}
+                </Link>
 
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/circles/${circle.slug}`}
-                      className="truncate text-[0.9375rem] font-semibold hover:underline"
-                    >
-                      {circle.name}
-                    </Link>
-                    <p className="text-ink-subtle mt-0.5 flex items-center gap-1.5 text-xs">
-                      <Icon className="size-3" />
-                      {circle.visibility === 'INVITE_ONLY' ? 'Invite only' : circle.visibility.toLowerCase()}
-                      {circle.city ? ` · ${circle.city}` : ''}
-                    </p>
+                <div className="flex flex-1 flex-col px-5 pb-5">
+                  <div className="-mt-4 flex items-start gap-3">
+                    <span className="bg-surface border-line text-accent relative flex size-11 shrink-0 items-center justify-center rounded-xl border">
+                      <UsersRound className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1 pt-4">
+                      <Link
+                        href={`/circles/${circle.slug}`}
+                        className="font-display block truncate text-lg font-bold tracking-tight hover:underline"
+                      >
+                        {circle.name}
+                      </Link>
+                      {circle.city ? (
+                        <p className="text-ink-subtle text-xs">{circle.city}</p>
+                      ) : null}
+                    </div>
                   </div>
 
-                  {circle.myRole ? (
-                    <Badge variant={circle.myRole === 'MEMBER' ? 'neutral' : 'accent'} size="sm">
-                      {circle.myRole.toLowerCase()}
-                    </Badge>
-                  ) : null}
-                </div>
-
-                {circle.description ? (
-                  <p className="text-ink-muted mt-3 line-clamp-2 text-sm leading-relaxed">
-                    {circle.description}
-                  </p>
-                ) : null}
-
-                <div className="border-line mt-4 flex items-center justify-between border-t pt-3.5">
-                  <span className="text-ink-subtle text-xs">
-                    {circle.members} {circle.members === 1 ? 'member' : 'members'} · {circle.posts}{' '}
-                    {circle.posts === 1 ? 'post' : 'posts'}
-                  </span>
-
-                  {circle.myRole ? (
-                    <Button asChild size="sm" variant="secondary">
-                      <Link href={`/circles/${circle.slug}`}>Open</Link>
-                    </Button>
-                  ) : circle.visibility === 'INVITE_ONLY' ? (
-                    <Badge size="sm">Invite only</Badge>
+                  {circle.description ? (
+                    <p className="text-ink-muted mt-3 line-clamp-2 flex-1 text-sm leading-relaxed">
+                      {circle.description}
+                    </p>
                   ) : (
-                    <Button
-                      size="sm"
-                      loading={pending[circle.slug]}
-                      onClick={() => void join(circle)}
-                    >
-                      {circle.visibility === 'PRIVATE' ? 'Ask to join' : 'Join'}
-                    </Button>
+                    <div className="flex-1" />
                   )}
+
+                  <div className="border-line mt-4 flex items-center justify-between border-t pt-3.5">
+                    <span className="text-ink-subtle text-xs">
+                      {circle.members} {circle.members === 1 ? 'member' : 'members'} ·{' '}
+                      {circle.posts} {circle.posts === 1 ? 'post' : 'posts'}
+                    </span>
+
+                    {circle.myRole ? (
+                      <Button asChild size="sm" variant="secondary">
+                        <Link href={`/circles/${circle.slug}`}>Open</Link>
+                      </Button>
+                    ) : circle.visibility === 'INVITE_ONLY' ? (
+                      <Badge size="sm">Invite only</Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        loading={pending[circle.slug]}
+                        onClick={() => void join(circle)}
+                      >
+                        {circle.visibility === 'PRIVATE' ? 'Ask to join' : 'Join'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </Card>
             );

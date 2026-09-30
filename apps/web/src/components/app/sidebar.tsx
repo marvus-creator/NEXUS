@@ -1,88 +1,186 @@
 'use client';
 
-import { Logo, Tooltip, TooltipContent, TooltipTrigger, cn } from '@nexus/ui';
+import { Avatar, Logo, LogoMark, cn } from '@nexus/ui';
+import { ChevronsLeft } from 'lucide-react';
+import { motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Spark } from '@/components/landing/bits';
 import { aiItem, navGroups, staffItem, type NavItem } from './nav-config';
 
-function NavRow({ item, active }: { item: NavItem; active: boolean }) {
-  const Icon = item.icon;
+const STORAGE_KEY = 'nexus-sidebar-collapsed';
 
-  const content = (
-    <span
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function NavRow({
+  item,
+  active,
+  collapsed,
+}: {
+  item: NavItem;
+  active: boolean;
+  collapsed: boolean;
+}) {
+  const Icon = item.icon;
+  const tint = item.tint ?? 'var(--accent)';
+
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? 'page' : undefined}
+      title={collapsed ? item.label : undefined}
       className={cn(
-        'relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200',
-        active && 'bg-surface-hover text-ink',
-        !active && item.available && 'text-ink-muted hover:bg-surface-hover hover:text-ink',
-        !item.available && 'text-ink-subtle cursor-default',
+        'group relative mb-0.5 flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition',
+        active
+          ? 'bg-surface-raised text-ink'
+          : 'text-ink-muted hover:bg-surface-raised/60 hover:text-ink',
+        collapsed && 'justify-center px-0',
       )}
     >
       {active ? (
-        <span
-          className="absolute top-1/2 -left-3 h-5 w-0.5 -translate-y-1/2 rounded-full"
-          style={{ backgroundColor: item.tint ?? 'var(--accent)' }}
+        <motion.span
+          layoutId="nav-active"
+          className="bg-accent absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full"
+          transition={{ type: 'spring', stiffness: 500, damping: 40 }}
         />
       ) : null}
-      <Icon className="size-4 shrink-0" style={active ? { color: item.tint ?? 'var(--accent)' } : undefined} />
-      <span className="truncate">{item.label}</span>
-    </span>
-  );
-
-  if (!item.available) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div aria-disabled="true">{content}</div>
-        </TooltipTrigger>
-        <TooltipContent side="right">Arrives in {item.phase}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return (
-    <Link href={item.href} aria-current={active ? 'page' : undefined}>
-      {content}
+      <Icon className="size-[18px] shrink-0" style={active ? { color: tint } : undefined} />
+      {collapsed ? null : <span className="flex-1 truncate text-left">{item.label}</span>}
     </Link>
   );
 }
 
-export function Sidebar({ role }: { role?: string }) {
+export function Sidebar({
+  role,
+  name,
+  username,
+  avatarUrl,
+}: {
+  role?: string;
+  name: string;
+  username?: string | null;
+  avatarUrl?: string | null;
+}) {
   const pathname = usePathname();
   const isStaff = role === 'ADMIN' || role === 'MODERATOR';
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(STORAGE_KEY) === '1');
+    } catch {}
+  }, []);
+
+  function toggle() {
+    setCollapsed((value) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, value ? '0' : '1');
+      } catch {}
+      return !value;
+    });
+  }
 
   return (
-    <aside className="border-line bg-ground-deep hidden w-64 shrink-0 flex-col border-r lg:flex">
-      <div className="px-6 py-5">
-        <Link href="/home" aria-label="Nexus home">
-          <Logo />
+    <motion.aside
+      initial={false}
+      animate={{ width: collapsed ? 76 : 256 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+      className="border-line bg-surface/60 sticky top-0 hidden h-dvh shrink-0 flex-col border-r lg:flex"
+    >
+      <div className={cn('flex h-16 items-center px-5', collapsed && 'justify-center px-0')}>
+        <Link href="/home" aria-label="NEXUS home">
+          {collapsed ? <LogoMark className="size-[30px]" /> : <Logo />}
         </Link>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-7 overflow-y-auto px-6 pb-6">
+      <nav className="no-scrollbar flex-1 overflow-y-auto px-3 pb-4">
         {navGroups.map((group) => (
-          <div key={group.label}>
-            <p className="text-micro text-ink-subtle mb-2.5 font-semibold uppercase">
-              {group.label}
-            </p>
-            <div className="flex flex-col gap-0.5">
-              {group.items.map((item) => (
-                <NavRow
-                  key={item.href}
-                  item={item}
-                  active={pathname === item.href || pathname.startsWith(`${item.href}/`)}
-                />
-              ))}
-            </div>
+          <div key={group.label} className="mt-4 first:mt-1">
+            {collapsed ? (
+              <div className="bg-line mx-auto mb-2 h-px w-6" />
+            ) : (
+              <div className="t-eyebrow text-ink-subtle mb-2 px-3">{group.label}</div>
+            )}
+            {group.items.map((item) => (
+              <NavRow
+                key={item.href}
+                item={item}
+                active={isActive(pathname, item.href)}
+                collapsed={collapsed}
+              />
+            ))}
           </div>
         ))}
+
+        {isStaff ? (
+          <div className="mt-4">
+            {collapsed ? null : <div className="t-eyebrow text-ink-subtle mb-2 px-3">Staff</div>}
+            <NavRow
+              item={staffItem}
+              active={isActive(pathname, staffItem.href)}
+              collapsed={collapsed}
+            />
+          </div>
+        ) : null}
+
+        {collapsed ? (
+          <Link
+            href={aiItem.href}
+            title={aiItem.label}
+            className="bg-surface-raised mt-5 flex h-10 items-center justify-center rounded-[10px]"
+          >
+            <Spark className="size-5" />
+          </Link>
+        ) : (
+          <Link
+            href={aiItem.href}
+            className={cn(
+              'ai-border ai-glow bg-surface-raised mt-6 block rounded-2xl p-4 text-left',
+              isActive(pathname, aiItem.href) && 'bg-surface-hover',
+            )}
+          >
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Spark /> <span className="text-ai-gradient">Plan my day</span>
+            </div>
+            <p className="text-ink-muted mt-1.5 text-xs leading-relaxed">
+              Let NEXUS fit your tasks and study into the free time you actually have.
+            </p>
+          </Link>
+        )}
       </nav>
 
-      <div className="border-line flex flex-col gap-0.5 border-t px-6 py-4">
-        {isStaff ? (
-          <NavRow item={staffItem} active={pathname.startsWith(staffItem.href)} />
-        ) : null}
-        <NavRow item={aiItem} active={pathname.startsWith(aiItem.href)} />
+      <div
+        className={cn('border-line flex items-center gap-2 border-t p-3', collapsed && 'flex-col')}
+      >
+        <Link
+          href="/profile"
+          className={cn(
+            'hover:bg-surface-raised flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5',
+            collapsed && 'justify-center',
+          )}
+        >
+          <Avatar name={name} src={avatarUrl ?? undefined} size="sm" />
+          {collapsed ? null : (
+            <span className="min-w-0 text-left">
+              <span className="block truncate text-[13px] font-semibold">{name}</span>
+              {username ? (
+                <span className="text-ink-muted block truncate text-[11.5px]">@{username}</span>
+              ) : null}
+            </span>
+          )}
+        </Link>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="text-ink-muted hover:bg-surface-raised hover:text-ink grid size-9 place-items-center rounded-[10px] transition"
+        >
+          <ChevronsLeft className={cn('size-[18px] transition', collapsed && 'rotate-180')} />
+        </button>
       </div>
-    </aside>
+    </motion.aside>
   );
 }

@@ -1,11 +1,17 @@
 'use client';
 
 import { Logo, cn } from '@nexus/ui';
-import { Menu, X } from 'lucide-react';
+import { LayoutGrid, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Spark } from '@/components/landing/bits';
 import { aiItem, mobilePrimary, navGroups } from './nav-config';
+
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -22,36 +28,39 @@ export function MobileNav() {
     };
   }, [open]);
 
+  const inPrimary = mobilePrimary.some((item) => isActive(pathname, item.href));
+
   return (
     <>
-      <nav className="border-line bg-ground/92 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-        <div className="grid grid-cols-5">
+      <nav className="border-line bg-surface/90 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <div className="grid h-16 grid-cols-5">
           {mobilePrimary.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const inner = (
-              <span
+            const active = isActive(pathname, item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center gap-1 py-2.5',
-                  active ? 'text-ink' : item.available ? 'text-ink-muted' : 'text-ink-subtle',
+                  'relative flex flex-col items-center justify-center gap-1 text-[10.5px] font-medium',
+                  active ? 'text-ink' : 'text-ink-muted',
                 )}
               >
+                {active ? (
+                  <motion.span
+                    layoutId="tab-dot"
+                    className="bg-accent absolute top-0 h-0.5 w-8 rounded-full"
+                  />
+                ) : null}
                 <Icon
-                  className="size-5"
-                  style={active ? { color: item.tint ?? 'var(--accent)' } : undefined}
+                  className="size-[22px]"
+                  style={active ? { color: 'var(--accent)' } : undefined}
+                  strokeWidth={active ? 2.3 : 1.8}
                 />
-                <span className="text-[0.625rem] font-medium">{item.label}</span>
-              </span>
-            );
-
-            return item.available ? (
-              <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined}>
-                {inner}
+                {item.label}
               </Link>
-            ) : (
-              <div key={item.href} aria-disabled="true">
-                {inner}
-              </div>
             );
           })}
 
@@ -59,86 +68,99 @@ export function MobileNav() {
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="text-ink-muted flex flex-col items-center gap-1 py-2.5"
+            className={cn(
+              'relative flex flex-col items-center justify-center gap-1 text-[10.5px] font-medium',
+              !inPrimary ? 'text-ink' : 'text-ink-muted',
+            )}
           >
-            <Menu className="size-5" />
-            <span className="text-[0.625rem] font-medium">More</span>
+            {!inPrimary ? (
+              <span className="bg-accent absolute top-0 h-0.5 w-8 rounded-full" />
+            ) : null}
+            <LayoutGrid className="size-[22px]" strokeWidth={1.8} />
+            More
           </button>
         </div>
       </nav>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-[var(--overlay)] backdrop-blur-sm"
-          />
+      <AnimatePresence>
+        {open ? (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
 
-          <div className="bg-ground border-line animate-[fade-up_0.28s_var(--ease-out-expo)] absolute inset-x-0 bottom-0 max-h-[86svh] overflow-y-auto rounded-t-xl border-t">
-            <div className="border-line sticky top-0 flex items-center justify-between border-b bg-[var(--ground)] px-5 py-4">
-              <Logo />
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-                className="border-line text-ink flex size-9 items-center justify-center rounded-md border"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-7 px-5 py-6">
-              {navGroups.map((group) => (
-                <div key={group.label}>
-                  <p className="text-micro text-ink-subtle mb-3 font-semibold uppercase">
-                    {group.label}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {group.items.map((item) => {
-                      const Icon = item.icon;
-                      const inner = (
-                        <span
-                          className={cn(
-                            'border-line flex items-center gap-3 rounded-md border px-3.5 py-3 text-sm font-medium',
-                            item.available ? 'text-ink bg-surface' : 'text-ink-subtle',
-                          )}
-                        >
-                          <Icon
-                            className="size-4 shrink-0"
-                            style={item.available ? { color: item.tint ?? 'var(--accent)' } : undefined}
-                          />
-                          <span className="truncate">{item.label}</span>
-                        </span>
-                      );
-
-                      return item.available ? (
-                        <Link key={item.href} href={item.href}>
-                          {inner}
-                        </Link>
-                      ) : (
-                        <div key={item.href} aria-disabled="true" title={`Arrives in ${item.phase}`}>
-                          {inner}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              <div
-                aria-disabled="true"
-                className="border-accent-line bg-accent-soft flex items-center gap-3 rounded-md border px-3.5 py-3"
-              >
-                <aiItem.icon className="size-4" style={{ color: aiItem.tint }} />
-                <span className="text-sm font-medium">Nexus AI</span>
-                <span className="text-ink-subtle ml-auto text-xs">{aiItem.phase}</span>
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              className="bg-surface border-line absolute inset-x-0 bottom-0 max-h-[86svh] overflow-y-auto rounded-t-3xl border-t pb-[env(safe-area-inset-bottom)]"
+            >
+              <div className="bg-line-strong mx-auto mt-2.5 h-1 w-10 rounded-full" />
+              <div className="flex items-center justify-between px-5 pb-2 pt-3">
+                <Logo />
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                  className="text-ink-muted hover:bg-surface-raised grid size-9 place-items-center rounded-[10px]"
+                >
+                  <X className="size-5" />
+                </button>
               </div>
-            </div>
+
+              <div className="flex flex-col gap-6 px-5 pb-8 pt-3">
+                <Link
+                  href={aiItem.href}
+                  className="ai-border ai-glow bg-surface-raised rounded-2xl p-4"
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Spark /> <span className="text-ai-gradient">Plan my day</span>
+                  </div>
+                  <p className="text-ink-muted mt-1.5 text-xs">
+                    Fit your tasks and study into the free time you actually have.
+                  </p>
+                </Link>
+
+                {navGroups.map((group) => (
+                  <div key={group.label}>
+                    <p className="t-eyebrow text-ink-subtle mb-3">{group.label}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const active = isActive(pathname, item.href);
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              'border-line flex flex-col items-center gap-2 rounded-2xl border px-2 py-3.5 text-center text-[12.5px] font-medium',
+                              active ? 'bg-surface-raised text-ink' : 'bg-surface text-ink',
+                            )}
+                          >
+                            <Icon
+                              className="size-5"
+                              style={{ color: item.tint ?? 'var(--accent)' }}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }

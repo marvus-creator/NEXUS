@@ -21,9 +21,9 @@ export default async function EventsPage({
   const [events, places] = await Promise.all([getEvents(scope), getPlaces()]);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your world</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Events</h1>
+    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
+      <Eyebrow tint="var(--module-events)">Events</Eyebrow>
+      <h1 className="t-h1 mt-3">What&apos;s on in Kigali.</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         From finding something to standing in the room. Invite friends, check in at the door with a
         code, and leave a review afterwards.

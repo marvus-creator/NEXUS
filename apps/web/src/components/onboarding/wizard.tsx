@@ -180,7 +180,7 @@ export function OnboardingWizard({
 
       <div className="flex flex-1 flex-col py-10">
         <Eyebrow className="text-accent">Build your Nexus</Eyebrow>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+        <h1 className="t-h1 mt-3">
           {step === 1 ? `Welcome, ${displayName.split(' ')[0]}.` : current.title}
         </h1>
         <p className="text-ink-muted mt-2.5 text-[0.9375rem]">

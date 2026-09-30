@@ -14,6 +14,10 @@ async function bootstrap() {
   const config = app.get(ConfigService<Env, true>);
 
   app.use(helmet());
+  app.use('/uploads', (_request: unknown, response: { setHeader: (name: string, value: string) => void }, next: () => void) => {
+    response.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
   app.use(cookieParser());
 
   app.enableCors({

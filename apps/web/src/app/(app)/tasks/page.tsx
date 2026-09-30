@@ -16,7 +16,7 @@ export default async function TasksPage() {
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Tasks</h1>
+      <h1 className="t-h1 mt-3">Tasks</h1>
       <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
         Every task can point at a goal and land on your calendar. That link is the whole point.
       </p>

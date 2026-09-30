@@ -17,7 +17,7 @@ export default async function AiPage() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
       <Eyebrow style={{ color: 'var(--module-ai)' }}>Nexus AI</Eyebrow>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Plan my day</h1>
+      <h1 className="t-h1 mt-3">Plan my day</h1>
       <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
         Nexus knows what is already fixed in your day, what you owe, and what you are trying to
         learn. It suggests where the work fits. You decide what sticks.

@@ -53,6 +53,7 @@ export function formatMoney(minor: number, currency: string, locale = 'en-RW') {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency.toUpperCase(),
+    currencyDisplay: 'code',
     minimumFractionDigits: exponent,
     maximumFractionDigits: exponent,
   }).format(fromMinor(minor, currency));

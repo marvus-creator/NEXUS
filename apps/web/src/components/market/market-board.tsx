@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { listingImage } from '@/lib/photos';
 import {
   createListing,
   placeOrder,
@@ -61,7 +62,8 @@ function ListingCard({
   const [error, setError] = useState<string | null>(null);
   const [ordered, setOrdered] = useState(false);
 
-  const soldOut = listing.status === 'SOLD' || (listing.kind === 'PRODUCT' && listing.quantity === 0);
+  const soldOut =
+    listing.status === 'SOLD' || (listing.kind === 'PRODUCT' && listing.quantity === 0);
 
   async function toggleSave() {
     setBusy(true);
@@ -90,36 +92,45 @@ function ListingCard({
   }
 
   return (
-    <Card className="flex flex-col p-4">
-      <div className="flex items-start gap-3">
-        <span
-          className="grid size-10 shrink-0 place-items-center rounded-xl"
-          style={{
-            background: `color-mix(in oklab, ${CATEGORY_TINT[listing.category] ?? 'var(--ink-subtle)'} 14%, transparent)`,
-          }}
-        >
+    <Card className="group flex flex-col overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <img
+          src={listingImage({ title: listing.title, id: listing.id, imageUrl: listing.coverUrl })}
+          alt=""
+          className="size-full object-cover transition duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
           {listing.kind === 'SERVICE' ? (
-            <Wrench className="size-4.5" style={{ color: CATEGORY_TINT[listing.category] }} />
+            <Wrench className="size-3" />
           ) : (
-            <Package className="size-4.5" style={{ color: CATEGORY_TINT[listing.category] }} />
+            <Package className="size-3" />
           )}
+          <span className="capitalize">{listing.category.toLowerCase()}</span>
         </span>
+        <button
+          type="button"
+          onClick={() => void toggleSave()}
+          disabled={busy}
+          aria-label={listing.saved ? 'Remove from saved' : 'Save listing'}
+          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/70 disabled:opacity-50"
+        >
+          <Bookmark className={cn('size-4', listing.saved && 'fill-current text-[#60A5FA]')} />
+        </button>
+        {soldOut ? (
+          <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-black">
+            Sold out
+          </span>
+        ) : null}
+      </div>
 
+      <div className="flex flex-1 flex-col p-4">
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="min-w-0 text-[0.9375rem] leading-snug font-semibold">{listing.title}</h3>
-            <button
-              type="button"
-              onClick={() => void toggleSave()}
-              disabled={busy}
-              aria-label={listing.saved ? 'Remove from saved' : 'Save listing'}
-              className="text-ink-subtle hover:text-accent shrink-0 transition-colors disabled:opacity-50"
-            >
-              <Bookmark className={cn('size-4', listing.saved && 'fill-current text-accent')} />
-            </button>
-          </div>
+          <h3 className="line-clamp-2 min-w-0 text-[0.9375rem] font-semibold leading-snug">
+            {listing.title}
+          </h3>
 
-          <p className="text-accent mt-1 font-mono text-[0.9375rem] font-semibold">
+          <p className="num text-accent mt-1.5 text-[1.0625rem] font-semibold">
             {listing.price.display}
             {listing.negotiable ? (
               <span className="text-ink-subtle ml-1.5 font-sans text-xs font-normal">
@@ -144,7 +155,10 @@ function ListingCard({
                 {listing.business.name}
               </Link>
             ) : listing.seller ? (
-              <Link href={`/u/${listing.seller.username}`} className="hover:text-ink transition-colors">
+              <Link
+                href={`/u/${listing.seller.username}`}
+                className="hover:text-ink transition-colors"
+              >
                 {listing.seller.displayName}
               </Link>
             ) : null}
@@ -152,36 +166,30 @@ function ListingCard({
             {listing.kind === 'PRODUCT' && !soldOut ? <span>· {listing.quantity} left</span> : null}
           </div>
         </div>
-      </div>
 
-      {error ? <p className="text-danger mt-2.5 text-xs">{error}</p> : null}
+        {error ? <p className="text-danger mt-2.5 text-xs">{error}</p> : null}
 
-      <div className="mt-3.5 flex items-center gap-2">
-        {listing.isMine ? (
-          <Badge>Your listing</Badge>
-        ) : soldOut ? (
-          <Badge>Sold</Badge>
-        ) : ordered ? (
-          <p className="text-nearby flex items-center gap-1.5 text-xs">
-            <Check className="size-3.5" /> Order sent — waiting on the seller
-          </p>
-        ) : (
-          <Button size="sm" variant="ghost" onClick={() => void order()} disabled={busy}>
-            <ShoppingBag className="size-4" /> Request
-          </Button>
-        )}
+        <div className="mt-3.5 flex items-center gap-2">
+          {listing.isMine ? (
+            <Badge>Your listing</Badge>
+          ) : soldOut ? (
+            <Badge>Sold</Badge>
+          ) : ordered ? (
+            <p className="text-module-nearby flex items-center gap-1.5 text-xs">
+              <Check className="size-3.5" /> Order sent, waiting on the seller
+            </p>
+          ) : (
+            <Button size="sm" className="w-full" onClick={() => void order()} disabled={busy}>
+              <ShoppingBag className="size-4" /> Request to buy
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
 }
 
-export function MarketBoard({
-  listings,
-  city,
-}: {
-  listings: Listing[];
-  city: string | null;
-}) {
+export function MarketBoard({ listings, city }: { listings: Listing[]; city: string | null }) {
   const router = useRouter();
 
   const [items, setItems] = useState(listings);
@@ -257,7 +265,7 @@ export function MarketBoard({
     <div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1">
-          <Search className="text-ink-subtle pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Search className="text-ink-subtle pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -281,7 +289,7 @@ export function MarketBoard({
             className={cn(
               'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
               category === entry.value
-                ? 'border-transparent bg-accent text-white'
+                ? 'bg-accent border-transparent text-white'
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
@@ -295,7 +303,7 @@ export function MarketBoard({
           className={cn(
             'ml-auto flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
             savedOnly
-              ? 'border-transparent bg-accent text-white'
+              ? 'bg-accent border-transparent text-white'
               : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
           )}
         >
@@ -380,15 +388,13 @@ export function MarketBoard({
           }
         />
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visible.map((listing) => (
             <ListingCard
               key={listing.id}
               listing={listing}
               onChange={(next) =>
-                setItems((current) =>
-                  current.map((entry) => (entry.id === next.id ? next : entry)),
-                )
+                setItems((current) => current.map((entry) => (entry.id === next.id ? next : entry)))
               }
             />
           ))}
