@@ -105,7 +105,7 @@ export const aiItem: NavItem = {
 };
 
 export const staffItem: NavItem = {
-  label: 'Moderation',
+  label: 'Control center',
   href: '/admin',
   icon: ShieldCheck,
   tint: 'var(--module-nearby)',

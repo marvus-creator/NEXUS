@@ -46,7 +46,9 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('This account is not active');
     }
 
-    if (await this.revocations.isRevoked(payload.sub)) {
+    const issuedAtMs = payload.issuedAtMs ?? ((payload as { iat?: number }).iat ?? 0) * 1000;
+
+    if (await this.revocations.isRevoked(payload.sub, issuedAtMs)) {
       throw new UnauthorizedException('This session is no longer valid');
     }
 

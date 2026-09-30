@@ -13,6 +13,7 @@ export type AccessTokenPayload = {
   role: UserRole;
   status: UserStatus;
   emailVerified: boolean;
+  issuedAtMs?: number;
 };
 
 export const ACCESS_COOKIE = 'nexus_access';
@@ -44,7 +45,7 @@ export class TokensService {
   }
 
   async signAccessToken(payload: AccessTokenPayload) {
-    return this.jwt.signAsync(payload, {
+    return this.jwt.signAsync({ ...payload, issuedAtMs: Date.now() }, {
       secret: this.config.get('JWT_ACCESS_SECRET', { infer: true }),
       expiresIn: this.config.get('JWT_ACCESS_TTL', { infer: true }),
     });

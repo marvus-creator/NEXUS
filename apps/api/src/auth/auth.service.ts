@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -85,6 +86,15 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto, context: RequestContext) {
+    const registration = await this.prisma.platformSetting.findUnique({
+      where: { key: 'registrationOpen' },
+      select: { value: true },
+    });
+
+    if (registration?.value === false) {
+      throw new ForbiddenException('New sign-ups are paused right now. Please try again later.');
+    }
+
     const [existingEmail, existingUsername] = await Promise.all([
       this.prisma.user.findUnique({ where: { email: dto.email }, select: { id: true } }),
       this.prisma.profile.findUnique({ where: { username: dto.username }, select: { id: true } }),

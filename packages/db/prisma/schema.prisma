@@ -299,6 +299,15 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model PlatformSetting {
+  key         String   @id
+  value       Json
+  updatedById String?  @map("updated_by_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
+
 enum TaskStatus {
   TODO
   DOING

@@ -1,6 +1,7 @@
 import { TooltipProvider } from '@nexus/ui';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { AnnouncementBanner } from '@/components/app/announcement-banner';
 import { MobileNav } from '@/components/app/mobile-nav';
 import { Sidebar } from '@/components/app/sidebar';
 import { TopBar } from '@/components/app/top-bar';
@@ -27,6 +28,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
+          <AnnouncementBanner />
           <TopBar user={user} unread={notifications.unread} />
           <main className="flex-1 pb-24 lg:pb-0">{children}</main>
         </div>

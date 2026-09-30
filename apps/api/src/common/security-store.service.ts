@@ -43,9 +43,12 @@ export class SecurityStore implements OnModuleDestroy {
     }
   }
 
-  async isRevoked(userId: string) {
+  async isRevoked(userId: string, issuedAtMs?: number) {
     try {
-      return (await this.client.exists(`${REVOKED}${userId}`)) === 1;
+      const revokedAt = await this.client.get(`${REVOKED}${userId}`);
+      if (revokedAt === null) return false;
+      if (issuedAtMs === undefined) return true;
+      return issuedAtMs <= Number(revokedAt);
     } catch {
       return false;
     }
