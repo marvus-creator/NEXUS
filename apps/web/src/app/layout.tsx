@@ -1,6 +1,7 @@
 import { ThemeProvider, themeScript } from '@nexus/ui';
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, Geist, Geist_Mono } from 'next/font/google';
+import { ServiceWorker } from '@/components/app/service-worker';
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -18,6 +19,15 @@ export const metadata: Metadata = {
   },
   description:
     'Nexus is a personalized digital world connecting your people, places, communities, events, learning and goals in one interface.',
+  applicationName: 'NEXUS',
+  appleWebApp: { capable: true, title: 'NEXUS', statusBarStyle: 'black-translucent' },
+  icons: {
+    icon: [
+      { url: '/icons/favicon-64.png', sizes: '64x64', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
 };
 
 export const viewport: Viewport = {
@@ -32,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} font-sans antialiased`}>
         <ThemeProvider>{children}</ThemeProvider>
+        <ServiceWorker />
       </body>
     </html>
   );
