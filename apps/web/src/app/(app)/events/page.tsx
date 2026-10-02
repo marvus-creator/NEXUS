@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { EventsBoard } from '@/components/events/events-board';
 import { getEvents, getPlaces } from '@/lib/places-server';
@@ -21,16 +22,19 @@ export default async function EventsPage({
   const [events, places] = await Promise.all([getEvents(scope), getPlaces()]);
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
-      <Eyebrow tint="var(--module-events)">Events</Eyebrow>
-      <h1 className="t-h1 mt-3">What&apos;s on in Kigali.</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        From finding something to standing in the room. Invite friends, check in at the door with a
-        code, and leave a review afterwards.
-      </p>
+    <div>
+      <PageHero
+        eyebrow="Events"
+        tint="var(--module-events)"
+        image={IMG.concert}
+        title={<>What&apos;s on in Kigali.</>}
+        description={<>From finding something to standing in the room. Invite friends, check in at the door with a code, and leave a review afterwards.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <EventsBoard events={events} scope={scope} places={places} />
+      </div>
       </div>
     </div>
   );

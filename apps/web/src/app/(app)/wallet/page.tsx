@@ -1,4 +1,6 @@
-import { Eyebrow, EmptyState } from '@nexus/ui';
+import { EmptyState } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { Wallet } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { WalletBoard } from '@/components/market/wallet-board';
@@ -15,12 +17,16 @@ export default async function WalletPage() {
   const overview = await getWallet();
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your world</Eyebrow>
-      <h1 className="t-h1 mt-3">Wallet</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        Money you hold inside Nexus, and every movement that got it there.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-5xl"
+        eyebrow="Wallet"
+        tint="var(--accent)"
+        image={IMG.downtown}
+        title={<>Wallet</>}
+        description={<>Money you hold inside Nexus, and every movement that got it there.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         {overview ? (
@@ -32,6 +38,7 @@ export default async function WalletPage() {
             description="We could not reach your wallet. Reload in a moment."
           />
         )}
+      </div>
       </div>
     </div>
   );

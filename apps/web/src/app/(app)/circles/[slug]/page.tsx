@@ -24,7 +24,7 @@ export default async function CirclePage({ params }: { params: Promise<{ slug: s
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
+    <div className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-8">
       <CircleRoom circle={circle} posts={posts} requests={requests} />
     </div>
   );

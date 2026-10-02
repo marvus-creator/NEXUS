@@ -1,4 +1,6 @@
-import { Badge, Eyebrow } from '@nexus/ui';
+import { Badge } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { TaskBoard } from '@/components/planner/task-board';
 import { getGoals, getTaskCounts, getTasks } from '@/lib/planner-server';
@@ -14,12 +16,16 @@ export default async function TasksPage() {
   const [tasks, goals, counts] = await Promise.all([getTasks(), getGoals(), getTaskCounts()]);
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="t-h1 mt-3">Tasks</h1>
-      <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
-        Every task can point at a goal and land on your calendar. That link is the whole point.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-4xl"
+        eyebrow="Tasks"
+        tint="var(--module-events)"
+        image={IMG.cowork4}
+        title={<>Tasks</>}
+        description={<>Every task can point at a goal and land on your calendar. That link is the whole point.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Badge size="sm">{counts.open} open</Badge>
@@ -40,6 +46,7 @@ export default async function TasksPage() {
 
       <div className="mt-8">
         <TaskBoard initialTasks={tasks} goals={goals} />
+      </div>
       </div>
     </div>
   );

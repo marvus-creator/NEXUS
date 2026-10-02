@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { WeekView } from '@/components/planner/week-view';
 import { getCalendar } from '@/lib/planner-server';
@@ -45,16 +46,20 @@ export default async function CalendarPage({
   ).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Your life</Eyebrow>
-      <h1 className="t-h1 mt-3">Calendar</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        {rangeLabel} · {calendar.timezone}. Your fixed commitments come from onboarding, events sit
-        on top, and the pale green is what is genuinely left.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-6xl"
+        eyebrow="Calendar"
+        tint="var(--accent)"
+        image={IMG.hills}
+        title={<>Calendar</>}
+        description={<>{rangeLabel} · {calendar.timezone}. Your fixed commitments come from onboarding, events sit on top, and the pale green is what is genuinely left.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <WeekView days={calendar.days} weekStartIso={from.toISOString()} todayKey={todayKey} />
+      </div>
       </div>
     </div>
   );

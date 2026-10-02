@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { NearbyBoard } from '@/components/places/nearby-board';
 import { getPlaces } from '@/lib/places-server';
@@ -15,18 +16,19 @@ export default async function NearbyPage() {
   const city = user.profile?.city ?? null;
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8 md:py-10">
-      <Eyebrow tint="var(--module-nearby)">Nearby</Eyebrow>
-      <h1 className="t-h1 mt-3">
-        {city ? `Nearby in ${city}` : 'Nearby'}
-      </h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        Cafés, workspaces, venues and the places worth knowing. Share your location and distances
-        are computed for real.
-      </p>
+    <div>
+      <PageHero
+        eyebrow="Nearby"
+        tint="var(--module-nearby)"
+        image={IMG.kigaliRooftops}
+        title={<>{city ? `Nearby in ${city}` : 'Nearby'}</>}
+        description={<>Cafés, workspaces, venues and the places worth knowing. Share your location and distances are computed for real.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <NearbyBoard places={places} city={city} />
+      </div>
       </div>
     </div>
   );

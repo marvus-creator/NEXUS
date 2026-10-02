@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { PeopleBoard } from '@/components/people/people-board';
 import { getSession } from '@/lib/session';
@@ -14,16 +15,20 @@ export default async function PeoplePage() {
   const [connections, suggestions] = await Promise.all([getConnections(), getSuggestions()]);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow tint="var(--module-people)">People</Eyebrow>
-      <h1 className="t-h1 mt-3">Your people.</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        Following is one way. Friendship is mutual and has to be accepted. Suggestions come from
-        mutual friends, shared interests and your city — never from anything private.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-6xl"
+        eyebrow="People"
+        tint="var(--module-people)"
+        image={IMG.nyamirambo}
+        title={<>Your people.</>}
+        description={<>Following is one way. Friendship is mutual and has to be accepted. Suggestions come from mutual friends, shared interests and your city — never from anything private.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <PeopleBoard connections={connections} suggestions={suggestions} />
+      </div>
       </div>
     </div>
   );

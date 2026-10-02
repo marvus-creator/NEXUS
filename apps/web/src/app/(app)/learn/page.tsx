@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { LearnBoard } from '@/components/learning/learn-board';
 import { getPaths } from '@/lib/learning-server';
@@ -15,17 +16,20 @@ export default async function LearnPage() {
   const active = paths.filter((path) => path.status === 'ACTIVE');
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow tint="var(--module-learn)">Learn</Eyebrow>
-      <h1 className="t-h1 mt-3">Learn</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        {active.length > 0
-          ? 'What you are working through, broken into pieces small enough to finish in one sitting.'
-          : 'A course, a book, a syllabus — anything you are working through. Break it into modules, tick them off, and log the time you actually put in.'}
-      </p>
+    <div>
+      <PageHero
+        width="max-w-4xl"
+        eyebrow="Learn"
+        tint="var(--module-learn)"
+        image={IMG.cowork3}
+        title={<>Learn</>}
+        description={<>{active.length > 0 ? 'What you are working through, broken into pieces small enough to finish in one sitting.' : 'A course, a book, a syllabus — anything you are working through. Break it into modules, tick them off, and log the time you actually put in.'}</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <LearnBoard paths={paths} />
+      </div>
       </div>
     </div>
   );

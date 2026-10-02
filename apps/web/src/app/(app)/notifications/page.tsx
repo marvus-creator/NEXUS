@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { NotificationCenter } from '@/components/notifications/notification-center';
 import { getNotificationPreferences, getNotifications } from '@/lib/planner-server';
@@ -14,18 +15,23 @@ export default async function NotificationsPage() {
   const [data, preferences] = await Promise.all([getNotifications(), getNotificationPreferences()]);
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Notifications</Eyebrow>
-      <h1 className="t-h1 mt-3">What needs you</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        Grouped so the important things do not get buried under the rest.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-5xl"
+        eyebrow="Notifications"
+        tint="var(--accent)"
+        image={IMG.kigaliRooftops}
+        title={<>What needs you</>}
+        description={<>Grouped so the important things do not get buried under the rest.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <NotificationCenter
           initial={{ unread: data.unread, notifications: data.notifications }}
           preferences={preferences}
         />
+      </div>
       </div>
     </div>
   );

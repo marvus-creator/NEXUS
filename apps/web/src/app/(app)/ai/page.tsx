@@ -1,4 +1,6 @@
-import { Eyebrow, EmptyState } from '@nexus/ui';
+import { EmptyState } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { Sparkles } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { PlanBoard } from '@/components/learning/plan-board';
@@ -15,13 +17,16 @@ export default async function AiPage() {
   const plan = await getDayPlan();
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow style={{ color: 'var(--module-ai)' }}>Nexus AI</Eyebrow>
-      <h1 className="t-h1 mt-3">Plan my day</h1>
-      <p className="text-ink-muted mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed">
-        Nexus knows what is already fixed in your day, what you owe, and what you are trying to
-        learn. It suggests where the work fits. You decide what sticks.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-5xl"
+        eyebrow="Nexus AI"
+        tint="var(--module-ai)"
+        image={IMG.kigaliAerial}
+        title={<>Plan my day</>}
+        description={<>Nexus knows what is already fixed in your day, what you owe, and what you are trying to learn. It suggests where the work fits. You decide what sticks.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         {plan ? (
@@ -33,6 +38,7 @@ export default async function AiPage() {
             description="We could not reach the planner. Reload in a moment."
           />
         )}
+      </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import {
@@ -36,12 +37,16 @@ export default async function SettingsPage() {
   const sessions = await getSessions();
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Settings</Eyebrow>
-      <h1 className="t-h1 mt-3">Privacy and security</h1>
-      <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
-        You control what Nexus shares and what it learns from.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-3xl"
+        eyebrow="Settings"
+        tint="var(--ink-muted)"
+        image={IMG.hills}
+        title={<>Privacy and security</>}
+        description={<>You control what Nexus shares and what it learns from.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-3xl px-4 pb-10 md:px-8">
 
       <section className="mt-10">
         <h2 className="mb-5 text-lg font-semibold tracking-tight">Privacy</h2>
@@ -52,6 +57,7 @@ export default async function SettingsPage() {
         <h2 className="mb-5 text-lg font-semibold tracking-tight">Security</h2>
         <SecurityPanel sessions={sessions} />
       </section>
+      </div>
     </div>
   );
 }

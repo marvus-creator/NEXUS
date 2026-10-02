@@ -1,4 +1,5 @@
 import { Avatar, Badge, Button, Card, Logo } from '@nexus/ui';
+import { IMG } from '@/lib/photos';
 import { MapPin } from 'lucide-react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -68,20 +69,17 @@ export default async function PublicProfilePage({
 
   return (
     <div className="min-h-dvh">
-      <header className="border-line border-b px-5 py-4 sm:px-8">
+      <header className="border-line bg-ground/80 sticky top-0 z-30 border-b px-5 py-3.5 backdrop-blur-xl sm:px-8">
         <Link href="/" aria-label="Nexus home">
           <Logo />
         </Link>
       </header>
 
       <div className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
-        <div
-          className="h-32 rounded-xl sm:h-40"
-          style={{
-            background:
-              'linear-gradient(120deg, color-mix(in oklab, var(--accent) 22%, var(--surface)) 0%, color-mix(in oklab, var(--module-ai) 18%, var(--surface)) 55%, var(--surface) 100%)',
-          }}
-        />
+        <div className="relative h-44 overflow-hidden rounded-3xl sm:h-60">
+          <img src={IMG.kigaliSunset} alt="" className="absolute inset-0 size-full object-cover" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,0),rgba(11,13,16,.55))]" />
+        </div>
 
         <div className="-mt-12 flex flex-col gap-4 px-1 sm:flex-row sm:items-end">
           <Avatar
@@ -92,7 +90,7 @@ export default async function PublicProfilePage({
           />
           <div className="min-w-0 flex-1 pb-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="truncate text-2xl font-semibold tracking-tight">
+              <h1 className="t-h1 truncate">
                 {profile.displayName}
               </h1>
               {profile.verified ? (

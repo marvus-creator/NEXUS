@@ -1,4 +1,5 @@
-import { Eyebrow } from '@nexus/ui';
+import { PageHero } from '@/components/app/page-hero';
+import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { FeedBoard } from '@/components/social/feed-board';
 import { getSession } from '@/lib/session';
@@ -20,15 +21,20 @@ export default async function FeedPage({
   const posts = await getFeed(scope);
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow tint="var(--accent)">Feed</Eyebrow>
-      <h1 className="t-h1 mt-3">Feed</h1>
-      <p className="text-ink-muted mt-2.5 text-[0.9375rem] leading-relaxed">
-        Ranked by who you are connected to and what you care about, not by whatever is loudest.
-      </p>
+    <div>
+      <PageHero
+        width="max-w-2xl"
+        eyebrow="Feed"
+        tint="var(--accent)"
+        image={IMG.crowd}
+        title={<>Feed</>}
+        description={<>Ranked by who you are connected to and what you care about, not by whatever is loudest.</>}
+      />
+      <div className="relative mx-auto -mt-6 max-w-2xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <FeedBoard initialPosts={posts} scope={scope} user={user} />
+      </div>
       </div>
     </div>
   );

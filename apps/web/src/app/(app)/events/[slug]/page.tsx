@@ -24,7 +24,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     .map((friend) => ({ username: friend.username, displayName: friend.displayName }));
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 sm:py-10">
+    <div className="mx-auto max-w-[1240px] px-4 py-6 md:px-8 md:py-8">
       <EventDetail event={event} attendees={attendees} friends={friends} />
     </div>
   );

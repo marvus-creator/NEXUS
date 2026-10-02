@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, Badge, Button, Card, EmptyState, Textarea, cn } from '@nexus/ui';
+import { circleImage } from '@/lib/photos';
 import { Check, Crown, Globe, Lock, MessageSquare, Megaphone, Shield, Trash2, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -118,19 +119,16 @@ export function CircleRoom({
 
   return (
     <div>
-      <div
-        className="h-32 rounded-xl sm:h-40"
-        style={{
-          background:
-            'linear-gradient(120deg, color-mix(in oklab, var(--accent) 24%, var(--surface)) 0%, color-mix(in oklab, var(--module-people) 18%, var(--surface)) 60%, var(--surface) 100%)',
-        }}
-      />
+      <div className="relative h-52 overflow-hidden rounded-3xl sm:h-64">
+        <img src={circleImage(circle)} alt="" className="absolute inset-0 size-full object-cover" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.1),rgba(11,13,16,.75))]" />
+      </div>
 
-      <div className="-mt-8 px-1">
+      <div className="relative -mt-16 px-4 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{circle.name}</h1>
-            <p className="text-ink-muted mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <h1 className="t-d2 text-white drop-shadow">{circle.name}</h1>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80">
               <span className="inline-flex items-center gap-1.5">
                 <VisibilityIcon className="size-3.5" />
                 {circle.visibility === 'INVITE_ONLY' ? 'Invite only' : circle.visibility.toLowerCase()}

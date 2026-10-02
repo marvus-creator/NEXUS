@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, Badge, Button, Card, Field, Input, cn } from '@nexus/ui';
+import { eventImage } from '@/lib/photos';
 import {
   CalendarDays,
   Check,
@@ -156,22 +157,39 @@ export function EventDetail({
 
   return (
     <div>
-      <div
-        className="relative h-40 overflow-hidden rounded-xl sm:h-56"
-        style={{
-          background:
-            'linear-gradient(120deg, color-mix(in oklab, var(--module-events) 26%, var(--surface)) 0%, color-mix(in oklab, var(--accent) 20%, var(--surface)) 60%, var(--surface) 100%)',
-        }}
-      >
-        <div className="absolute inset-x-0 bottom-0 p-6">
+      <div className="relative h-[340px] overflow-hidden rounded-3xl sm:h-[420px]">
+        <img src={eventImage(event)} alt="" className="absolute inset-0 size-full object-cover" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.15)_0%,rgba(11,13,16,.35)_45%,rgba(11,13,16,.92)_100%)]" />
+        <div className="absolute top-5 left-5 rounded-2xl bg-white/95 px-4 py-2.5 text-center text-black shadow-lg">
+          <div className="font-mono text-[11px] font-semibold uppercase">
+            {new Date(event.startAt).toLocaleDateString('en-GB', { month: 'short' })}
+          </div>
+          <div className="font-display text-3xl leading-none font-extrabold">
+            {new Date(event.startAt).getDate()}
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
           <div className="flex flex-wrap items-center gap-2">
-            {event.isHost ? <Badge variant="accent" size="sm">You are hosting</Badge> : null}
-            {event.hasEnded ? <Badge size="sm">Ended</Badge> : starts ? <Badge variant="success" size="sm">{starts}</Badge> : null}
+            {event.isHost ? <Badge variant="accent">You are hosting</Badge> : null}
+            {event.hasEnded ? <Badge>Ended</Badge> : starts ? <Badge variant="success">{starts}</Badge> : null}
             {event.visibility !== 'PUBLIC' ? (
-              <Badge size="sm" className="capitalize">{event.visibility.toLowerCase()}</Badge>
+              <Badge className="capitalize">{event.visibility.toLowerCase()}</Badge>
             ) : null}
           </div>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{event.title}</h1>
+          <h1 className="t-d2 mt-3 max-w-3xl">{event.title}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/80">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="size-4" /> {when(event.startAt, event.endAt)}
+            </span>
+            {event.place || event.locationText ? (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-4" /> {event.place?.name ?? event.locationText}
+              </span>
+            ) : null}
+            <span className="flex items-center gap-1.5">
+              <Users className="size-4" /> {event.goingCount} going
+            </span>
+          </div>
         </div>
       </div>
 

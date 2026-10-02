@@ -1,10 +1,11 @@
 'use client';
 
-import { Avatar, Badge, Button, Card, EmptyState, Input, cn } from '@nexus/ui';
+import { Badge, Button, Card, EmptyState, Input, cn } from '@nexus/ui';
 import { Check, Search, UserMinus, UserPlus, UserX, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { IMG } from '@/lib/photos';
 import { socialClient, type Connections, type PersonSummary } from '@/lib/social-client';
 
 const TABS = [
@@ -16,6 +17,23 @@ const TABS = [
   { value: 'search', label: 'Search' },
 ] as const;
 
+const COVERS = [
+  IMG.nyamirambo,
+  IMG.kigaliRooftops,
+  IMG.designNight,
+  IMG.techMeetup,
+  IMG.cafeCozy,
+  IMG.football,
+  IMG.hills,
+  IMG.cowork1,
+];
+
+function cover(username: string) {
+  let hash = 0;
+  for (const char of username) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return COVERS[hash % COVERS.length]!;
+}
+
 function PersonRow({
   person,
   reasons,
@@ -25,30 +43,50 @@ function PersonRow({
   reasons?: string[];
   actions: React.ReactNode;
 }) {
+  const reason =
+    reasons && reasons.length > 0
+      ? reasons.join(' · ')
+      : person.mutualFriends && person.mutualFriends > 0
+        ? `${person.mutualFriends} mutual ${person.mutualFriends === 1 ? 'friend' : 'friends'}`
+        : null;
+
   return (
-    <Card className="flex items-center gap-4 p-4">
-      <Link href={`/u/${person.username}`} className="shrink-0">
-        <Avatar name={person.displayName} src={person.avatarUrl ?? undefined} size="md" />
+    <Card className="group flex flex-col overflow-hidden">
+      <Link href={`/u/${person.username}`} className="relative block h-24 overflow-hidden">
+        <img
+          src={cover(person.username)}
+          alt=""
+          className="size-full object-cover transition duration-700 group-hover:scale-105"
+        />
+        <div className="from-surface absolute inset-0 bg-gradient-to-t to-transparent" />
       </Link>
 
-      <div className="min-w-0 flex-1">
-        <Link href={`/u/${person.username}`} className="truncate text-sm font-medium hover:underline">
+      <div className="-mt-9 flex flex-1 flex-col px-4 pb-4">
+        <Link href={`/u/${person.username}`} className="relative w-fit">
+          {person.avatarUrl ? (
+            <img
+              src={person.avatarUrl}
+              alt={person.displayName}
+              className="ring-surface size-[60px] rounded-full object-cover ring-4"
+            />
+          ) : (
+            <span className="ring-surface bg-surface-raised grid size-[60px] place-items-center rounded-full text-lg font-bold ring-4">
+              {person.displayName.slice(0, 2).toUpperCase()}
+            </span>
+          )}
+        </Link>
+        <Link href={`/u/${person.username}`} className="mt-2 truncate font-semibold hover:underline">
           {person.displayName}
         </Link>
         <p className="text-ink-subtle truncate text-xs">
           @{person.username}
           {person.occupation ? ` · ${person.occupation}` : ''}
         </p>
-        {reasons && reasons.length > 0 ? (
-          <p className="text-ink-muted mt-1.5 truncate text-xs">{reasons.join(' · ')}</p>
-        ) : person.mutualFriends && person.mutualFriends > 0 ? (
-          <p className="text-ink-muted mt-1.5 text-xs">
-            {person.mutualFriends} mutual {person.mutualFriends === 1 ? 'friend' : 'friends'}
-          </p>
-        ) : null}
+        <p className="text-module-people mt-1.5 line-clamp-2 min-h-[2rem] text-xs font-medium">
+          {reason ?? ''}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 [&>*]:flex-1">{actions}</div>
       </div>
-
-      <div className="flex shrink-0 gap-2">{actions}</div>
     </Card>
   );
 }
@@ -119,10 +157,10 @@ export function PeopleBoard({
             type="button"
             onClick={() => setTab(item.value)}
             className={cn(
-              'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
+              'inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-[13px] font-medium transition',
               tab === item.value
-                ? 'border-accent bg-accent text-accent-ink'
-                : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
+                ? 'bg-ink text-ground border-transparent'
+                : 'border-line bg-surface text-ink hover:border-line-strong',
             )}
           >
             {item.label}
@@ -130,7 +168,7 @@ export function PeopleBoard({
               <span
                 className={cn(
                   'rounded-full px-1.5 text-[0.625rem] font-semibold',
-                  tab === item.value ? 'bg-white/20' : 'bg-surface-hover',
+                  tab === item.value ? 'bg-ground/20' : 'bg-surface-raised',
                 )}
               >
                 {counts[item.value]}
@@ -142,10 +180,11 @@ export function PeopleBoard({
 
       {error ? <p className="text-danger mt-4 text-sm">{error}</p> : null}
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {tab === 'suggestions' ? (
           suggestions.length === 0 ? (
             <EmptyState
+              className="col-span-full"
               icon={<Users />}
               title="No suggestions yet"
               description="Suggestions come from mutual friends, shared interests and your city. Add a few interests and they start appearing."
@@ -200,6 +239,7 @@ export function PeopleBoard({
             {connections.incomingRequests.length === 0 &&
             connections.outgoingRequests.length === 0 ? (
               <EmptyState
+                className="col-span-full"
                 icon={<UserPlus />}
                 title="No pending requests"
                 description="Friend requests you send and receive show up here."
@@ -242,7 +282,7 @@ export function PeopleBoard({
             ))}
 
             {connections.outgoingRequests.length > 0 ? (
-              <p className="text-micro text-ink-subtle mt-4 font-semibold uppercase">Sent</p>
+              <p className="t-eyebrow text-ink-subtle col-span-full mt-4">Sent</p>
             ) : null}
 
             {connections.outgoingRequests.map((request) => (
@@ -269,6 +309,7 @@ export function PeopleBoard({
         {tab === 'friends' ? (
           connections.friends.length === 0 ? (
             <EmptyState
+              className="col-span-full"
               icon={<Users />}
               title="No friends yet"
               description="Friendship is mutual — send a request and it becomes real once they accept."
@@ -313,6 +354,7 @@ export function PeopleBoard({
         {tab === 'following' ? (
           connections.following.length === 0 ? (
             <EmptyState
+              className="col-span-full"
               icon={<Users />}
               title="Not following anyone"
               description="Following is one-way. You see their posts without needing them to accept."
@@ -344,6 +386,7 @@ export function PeopleBoard({
         {tab === 'followers' ? (
           connections.followers.length === 0 ? (
             <EmptyState
+              className="col-span-full"
               icon={<Users />}
               title="No followers yet"
               description="People who follow you appear here."
@@ -374,7 +417,7 @@ export function PeopleBoard({
 
         {tab === 'search' ? (
           <>
-            <div className="flex gap-2">
+            <div className="col-span-full flex gap-2">
               <Input
                 icon={<Search />}
                 value={query}
@@ -390,7 +433,7 @@ export function PeopleBoard({
             </div>
 
             {results.length === 0 ? (
-              <p className="text-ink-subtle mt-4 text-sm">
+              <p className="text-ink-subtle col-span-full mt-4 text-sm">
                 {query.trim().length >= 2 && !searching
                   ? 'Nobody matched that.'
                   : 'Search by name, username, skill or city. Private profiles never appear.'}
@@ -421,8 +464,8 @@ export function PeopleBoard({
         ) : null}
 
         {tab !== 'search' && connections.blocked.length > 0 && tab === 'friends' ? (
-          <div className="mt-6">
-            <p className="text-micro text-ink-subtle mb-3 font-semibold uppercase">Blocked</p>
+          <div className="col-span-full mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="t-eyebrow text-ink-subtle col-span-full">Blocked</p>
             {connections.blocked.map((person) => (
               <PersonRow
                 key={person.id}
