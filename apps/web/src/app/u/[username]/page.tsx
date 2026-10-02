@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProfileActions } from '@/components/people/profile-actions';
 import { PostCard } from '@/components/social/post-card';
+import { BadgeStrip } from '@/components/learning/badge-wall';
+import { getBadgesFor } from '@/lib/learning-server';
 import { API_BASE } from '@/lib/api';
 import { getSession } from '@/lib/session';
 import { getPostsBy, getRelationship } from '@/lib/social-server';
@@ -62,6 +64,7 @@ export default async function PublicProfilePage({
   if (!response.ok) notFound();
 
   const profile = (await response.json()) as PublicProfile;
+  const badges = await getBadgesFor(profile.username);
   const viewer = await getSession();
 
   const [relationship, posts] = viewer
@@ -129,6 +132,8 @@ export default async function PublicProfilePage({
               </p>
             ) : null}
           </Card>
+
+          {badges ? <BadgeStrip set={badges} /> : null}
 
           {profile.interests.length > 0 ? (
             <Card className="p-6">

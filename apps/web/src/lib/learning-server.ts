@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { API_BASE } from './api';
+import type { BadgeSet } from '@/components/learning/badge-wall';
 import type { DayPlan, LearningPath, ProgressOverview, StudySession } from './learning-client';
 
 async function get<T>(path: string, fallback: T): Promise<T> {
@@ -33,6 +34,14 @@ export function getStudySessions() {
 
 export function getProgress() {
   return get<ProgressOverview | null>('/progress', null);
+}
+
+export function getBadges() {
+  return get<BadgeSet | null>('/progress/badges', null);
+}
+
+export function getBadgesFor(username: string) {
+  return get<BadgeSet | null>(`/progress/badges/${encodeURIComponent(username.toLowerCase())}`, null);
 }
 
 export function getDayPlan(planFor?: string) {

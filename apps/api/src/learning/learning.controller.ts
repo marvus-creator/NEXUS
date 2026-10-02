@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import {
@@ -26,7 +27,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import type { LearningSource, LearningStatus } from '@nexus/db';
+import type { Request } from 'express';
+import type { AccessTokenPayload } from '../auth/tokens.service.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { Public } from '../common/decorators/public.decorator.js';
+import { BadgesService } from './badges.service.js';
 import { LearningService } from './learning.service.js';
 import { PlannerAiService } from './planner-ai.service.js';
 import { ProgressService } from './progress.service.js';
@@ -187,11 +192,26 @@ export class LearningController {
 
 @Controller('progress')
 export class ProgressController {
-  constructor(private readonly progress: ProgressService) {}
+  constructor(
+    private readonly progress: ProgressService,
+    private readonly badges: BadgesService,
+  ) {}
 
   @Get()
   overview(@CurrentUser('sub') userId: string) {
     return this.progress.overview(userId);
+  }
+
+  @Get('badges')
+  myBadges(@CurrentUser('sub') userId: string) {
+    return this.badges.mine(userId);
+  }
+
+  @Public()
+  @Get('badges/:username')
+  badgesFor(@Param('username') username: string, @Req() request: Request) {
+    const viewer = (request as Request & { user?: AccessTokenPayload }).user;
+    return this.badges.forUsername(username, viewer?.sub);
   }
 }
 

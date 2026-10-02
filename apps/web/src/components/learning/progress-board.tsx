@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   Flame,
   GraduationCap,
+  Lightbulb,
+  Minus,
   Target,
   Timer,
   TrendingDown,
@@ -170,8 +172,32 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
     },
   ];
 
+  const tones = {
+    up: { icon: TrendingUp, color: 'var(--color-nearby, #22C55E)' },
+    down: { icon: TrendingDown, color: '#F97316' },
+    steady: { icon: Minus, color: 'var(--ink-muted)' },
+    tip: { icon: Lightbulb, color: '#F59E0B' },
+  } as const;
+
   return (
     <div>
+      {progress.insights.length > 0 ? (
+        <Card className="mb-6 p-5">
+          <h2 className="text-[0.9375rem] font-semibold">Your week in a sentence or four</h2>
+          <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
+            {progress.insights.map((insight) => {
+              const tone = tones[insight.tone];
+              return (
+                <li key={insight.text} className="bg-surface-raised/60 flex items-start gap-3 rounded-xl p-3 text-sm">
+                  <tone.icon className="mt-0.5 size-4 shrink-0" style={{ color: tone.color }} />
+                  <span className="leading-relaxed">{insight.text}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.label} className="p-4">

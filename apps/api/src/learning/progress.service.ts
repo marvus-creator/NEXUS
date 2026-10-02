@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { localParts } from '../planner/calendar.service.js';
+import { buildInsights } from './insights.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WINDOW_DAYS = 84;
@@ -180,30 +181,36 @@ export class ProgressService {
       0,
     );
 
+    const streak = streakFrom(activeDays, timezone);
+    const week = {
+      tasks: sum(last7, 'tasks'),
+      minutes: sum(last7, 'minutes'),
+      modules: sum(last7, 'modules'),
+      sessions: sum(last7, 'sessions'),
+    };
+    const previousWeek = {
+      tasks: sum(prev7, 'tasks'),
+      minutes: sum(prev7, 'minutes'),
+      modules: sum(prev7, 'modules'),
+      sessions: sum(prev7, 'sessions'),
+    };
+    const goalsActive = goals.filter((goal) => goal.status === 'ACTIVE').length;
+
     return {
       timezone,
-      streak: streakFrom(activeDays, timezone),
+      streak,
+      insights: buildInsights({ series, week, previousWeek, streak, tasksOpen: openTasks, goalsActive }),
       activeDays: activeDays.size,
       windowDays: WINDOW_DAYS,
       series,
-      week: {
-        tasks: sum(last7, 'tasks'),
-        minutes: sum(last7, 'minutes'),
-        modules: sum(last7, 'modules'),
-        sessions: sum(last7, 'sessions'),
-      },
-      previousWeek: {
-        tasks: sum(prev7, 'tasks'),
-        minutes: sum(prev7, 'minutes'),
-        modules: sum(prev7, 'modules'),
-        sessions: sum(prev7, 'sessions'),
-      },
+      week,
+      previousWeek,
       totals: {
         tasksCompleted: tasksDone.length,
         tasksOpen: openTasks,
         studyMinutes: totalMinutes,
         milestonesDone: milestones.length,
-        goalsActive: goals.filter((goal) => goal.status === 'ACTIVE').length,
+        goalsActive,
         goalsAchieved: goals.filter((goal) => goal.achievedAt !== null).length,
         pathsActive: paths.filter((path) => path.status === 'ACTIVE').length,
         pathsCompleted: paths.filter((path) => path.status === 'COMPLETED')

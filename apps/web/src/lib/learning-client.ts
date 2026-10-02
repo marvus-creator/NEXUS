@@ -74,6 +74,7 @@ export type ProgressOverview = {
   activeDays: number;
   windowDays: number;
   series: ProgressDay[];
+  insights: { tone: 'up' | 'down' | 'steady' | 'tip'; text: string }[];
   week: { tasks: number; minutes: number; modules: number; sessions: number };
   previousWeek: { tasks: number; minutes: number; modules: number; sessions: number };
   totals: {
