@@ -90,7 +90,8 @@ export function ChatView({
   useEffect(() => {
     const socket = io(`${API_URL}/realtime`, {
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
+      addTrailingSlash: false,
     });
 
     socketRef.current = socket;

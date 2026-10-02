@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: nexus-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @nexus/db run generate && pnpm turbo run build --filter=@nexus/api
+    startCommand: pnpm --filter @nexus/db run deploy && pnpm --filter @nexus/db run seed && cd apps/api && node dist/main.js
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_DRIVER
+        value: database
+      - key: TRUST_PROXY_HOPS
+        value: "2"
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+      - key: API_PUBLIC_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: NEXUS <onboarding@resend.dev>

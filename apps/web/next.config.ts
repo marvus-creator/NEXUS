@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
   },
+  async rewrites() {
+    const target = process.env.API_INTERNAL_URL;
+    if (!target) return [];
+    return [
+      { source: '/api/v1/:path*', destination: `${target}/api/v1/:path*` },
+      { source: '/uploads/:path*', destination: `${target}/uploads/:path*` },
+      { source: '/socket.io/:path*', destination: `${target}/socket.io/:path*` },
+    ];
+  },
   async headers() {
     return [
       {

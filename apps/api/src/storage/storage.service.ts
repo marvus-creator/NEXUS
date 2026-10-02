@@ -4,6 +4,7 @@ import path from 'node:path';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 const ALLOWED = new Map([
   ['image/jpeg', 'jpg'],
@@ -21,7 +22,10 @@ export type StoredFile = {
 
 @Injectable()
 export class StorageService {
-  constructor(private readonly config: ConfigService<Env, true>) {}
+  constructor(
+    private readonly config: ConfigService<Env, true>,
+    private readonly prisma: PrismaService,
+  ) {}
 
   private get root() {
     return path.resolve(process.cwd(), '../../uploads');
@@ -43,11 +47,25 @@ export class StorageService {
     }
 
     const key = `${folder}/${randomUUID()}.${extension}`;
-    const target = path.join(this.root, key);
 
-    await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, file.buffer);
+    if (this.config.get('STORAGE_DRIVER', { infer: true }) === 'database') {
+      await this.prisma.storedFile.create({
+        data: { key, contentType: file.mimetype, size: file.size, bytes: new Uint8Array(file.buffer) },
+      });
+    } else {
+      const target = path.join(this.root, key);
+
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, file.buffer);
+    }
 
     return { key, url: `${this.publicUrl}/uploads/${key}` };
+  }
+
+  async readStored(key: string) {
+    return this.prisma.storedFile.findUnique({
+      where: { key },
+      select: { contentType: true, bytes: true },
+    });
   }
 }

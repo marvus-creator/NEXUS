@@ -87,6 +87,9 @@ export function validatePlan(
   return accepted;
 }
 
+const PAUSE_MS = 60 * 60 * 1000;
+let pausedUntil = 0;
+
 export async function planWithModel(input: {
   dateKey: string;
   isToday: boolean;
@@ -94,6 +97,7 @@ export async function planWithModel(input: {
   candidates: PlanCandidate[];
 }): Promise<PlannedBlock[] | null> {
   if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (Date.now() < pausedUntil) return null;
   if (input.gaps.length === 0 || input.candidates.length === 0) return null;
 
   const client = new Anthropic({ timeout: 45_000, maxRetries: 1 });
@@ -146,7 +150,11 @@ export async function planWithModel(input: {
     return blocks;
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {
-      logger.error('ANTHROPIC_API_KEY was rejected, falling back to rules');
+      pausedUntil = Date.now() + PAUSE_MS;
+      logger.error('ANTHROPIC_API_KEY was rejected, using rules for the next hour');
+    } else if (error instanceof Anthropic.APIError && /credit balance/i.test(error.message)) {
+      pausedUntil = Date.now() + PAUSE_MS;
+      logger.warn('the model account has no credit, using rules for the next hour');
     } else if (error instanceof Anthropic.RateLimitError) {
       logger.warn('rate limited by the model API, falling back to rules');
     } else if (error instanceof Anthropic.APIError) {

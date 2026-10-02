@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import type { Env } from './config/env.js';
 import { RedisIoAdapter } from './common/redis-io.adapter.js';
+import { StorageService } from './storage/storage.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
@@ -24,6 +25,40 @@ async function bootstrap() {
     origin: config.get('WEB_ORIGIN', { infer: true }),
     credentials: true,
   });
+
+  const hops = config.get('TRUST_PROXY_HOPS', { infer: true });
+  if (hops > 0) app.set('trust proxy', hops);
+
+  if (config.get('STORAGE_DRIVER', { infer: true }) === 'database') {
+    const storage = app.get(StorageService);
+
+    app.use(
+      '/uploads',
+      (
+        request: { method: string; path: string },
+        response: {
+          status: (code: number) => { end: () => void };
+          setHeader: (name: string, value: string) => void;
+          end: (body: Buffer) => void;
+        },
+        next: () => void,
+      ) => {
+        if (request.method !== 'GET' && request.method !== 'HEAD') return next();
+        const key = decodeURIComponent(request.path.replace(/^\//, ''));
+        if (!/^[a-z]+\/[0-9a-f-]{36}\.(jpg|png|webp|avif)$/.test(key)) return next();
+        storage
+          .readStored(key)
+          .then((file) => {
+            if (!file) return next();
+            response.setHeader('Content-Type', file.contentType);
+            response.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            response.setHeader('X-Content-Type-Options', 'nosniff');
+            response.end(Buffer.from(file.bytes));
+          })
+          .catch(() => response.status(500).end());
+      },
+    );
+  }
 
   app.useStaticAssets(path.resolve(process.cwd(), '../../uploads'), { prefix: '/uploads/' });
 
@@ -47,7 +82,7 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const port = config.get('API_PORT', { infer: true });
+  const port = config.get('PORT', { infer: true }) ?? config.get('API_PORT', { infer: true });
   await app.listen(port);
 
   console.log(`nexus-api listening on http://localhost:${port}/api/v1`);

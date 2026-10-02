@@ -5,6 +5,9 @@ export const envSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   API_PORT: z.coerce.number().int().positive().default(4000),
+  PORT: z.coerce.number().int().positive().optional(),
+  STORAGE_DRIVER: z.enum(['disk', 'database']).default('disk'),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
   API_PUBLIC_URL: z.string().url().default('http://localhost:4000'),
   DATABASE_URL: z.string().min(1),

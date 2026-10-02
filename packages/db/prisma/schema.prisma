@@ -308,6 +308,16 @@ model PlatformSetting {
   @@map("platform_settings")
 }
 
+model StoredFile {
+  key         String   @id
+  contentType String   @map("content_type")
+  size        Int
+  bytes       Bytes
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("stored_files")
+}
+
 enum TaskStatus {
   TODO
   DOING
