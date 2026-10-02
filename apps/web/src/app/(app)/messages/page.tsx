@@ -1,4 +1,3 @@
-import { Eyebrow } from '@nexus/ui';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { ChatView } from '@/components/messages/chat-view';
@@ -20,19 +19,10 @@ export default async function MessagesPage({
   const conversations = await getConversations();
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-      <Eyebrow className="text-ink-subtle">Nexus</Eyebrow>
-      <h1 className="t-h1 mt-3">Messages</h1>
-      <p className="text-ink-muted mt-2.5 text-[0.9375rem] leading-relaxed">
-        Live over a websocket, with typing indicators and read receipts. Falls back to plain
-        requests if the connection drops.
-      </p>
-
-      <div className="mt-8">
-        <Suspense fallback={null}>
-          <ChatView conversations={conversations} initialConversationId={params.c ?? null} />
-        </Suspense>
-      </div>
+    <div className="mx-auto max-w-[1240px] px-0 md:px-8 md:py-6">
+      <Suspense fallback={null}>
+        <ChatView conversations={conversations} initialConversationId={params.c ?? null} />
+      </Suspense>
     </div>
   );
 }
