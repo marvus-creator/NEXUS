@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { eventImage } from '@/lib/photos';
 import { placesClient, type EventSummary, type PlaceSummary } from '@/lib/places-client';
+import { ImagePicker } from '@/components/app/image-picker';
 
 const SCOPES = [
   { value: 'upcoming', label: 'Upcoming' },
@@ -194,6 +195,7 @@ export function EventsBoard({
   const [locationText, setLocationText] = useState('');
   const [capacity, setCapacity] = useState('');
   const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
+  const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -213,6 +215,7 @@ export function EventsBoard({
         locationText: locationText.trim() || undefined,
         capacity: capacity ? Number(capacity) : undefined,
         visibility,
+        coverUrl: cover ?? undefined,
       });
 
       router.push(`/events/${created.slug}`);
@@ -255,6 +258,8 @@ export function EventsBoard({
       {composing ? (
         <Card className="mt-4 p-5">
           <div className="flex flex-col gap-4">
+            <ImagePicker folder="events" value={cover} onChange={setCover} label="Add an event poster or photo" />
+
             <Field label="What is happening?">
               <Input
                 autoFocus

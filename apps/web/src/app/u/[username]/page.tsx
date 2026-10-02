@@ -16,6 +16,7 @@ type PublicProfile = {
   username: string;
   displayName: string;
   avatarUrl: string | null;
+  coverUrl: string | null;
   bio: string | null;
   occupation: string | null;
   userType: string;
@@ -77,7 +78,7 @@ export default async function PublicProfilePage({
 
       <div className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
         <div className="relative h-44 overflow-hidden rounded-3xl sm:h-60">
-          <img src={IMG.kigaliSunset} alt="" className="absolute inset-0 size-full object-cover" />
+          <img src={profile.coverUrl ?? IMG.kigaliSunset} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,0),rgba(11,13,16,.55))]" />
         </div>
 

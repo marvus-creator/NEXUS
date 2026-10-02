@@ -196,6 +196,12 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
 
       <p className="mt-3.5 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{post.body}</p>
 
+      {post.imageUrl ? (
+        <div className="border-line mt-3.5 overflow-hidden rounded-2xl border">
+          <img src={post.imageUrl} alt="" loading="lazy" className="max-h-[520px] w-full object-cover" />
+        </div>
+      ) : null}
+
       {reported ? <p className="text-warning mt-2 text-xs">Reported. Thanks for flagging it.</p> : null}
 
       {poll ? (

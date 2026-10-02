@@ -156,6 +156,7 @@ export function createListing(input: {
   condition?: string;
   businessSlug?: string;
   negotiable?: boolean;
+  coverUrl?: string;
 }) {
   return request<Listing>('/listings', 'POST', input);
 }

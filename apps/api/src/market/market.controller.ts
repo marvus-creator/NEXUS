@@ -21,6 +21,7 @@ import type {
   ListingStatus,
 } from '@nexus/db';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { IsImageUrl } from '../common/validators/is-image-url.js';
 import { BusinessesService } from './businesses.service.js';
 import { ListingsService } from './listings.service.js';
 import { OrdersService } from './orders.service.js';
@@ -48,6 +49,7 @@ class CreateBusinessDto {
   @IsOptional() @IsString() @MaxLength(200) website?: string;
   @IsOptional() @IsString() @MaxLength(80) city?: string;
   @IsOptional() @IsString() placeSlug?: string;
+  @IsImageUrl() coverUrl?: string;
 }
 
 class UpdateBusinessDto {
@@ -60,6 +62,7 @@ class UpdateBusinessDto {
   @IsOptional() @IsString() @MaxLength(160) email?: string;
   @IsOptional() @IsString() @MaxLength(200) website?: string;
   @IsOptional() @IsString() @MaxLength(80) city?: string;
+  @IsImageUrl() coverUrl?: string | null;
 }
 
 class TeamMemberDto {
@@ -97,6 +100,7 @@ class CreateListingDto {
   @IsOptional() @IsEnum(CATEGORIES) category?: BusinessCategory;
   @IsOptional() @IsString() @MaxLength(80) city?: string;
   @IsOptional() @IsString() businessSlug?: string;
+  @IsImageUrl() coverUrl?: string;
 }
 
 class UpdateListingDto {
@@ -119,6 +123,7 @@ class UpdateListingDto {
   @IsOptional() @IsEnum(['DRAFT', 'ACTIVE', 'SOLD', 'ARCHIVED']) status?: ListingStatus;
   @IsOptional() @IsBoolean() negotiable?: boolean;
   @IsOptional() @IsEnum(CATEGORIES) category?: BusinessCategory;
+  @IsImageUrl() coverUrl?: string | null;
 }
 
 class SaveDto {

@@ -153,6 +153,7 @@ export class CirclesService {
       visibility?: 'PUBLIC' | 'PRIVATE' | 'INVITE_ONLY';
       city?: string;
       rules?: string;
+      coverUrl?: string;
     },
   ) {
     const me = await this.people.profileFor(userId);
@@ -186,6 +187,7 @@ export class CirclesService {
         visibility: input.visibility ?? 'PUBLIC',
         city: input.city,
         rules: input.rules,
+        coverUrl: input.coverUrl,
         members: { create: { profileId: me.id, role: 'OWNER' } },
         conversations: { create: { kind: 'CIRCLE', title: input.name.trim() } },
       },
@@ -208,6 +210,25 @@ export class CirclesService {
     });
 
     return { id: circle.id, slug: circle.slug, name: circle.name };
+  }
+
+  async update(
+    userId: string,
+    slug: string,
+    input: { description?: string; rules?: string; coverUrl?: string | null },
+  ) {
+    const me = await this.people.profileFor(userId);
+    const circle = await this.circleBySlug(slug);
+
+    await this.requireRole(circle.id, me.id, 'ADMIN');
+
+    const updated = await this.prisma.circle.update({
+      where: { id: circle.id },
+      data: { description: input.description, rules: input.rules, coverUrl: input.coverUrl },
+      select: { slug: true, description: true, rules: true, coverUrl: true },
+    });
+
+    return updated;
   }
 
   async join(userId: string, slug: string, message?: string) {

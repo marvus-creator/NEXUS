@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CATEGORY_COLOR, placeImage } from '@/lib/photos';
 import { placesClient, type PlaceSummary } from '@/lib/places-client';
 import { PlacesMap } from './places-map';
+import { ImagePicker } from '@/components/app/image-picker';
 
 const CATEGORIES = [
   { value: '', label: 'All', icon: MapPin },
@@ -47,6 +48,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
   const [newCategory, setNewCategory] = useState('CAFE');
+  const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -141,9 +143,11 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
         city: city ?? undefined,
         latitude: picked?.lat,
         longitude: picked?.lng,
+        coverUrl: cover ?? undefined,
       });
 
       setPicked(null);
+      setCover(null);
       setName('');
       setAddress('');
       setDescription('');
@@ -240,6 +244,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
           {composing ? (
             <Card className="mb-4 p-5">
               <div className="flex flex-col gap-4">
+                <ImagePicker folder="places" value={cover} onChange={setCover} label="Add a photo of the place" />
                 <Field label="What is it called?">
                   <Input
                     autoFocus

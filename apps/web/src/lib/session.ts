@@ -14,6 +14,7 @@ export type SessionUser = {
     username: string;
     displayName: string;
     avatarUrl: string | null;
+    coverUrl: string | null;
     bio: string | null;
     occupation: string | null;
     userType: string;

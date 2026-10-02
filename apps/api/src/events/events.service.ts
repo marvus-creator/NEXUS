@@ -168,6 +168,7 @@ export class EventsService {
       circleId?: string;
       visibility?: 'PUBLIC' | 'CIRCLE' | 'PRIVATE';
       capacity?: number;
+      coverUrl?: string;
     },
   ) {
     const me = await this.people.profileFor(userId);
@@ -231,6 +232,7 @@ export class EventsService {
         circleId: input.circleId,
         visibility: input.visibility ?? 'PUBLIC',
         capacity: input.capacity,
+        coverUrl: input.coverUrl,
         hostId: me.id,
         checkInCode: randomBytes(4).toString('hex').toUpperCase(),
         attendees: { create: { profileId: me.id, status: 'GOING' } },
@@ -260,6 +262,7 @@ export class EventsService {
       joinUrl?: string;
       placeSlug?: string;
       capacity?: number;
+      coverUrl?: string | null;
     },
   ) {
     const me = await this.people.profileFor(userId);
@@ -316,6 +319,7 @@ export class EventsService {
         description: input.description,
         locationText: input.locationText,
         capacity: input.capacity,
+        coverUrl: input.coverUrl,
         placeId,
         startAt,
         endAt,

@@ -23,6 +23,7 @@ import {
   type BusinessCategory,
   type Listing,
 } from '@/lib/market-client';
+import { ImagePicker } from '@/components/app/image-picker';
 
 const CATEGORIES: { value: BusinessCategory | ''; label: string }[] = [
   { value: '', label: 'Everything' },
@@ -202,6 +203,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [newCategory, setNewCategory] = useState<BusinessCategory>('RETAIL');
+  const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -245,9 +247,11 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
         price: value,
         quantity: Number(quantity) || 1,
         category: newCategory,
+        coverUrl: cover ?? undefined,
       });
 
       setItems((current) => [created, ...current]);
+      setCover(null);
       setTitle('');
       setPrice('');
       setDescription('');
@@ -315,6 +319,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
       {composing ? (
         <Card className="mt-5 p-5">
           <form onSubmit={submit} className="space-y-4">
+            <ImagePicker folder="listings" value={cover} onChange={setCover} label="Add a photo of what you are selling" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="What are you selling?">
                 <Input

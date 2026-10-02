@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import type { InterestGroup } from '@/lib/interests';
 import { profileClient } from '@/lib/profile-client';
+import { CoverButton } from '@/components/app/cover-button';
 import type { SessionUser } from '@/lib/session';
 
 export function ProfileEditor({
@@ -99,13 +100,20 @@ export function ProfileEditor({
   return (
     <div>
       <div className="relative">
-        <div
-          className="h-40 rounded-xl sm:h-52"
-          style={{
-            background:
-              'linear-gradient(120deg, color-mix(in oklab, var(--accent) 22%, var(--surface)) 0%, color-mix(in oklab, var(--module-ai) 18%, var(--surface)) 55%, var(--surface) 100%)',
-          }}
-        />
+        <div className="relative h-40 overflow-hidden rounded-xl sm:h-52">
+          {profile.coverUrl ? (
+            <img src={profile.coverUrl} alt="" className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(120deg, color-mix(in oklab, var(--accent) 22%, var(--surface)) 0%, color-mix(in oklab, var(--module-ai) 18%, var(--surface)) 55%, var(--surface) 100%)',
+              }}
+            />
+          )}
+          <CoverButton target={{ kind: 'profile' }} className="absolute top-3 right-3" />
+        </div>
 
         <div className="-mt-12 flex flex-col gap-4 px-1 sm:-mt-14 sm:flex-row sm:items-end sm:gap-6">
           <div className="relative w-fit">

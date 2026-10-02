@@ -2,6 +2,7 @@
 
 import { Avatar, Badge, Button, Card, EmptyState, Textarea, cn } from '@nexus/ui';
 import { circleImage } from '@/lib/photos';
+import { CoverButton } from '@/components/app/cover-button';
 import { Check, Crown, Globe, Lock, MessageSquare, Megaphone, Shield, Trash2, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -122,6 +123,9 @@ export function CircleRoom({
       <div className="relative h-52 overflow-hidden rounded-3xl sm:h-64">
         <img src={circleImage(circle)} alt="" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.1),rgba(11,13,16,.75))]" />
+        {circle.myRole === 'OWNER' || circle.myRole === 'ADMIN' ? (
+          <CoverButton target={{ kind: 'circle', slug: circle.slug }} className="absolute top-4 right-4" />
+        ) : null}
       </div>
 
       <div className="relative -mt-16 px-4 sm:px-6">

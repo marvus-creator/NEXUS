@@ -19,6 +19,7 @@ import {
 } from 'class-validator';
 import type { AttendeeStatus, PlaceCategory } from '@nexus/db';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { IsImageUrl } from '../common/validators/is-image-url.js';
 import { PlacesService } from '../places/places.service.js';
 import { EventsService } from './events.service.js';
 
@@ -37,6 +38,7 @@ class CreatePlaceDto {
   @IsOptional() @IsString() @MaxLength(80) city?: string;
   @IsOptional() @IsString() @MaxLength(200) website?: string;
   @IsOptional() @IsString() @MaxLength(40) phone?: string;
+  @IsImageUrl() coverUrl?: string;
 
   @IsOptional()
   @Type(() => Number)
@@ -77,6 +79,7 @@ class CreateEventDto {
   @IsOptional() @IsString() circleId?: string;
   @IsOptional() @IsBoolean() isOnline?: boolean;
   @IsOptional() @IsString() @MaxLength(500) joinUrl?: string;
+  @IsImageUrl() coverUrl?: string;
 
   @IsOptional()
   @IsEnum(['PUBLIC', 'CIRCLE', 'PRIVATE'])
@@ -99,6 +102,7 @@ class UpdateEventDto {
   @IsOptional() @IsString() placeSlug?: string;
   @IsOptional() @IsBoolean() isOnline?: boolean;
   @IsOptional() @IsString() @MaxLength(500) joinUrl?: string;
+  @IsImageUrl() coverUrl?: string | null;
 
   @IsOptional()
   @Type(() => Number)

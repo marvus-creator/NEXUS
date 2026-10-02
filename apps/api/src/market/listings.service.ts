@@ -183,6 +183,7 @@ export class ListingsService {
       category?: BusinessCategory;
       city?: string;
       businessSlug?: string;
+      coverUrl?: string;
     },
   ) {
     const profile = await this.profileFor(userId);
@@ -226,6 +227,7 @@ export class ListingsService {
         quantity: input.quantity ?? 1,
         category: input.category ?? 'OTHER',
         city: input.city ?? profile.city,
+        coverUrl: input.coverUrl,
       },
       include: LISTING_INCLUDE,
     });
@@ -244,6 +246,7 @@ export class ListingsService {
       status?: ListingStatus;
       negotiable?: boolean;
       category?: BusinessCategory;
+      coverUrl?: string | null;
     },
   ) {
     const profile = await this.profileFor(userId);
@@ -264,6 +267,7 @@ export class ListingsService {
         status: input.status,
         negotiable: input.negotiable,
         category: input.category,
+        coverUrl: input.coverUrl,
         ...(input.price !== undefined
           ? { priceMinor: toMinor(input.price, listing.currency) }
           : {}),

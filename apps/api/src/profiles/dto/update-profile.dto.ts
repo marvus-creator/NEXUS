@@ -1,5 +1,6 @@
 import { IsArray, ArrayMaxSize, IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsImageUrl } from '../../common/validators/is-image-url.js';
 import { GoalAreaInput, HelpAreaInput, UserTypeInput } from './onboarding.dto.js';
 
 export class UpdateProfileDto {
@@ -71,6 +72,9 @@ export class UpdateProfileDto {
   @ArrayMaxSize(40)
   @IsString({ each: true })
   interestSlugs?: string[];
+
+  @IsImageUrl()
+  coverUrl?: string | null;
 }
 
 export class UpdatePrivacyDto {

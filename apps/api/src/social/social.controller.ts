@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import type { ReactionType } from '@nexus/db';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { IsImageUrl } from '../common/validators/is-image-url.js';
 import { SocialService, type FeedScope } from './social.service.js';
 
 class CreatePostDto {
@@ -27,9 +28,7 @@ class CreatePostDto {
   @IsEnum(['PUBLIC', 'FRIENDS', 'PRIVATE'])
   visibility?: 'PUBLIC' | 'FRIENDS' | 'PRIVATE';
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
+  @IsImageUrl()
   imageUrl?: string;
 
   @IsOptional()

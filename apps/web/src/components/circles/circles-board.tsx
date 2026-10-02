@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { communityClient, type CircleSummary } from '@/lib/community-client';
 import { circleImage } from '@/lib/photos';
+import { ImagePicker } from '@/components/app/image-picker';
 
 const VISIBILITIES = [
   { value: 'PUBLIC', label: 'Public', icon: Globe, blurb: 'Anyone can find and join' },
@@ -31,6 +32,7 @@ export function CirclesBoard({
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('');
   const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE' | 'INVITE_ONLY'>('PUBLIC');
+  const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export function CirclesBoard({
         description: description.trim() || undefined,
         city: city.trim() || undefined,
         visibility,
+        coverUrl: cover ?? undefined,
       });
 
       router.push(`/circles/${created.slug}`);
@@ -117,6 +120,8 @@ export function CirclesBoard({
       {composing ? (
         <Card className="mt-4 p-5">
           <div className="flex flex-col gap-4">
+            <ImagePicker folder="circles" value={cover} onChange={setCover} />
+
             <Field label="What is this circle called?">
               <Input
                 autoFocus

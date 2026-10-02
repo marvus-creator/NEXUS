@@ -190,6 +190,7 @@ export class BusinessesService {
       website?: string;
       city?: string;
       placeSlug?: string;
+      coverUrl?: string;
     },
   ) {
     const profile = await this.profileFor(userId);
@@ -221,6 +222,7 @@ export class BusinessesService {
         countryCode: profile.countryCode,
         currency: profile.currency,
         placeId,
+        coverUrl: input.coverUrl,
         members: { create: { profileId: profile.id, role: 'OWNER' } },
       },
       include: {
@@ -246,6 +248,7 @@ export class BusinessesService {
       email?: string;
       website?: string;
       city?: string;
+      coverUrl?: string | null;
     },
   ) {
     const profile = await this.profileFor(userId);

@@ -477,6 +477,7 @@ export class AuthService {
         username: user.profile.username,
         displayName: user.profile.displayName,
         avatarUrl: user.profile.avatarUrl,
+        coverUrl: user.profile.coverUrl,
         bio: user.profile.bio,
         occupation: user.profile.occupation,
         userType: user.profile.userType,

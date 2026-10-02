@@ -1,12 +1,13 @@
 'use client';
 
 import { Avatar, Button, Card, EmptyState, Textarea, cn } from '@nexus/ui';
-import { BarChart3, Globe, Lock, MessageSquare, Plus, Users, X } from 'lucide-react';
+import { BarChart3, Globe, ImagePlus, Lock, MessageSquare, Plus, Users, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { socialClient, type FeedPost } from '@/lib/social-client';
 import { PostCard } from './post-card';
 import type { SessionUser } from '@/lib/session';
+import { ImagePicker } from '@/components/app/image-picker';
 
 const SCOPES = [
   { value: 'for-you', label: 'For You' },
@@ -38,6 +39,8 @@ export function FeedBoard({
   const [visibility, setVisibility] = useState<'PUBLIC' | 'FRIENDS' | 'PRIVATE'>('PUBLIC');
   const [pollMode, setPollMode] = useState(false);
   const [options, setOptions] = useState(['', '']);
+  const [photoMode, setPhotoMode] = useState(false);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,14 +56,17 @@ export function FeedBoard({
       const created = await socialClient.createPost({
         body: body.trim(),
         visibility,
-        kind: pollMode ? 'POLL' : 'TEXT',
+        kind: pollMode ? 'POLL' : photo ? 'IMAGE' : 'TEXT',
         pollOptions: pollMode ? filled : undefined,
+        imageUrl: photo ?? undefined,
       });
 
       setPosts((current) => [created, ...current]);
       setBody('');
       setOptions(['', '']);
       setPollMode(false);
+      setPhoto(null);
+      setPhotoMode(false);
       router.refresh();
     } catch (caught) {
       setError((caught as Error).message);
@@ -86,6 +92,16 @@ export function FeedBoard({
               className="min-h-20 border-0 bg-transparent px-0 py-1 focus:ring-0"
               onChange={(event) => setBody(event.target.value)}
             />
+
+            {photoMode ? (
+              <ImagePicker
+                folder="posts"
+                value={photo}
+                onChange={setPhoto}
+                label="Add a photo"
+                className="mt-3"
+              />
+            ) : null}
 
             {pollMode ? (
               <div className="mt-3 flex flex-col gap-2">
@@ -165,6 +181,23 @@ export function FeedBoard({
               >
                 <BarChart3 className="size-3" />
                 Poll
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPhotoMode((value) => !value);
+                  setPhoto(null);
+                }}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                  photoMode
+                    ? 'border-accent bg-accent text-accent-ink'
+                    : 'border-line text-ink-muted hover:text-ink',
+                )}
+              >
+                <ImagePlus className="size-3" />
+                Photo
               </button>
 
               <Button

@@ -2,6 +2,7 @@
 
 import { Avatar, Badge, Button, Card, Field, Input, cn } from '@nexus/ui';
 import { eventImage } from '@/lib/photos';
+import { CoverButton } from '@/components/app/cover-button';
 import {
   CalendarDays,
   Check,
@@ -159,6 +160,9 @@ export function EventDetail({
     <div>
       <div className="relative h-[340px] overflow-hidden rounded-3xl sm:h-[420px]">
         <img src={eventImage(event)} alt="" className="absolute inset-0 size-full object-cover" />
+        {event.isHost ? (
+          <CoverButton target={{ kind: 'event', slug: event.slug }} className="absolute top-5 right-5 z-10" />
+        ) : null}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.15)_0%,rgba(11,13,16,.35)_45%,rgba(11,13,16,.92)_100%)]" />
         <div className="absolute top-5 left-5 rounded-2xl bg-white/95 px-4 py-2.5 text-center text-black shadow-lg">
           <div className="font-mono text-[11px] font-semibold uppercase">

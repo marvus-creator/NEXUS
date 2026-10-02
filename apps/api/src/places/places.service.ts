@@ -214,6 +214,7 @@ export class PlacesService {
       longitude?: number;
       website?: string;
       phone?: string;
+      coverUrl?: string;
     },
   ) {
     const me = await this.people.profileFor(userId);
@@ -251,6 +252,7 @@ export class PlacesService {
         longitude: input.longitude,
         website: input.website,
         phone: input.phone,
+        coverUrl: input.coverUrl,
         createdById: me.id,
       },
     });
