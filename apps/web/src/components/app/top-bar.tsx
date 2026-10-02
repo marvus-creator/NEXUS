@@ -18,7 +18,8 @@ import { LogOut, Search, Settings, ShieldCheck, User } from 'lucide-react';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { TourButton } from './tour';
 import { authClient } from '@/lib/auth-client';
 import type { SessionUser } from '@/lib/session';
 
@@ -47,7 +48,7 @@ export function TopBar({ user, unread }: { user: SessionUser; unread: number }) 
           <Logo showWordmark={false} />
         </Link>
 
-        <div className="max-w-md flex-1">
+        <div data-tour="search" className="max-w-md flex-1">
           <Input
             icon={<Search />}
             placeholder="Search people, places, events…"
@@ -61,7 +62,13 @@ export function TopBar({ user, unread }: { user: SessionUser; unread: number }) 
             <ThemeToggle />
           </div>
 
-          <NotificationBell initialUnread={unread} />
+          <Suspense fallback={null}>
+            <TourButton />
+          </Suspense>
+
+          <span data-tour="bell">
+            <NotificationBell initialUnread={unread} />
+          </span>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -81,7 +81,7 @@ export default async function PublicProfilePage({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,0),rgba(11,13,16,.55))]" />
         </div>
 
-        <div className="-mt-12 flex flex-col gap-4 px-1 sm:flex-row sm:items-end">
+        <div className="relative -mt-12 flex flex-col gap-4 px-4 sm:flex-row sm:items-end">
           <Avatar
             name={profile.displayName}
             src={profile.avatarUrl ?? undefined}

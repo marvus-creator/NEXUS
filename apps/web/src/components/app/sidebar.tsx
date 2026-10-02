@@ -88,6 +88,7 @@ export function Sidebar({
       initial={false}
       animate={{ width: collapsed ? 76 : 256 }}
       transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+      data-tour="sidebar"
       className="border-line bg-surface/60 sticky top-0 hidden h-dvh shrink-0 flex-col border-r lg:flex"
     >
       <div className={cn('flex h-16 items-center px-5', collapsed && 'justify-center px-0')}>

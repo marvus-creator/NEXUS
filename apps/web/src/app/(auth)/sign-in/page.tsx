@@ -5,6 +5,7 @@ import { AlertCircle, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState, type FormEvent } from 'react';
+import { DemoPersonas } from '@/components/auth/demo-personas';
 import { authClient, type AuthError } from '@/lib/auth-client';
 
 function SignInForm() {
@@ -85,8 +86,10 @@ function SignInForm() {
         </Button>
       </form>
 
+      <DemoPersonas next={next} />
+
       <p className="text-ink-muted mt-8 text-center text-sm">
-        New to Nexus?{' '}
+        New to NEXUS?{' '}
         <Link href="/create-account" className="text-accent font-medium hover:underline">
           Create an account
         </Link>

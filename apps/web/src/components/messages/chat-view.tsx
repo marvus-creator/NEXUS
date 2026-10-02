@@ -267,8 +267,8 @@ export function ChatView({
   const otherOf = (thread: ConversationSummary) => thread.participants[0];
 
   return (
-    <div className="border-line bg-surface grid h-[calc(100dvh-8.5rem)] overflow-hidden border-y md:h-[calc(100dvh-7rem)] md:rounded-3xl md:border lg:grid-cols-[340px_1fr] lg:pb-0">
-      <aside className={cn('border-line flex min-h-0 flex-col lg:border-r', mobileOpen && 'hidden lg:flex')}>
+    <div className="border-line bg-surface grid h-[calc(100dvh-8.5rem)] grid-cols-1 overflow-hidden border-y md:h-[calc(100dvh-7rem)] md:rounded-3xl md:border lg:grid-cols-[340px_1fr] lg:pb-0">
+      <aside className={cn('border-line flex min-h-0 min-w-0 flex-col lg:border-r', mobileOpen && 'hidden lg:flex')}>
         <div className="px-4 pt-5 pb-3">
           <div className="flex items-center justify-between">
             <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>

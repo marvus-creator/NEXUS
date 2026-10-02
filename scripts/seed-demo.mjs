@@ -192,6 +192,113 @@ async function ensurePerson(person, catalogue) {
   return jar;
 }
 
+const DIRECT_CHATS = [
+  {
+    with: 'kevin',
+    lines: [
+      ['kevin', 'Yo! Are you coming to the Tech Meetup on Thursday?'],
+      ['host', 'For sure. Is the AI-on-slow-networks talk still on?'],
+      ['kevin', 'Yes, and three student teams are demoing. Bring your NEXUS demo, people will love it'],
+      ['host', 'Deal. I will show the live Kigali map and Plan my day'],
+      ['kevin', 'Perfect. Pizza and Question Coffee are on us 🍕'],
+    ],
+  },
+  {
+    with: 'aline',
+    lines: [
+      ['aline', 'Hey, I saw your landing page with the globe. That is beautiful work'],
+      ['host', 'Thank you! Coming from a designer that means a lot'],
+      ['aline', 'Present it at Design Critique Night next Tuesday? Five presenter slots'],
+      ['host', 'Yes please, put me down for one'],
+      ['aline', 'Done ✅ 18:30 at Norrsken'],
+    ],
+  },
+];
+
+const CIRCLE_CHATS = {
+  'Kigali Builders': [
+    ['kevin', 'Who is shipping something this week?'],
+    ['patrick', 'Pushing the offline mode for our Flutter app tonight'],
+    ['aline', 'Redesigning a checkout flow for a Kimihurura café'],
+    ['host', 'Launching the NEXUS control center and the 3D landing'],
+    ['kevin', 'Love it. Demo night is Thursday, everyone bring something'],
+  ],
+  'Sunday Ballers': [
+    ['eric', 'Pitch is booked for 07:00 on Sunday. Bring water'],
+    ['kevin', 'I am in'],
+    ['host', 'Me too, see you there ⚽'],
+  ],
+  'Design Kigali': [
+    ['aline', 'Theme for the next crit night: mobile apps'],
+    ['sandrine', 'Bringing a fashion lookbook app'],
+    ['divine', 'I will bring the film club poster series'],
+  ],
+};
+
+async function seedActivity(host, jars) {
+  const hostConversations = (await call('/messages', { jar: host })).body ?? [];
+
+  for (const chat of DIRECT_CHATS) {
+    const username = PEOPLE.find((p) => p.key === chat.with).username;
+    const opened = await call(`/messages/direct/${username}`, { method: 'POST', jar: host });
+    const conversationId = opened.body?.id ?? opened.body?.conversationId;
+    if (!conversationId) {
+      log(`could not open a chat with ${chat.with}: ${opened.status}`);
+      continue;
+    }
+    const existing = await call(`/messages/${conversationId}`, { jar: host });
+    const list = Array.isArray(existing.body) ? existing.body : existing.body?.messages ?? [];
+    if (list.length > 0) continue;
+    for (const [who, body] of chat.lines) {
+      await call(`/messages/${conversationId}`, { method: 'POST', jar: who === 'host' ? host : jars[who], body: { body } });
+    }
+    created.messages = (created.messages ?? 0) + chat.lines.length;
+  }
+
+  for (const [circleName, lines] of Object.entries(CIRCLE_CHATS)) {
+    const conversation = hostConversations.find((c) => c.kind === 'CIRCLE' && (c.circle?.name === circleName || c.title === circleName));
+    if (!conversation) continue;
+    const existing = await call(`/messages/${conversation.id}`, { jar: host });
+    const list = Array.isArray(existing.body) ? existing.body : existing.body?.messages ?? [];
+    if (list.length > 0) continue;
+    for (const [who, body] of lines) {
+      const jar = who === 'host' ? host : jars[who];
+      const sent = await call(`/messages/${conversation.id}`, { method: 'POST', jar, body: { body } });
+      if (sent.status >= 300 && who !== 'host') log(`${who} cannot post in ${circleName}: ${sent.status}`);
+    }
+    created.messages = (created.messages ?? 0) + lines.length;
+  }
+
+  const paths = (await call('/learning/paths', { jar: host })).body ?? [];
+  let pathId = (Array.isArray(paths) ? paths : paths.items ?? []).find((path) => path.title === 'Java for Year 2')?.id;
+  if (!pathId) {
+    const path = await call('/learning/paths', {
+      method: 'POST',
+      jar: host,
+      body: { title: 'Java for Year 2', description: 'Object-oriented programming, collections and the Java project.' },
+    });
+    pathId = path.body?.id;
+    for (const title of ['Classes and objects', 'Inheritance and interfaces', 'Collections', 'Exceptions and files', 'Final project']) {
+      if (pathId) await call(`/learning/paths/${pathId}/modules`, { method: 'POST', jar: host, body: { title, estimatedMinutes: 60 } });
+    }
+  }
+
+  const sessions = (await call('/learning/sessions', { jar: host })).body ?? [];
+  const sessionList = Array.isArray(sessions) ? sessions : sessions.items ?? [];
+  const recent = sessionList.filter((session) => Date.now() - new Date(session.startedAt).getTime() < 3 * 86400000);
+  if (recent.length === 0) {
+    for (let daysAgo = 13; daysAgo >= 0; daysAgo -= 1) {
+      if (daysAgo === 9) continue;
+      await call('/learning/sessions', {
+        method: 'POST',
+        jar: host,
+        body: { pathId, minutes: 30 + ((daysAgo * 17) % 60), startedAt: kigali(-daysAgo, 19), note: 'Evening study' },
+      });
+    }
+    created.studyDays = 13;
+  }
+}
+
 async function main() {
   const health = await call('/health');
   if (health.status !== 200) {
@@ -299,7 +406,7 @@ async function main() {
       if (sent.status < 300) created.friends += 1;
     }
     const connections = await call('/people/connections', { jar: host });
-    for (const request of connections.body?.incoming ?? []) {
+    for (const request of connections.body?.incomingRequests ?? connections.body?.incoming ?? []) {
       await call(`/people/requests/${request.id}/respond`, { method: 'POST', jar: host, body: { decision: 'ACCEPTED' } });
     }
     for (const who of ['divine', 'patrick', 'sandrine']) await call(`/people/${PEOPLE.find((p) => p.key === who).username}/follow`, { method: 'POST', jar: host });
@@ -308,7 +415,7 @@ async function main() {
     const target = PEOPLE.find((p) => p.key === b).username;
     await call(`/people/${target}/friend-request`, { method: 'POST', jar: jars[a], body: {} });
     const incoming = await call('/people/connections', { jar: jars[b] });
-    for (const request of incoming.body?.incoming ?? []) {
+    for (const request of incoming.body?.incomingRequests ?? incoming.body?.incoming ?? []) {
       await call(`/people/requests/${request.id}/respond`, { method: 'POST', jar: jars[b], body: { decision: 'ACCEPTED' } });
     }
   }
@@ -369,6 +476,8 @@ async function main() {
     if (response.status < 300) created.listings += 1;
     else log(`listing ${listing.title} failed: ${response.status} ${JSON.stringify(response.body)}`);
   }
+
+  await seedActivity(host, jars);
 
   log('done', JSON.stringify(created));
   log(`demo people sign in with <name>@demo.nexus.rw / ${PASSWORD}`);

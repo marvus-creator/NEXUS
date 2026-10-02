@@ -240,7 +240,10 @@ export default async function HomePage() {
     : [];
 
   const aiCard = (
-    <div className="ai-border ai-glow bg-surface relative overflow-hidden rounded-[18px] p-5">
+    <div
+      data-tour="ai"
+      className="ai-border ai-glow bg-surface relative overflow-hidden rounded-[18px] p-5"
+    >
       <div className="absolute -right-16 -top-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(168,85,247,.25),transparent_65%)]" />
       <div className="relative flex items-center gap-2 text-sm font-semibold">
         <Spark className="size-5" />
@@ -290,7 +293,10 @@ export default async function HomePage() {
           alt="Kigali"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.25)_0%,rgba(11,13,16,.5)_62%,var(--ground)_100%)]" />
-        <div className="relative mx-auto max-w-[1240px] px-4 pb-20 pt-10 md:px-8 md:pb-24 md:pt-16">
+        <div
+          data-tour="greeting"
+          className="relative mx-auto max-w-[1240px] px-4 pb-20 pt-10 md:px-8 md:pb-24 md:pt-16"
+        >
           <div className="flex items-center gap-2 text-sm font-medium text-white/85">
             <CalendarDays className="size-4" /> {todayLabel} · Kigali
           </div>
@@ -322,6 +328,7 @@ export default async function HomePage() {
       <div className="relative mx-auto -mt-12 max-w-[1240px] px-4 pb-10 md:-mt-14 md:px-8">
         {priorities.length > 0 ? (
           <Card
+            data-tour="needs"
             className="border-danger/30 relative mb-6 flex flex-col gap-4 overflow-hidden p-4 sm:flex-row sm:items-center md:p-5"
             tint="#EF4444"
           >
@@ -356,7 +363,7 @@ export default async function HomePage() {
           <div className="min-w-0 space-y-5">
             <div className="lg:hidden">{aiCard}</div>
 
-            <Card className="p-5">
+            <Card data-tour="timeline" className="p-5">
               <SectionTitle
                 eyebrow="Today"
                 title="Your timeline"
@@ -614,7 +621,7 @@ export default async function HomePage() {
           <div className="min-w-0 space-y-5">
             <div className="hidden lg:block">{aiCard}</div>
 
-            <Card className="relative overflow-hidden p-5">
+            <Card data-tour="streak" className="relative overflow-hidden p-5">
               <div className="bg-module-events/15 absolute -right-8 -top-8 size-32 rounded-full blur-2xl" />
               <div className="relative flex items-center justify-between">
                 <div>
