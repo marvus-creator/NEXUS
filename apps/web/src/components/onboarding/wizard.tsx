@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Eyebrow, Field, Input, Logo, cn } from '@nexus/ui';
+import { IMG } from '@/lib/photos';
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,7 +24,12 @@ const USER_TYPES = [
   { value: 'STUDENT', label: 'Student', icon: GraduationCap, blurb: 'Classes, exams, revision' },
   { value: 'PROFESSIONAL', label: 'Professional', icon: Briefcase, blurb: 'Work, growth, network' },
   { value: 'CREATOR', label: 'Creator', icon: Sparkles, blurb: 'Projects, audience, output' },
-  { value: 'BUSINESS_OWNER', label: 'Business owner', icon: Briefcase, blurb: 'Customers, products' },
+  {
+    value: 'BUSINESS_OWNER',
+    label: 'Business owner',
+    icon: Briefcase,
+    blurb: 'Customers, products',
+  },
   { value: 'ENTREPRENEUR', label: 'Entrepreneur', icon: Rocket, blurb: 'Building something new' },
   { value: 'ATHLETE', label: 'Athlete', icon: Dumbbell, blurb: 'Training, fixtures, form' },
   { value: 'OTHER', label: 'Something else', icon: User, blurb: 'Tell Nexus in your own words' },
@@ -52,11 +58,16 @@ const HELP = [
   { value: 'OPPORTUNITIES', label: 'Opportunities' },
 ];
 
+const STEP_IMAGES = [IMG.hero, IMG.designNight, IMG.kigaliSunset, IMG.cowork2, IMG.techMeetup];
+
 const STEPS = [
   { title: 'Who are you?', caption: 'So Nexus knows which world to build.' },
   { title: 'What are you into?', caption: 'Pick at least three. You can change these any time.' },
   { title: 'What are you working toward?', caption: 'Goals connect to your tasks and calendar.' },
-  { title: 'What does your week look like?', caption: 'Fixed things stay fixed. Nexus plans around them.' },
+  {
+    title: 'What does your week look like?',
+    caption: 'Fixed things stay fixed. Nexus plans around them.',
+  },
   { title: 'What should Nexus help with?', caption: 'This shapes what your home page leads with.' },
 ];
 
@@ -160,171 +171,273 @@ export function OnboardingWizard({
   const current = STEPS[step - 1]!;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-8 sm:px-8">
-      <div className="flex items-center justify-between">
-        <Logo />
-        <span className="text-ink-subtle font-mono text-xs">Step {step} of 5</span>
+    <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,0.85fr)]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 py-8 sm:px-8">
+        <div className="flex items-center justify-between">
+          <Logo />
+          <span className="text-ink-subtle font-mono text-xs">Step {step} of 5</span>
+        </div>
+
+        <div
+          className="mt-6 flex gap-1.5"
+          role="progressbar"
+          aria-valuenow={step}
+          aria-valuemin={1}
+          aria-valuemax={5}
+        >
+          {STEPS.map((_, index) => (
+            <span
+              key={index}
+              className={cn(
+                'h-1 flex-1 rounded-full transition-colors duration-500',
+                index < step ? 'bg-accent' : 'bg-surface-hover',
+              )}
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-1 flex-col py-10">
+          <Eyebrow tint="var(--accent)">Build your NEXUS</Eyebrow>
+          <h1 className="t-h1 mt-3">
+            {step === 1 ? `Welcome, ${displayName.split(' ')[0]}.` : current.title}
+          </h1>
+          <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
+            {step === 1 ? current.title : current.caption}
+          </p>
+
+          <div className="mt-8 flex-1">
+            {step === 1 ? (
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {USER_TYPES.map((type) => {
+                    const Icon = type.icon;
+                    const active = userType === type.value;
+
+                    return (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setUserType(type.value)}
+                        className={cn(
+                          'flex items-start gap-3 rounded-lg border p-4 text-left transition-all duration-200',
+                          active
+                            ? 'border-accent bg-accent-soft'
+                            : 'border-line bg-surface hover:border-line-strong',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'flex size-9 shrink-0 items-center justify-center rounded-md',
+                            active
+                              ? 'bg-accent text-accent-ink'
+                              : 'bg-surface-raised text-ink-muted',
+                          )}
+                        >
+                          <Icon className="size-4" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium">{type.label}</span>
+                          <span className="text-ink-muted mt-0.5 block text-xs">{type.blurb}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="What do you do?" hint="Optional">
+                    <Input
+                      placeholder="Software engineering student"
+                      value={occupation}
+                      onChange={(event) => setOccupation(event.target.value)}
+                    />
+                  </Field>
+                  <Field label="Where are you?" hint="Optional">
+                    <Input
+                      placeholder="Kigali"
+                      value={city}
+                      onChange={(event) => setCity(event.target.value)}
+                    />
+                  </Field>
+                </div>
+              </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="flex flex-col gap-7">
+                {interestGroups.map((group) => (
+                  <div key={group.category}>
+                    <p className="text-micro text-ink-subtle mb-3 font-semibold uppercase">
+                      {group.category}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {group.interests.map((interest) => (
+                        <Chip
+                          key={interest.slug}
+                          active={interests.includes(interest.slug)}
+                          onClick={() => toggle(interests, interest.slug, setInterests)}
+                        >
+                          {interest.label}
+                        </Chip>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-ink-subtle text-xs">
+                  {interests.length} selected{interests.length < 3 ? ' · pick at least three' : ''}
+                </p>
+              </div>
+            ) : null}
+
+            {step === 3 ? (
+              <div className="flex flex-wrap gap-2">
+                {GOALS.map((goal) => (
+                  <Chip
+                    key={goal.value}
+                    active={goals.includes(goal.value)}
+                    onClick={() => toggle(goals, goal.value, setGoals)}
+                  >
+                    {goal.label}
+                  </Chip>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 4 ? <ScheduleBuilder blocks={blocks} onChange={setBlocks} /> : null}
+
+            {step === 5 ? (
+              <div className="flex flex-wrap gap-2">
+                {HELP.map((item) => (
+                  <Chip
+                    key={item.value}
+                    active={help.includes(item.value)}
+                    onClick={() => toggle(help, item.value, setHelp)}
+                  >
+                    {item.label}
+                  </Chip>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          {error ? (
+            <div className="border-danger/35 mb-4 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3">
+              <p className="text-sm">{error}</p>
+            </div>
+          ) : null}
+
+          <div className="flex items-center gap-3">
+            {step > 1 ? (
+              <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={pending}>
+                <ArrowLeft /> Back
+              </Button>
+            ) : null}
+
+            <Button
+              onClick={next}
+              loading={pending}
+              disabled={!canAdvance}
+              size="lg"
+              className="ml-auto"
+            >
+              {step === 5 ? 'Finish' : 'Continue'}
+              {step === 5 ? <Lightbulb /> : <ArrowRight />}
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-6 flex gap-1.5" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={5}>
-        {STEPS.map((_, index) => (
-          <span
-            key={index}
+      <aside className="sticky top-0 hidden h-dvh overflow-hidden lg:block">
+        {STEP_IMAGES.map((image, index) => (
+          <img
+            key={image}
+            src={image}
+            alt=""
             className={cn(
-              'h-1 flex-1 rounded-full transition-colors duration-500',
-              index < step ? 'bg-accent' : 'bg-surface-hover',
+              'absolute inset-0 size-full object-cover transition-opacity duration-700',
+              index === step - 1 ? 'opacity-100' : 'opacity-0',
             )}
           />
         ))}
-      </div>
-
-      <div className="flex flex-1 flex-col py-10">
-        <Eyebrow className="text-accent">Build your Nexus</Eyebrow>
-        <h1 className="t-h1 mt-3">
-          {step === 1 ? `Welcome, ${displayName.split(' ')[0]}.` : current.title}
-        </h1>
-        <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
-          {step === 1 ? current.title : current.caption}
-        </p>
-
-        <div className="mt-8 flex-1">
-          {step === 1 ? (
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {USER_TYPES.map((type) => {
-                  const Icon = type.icon;
-                  const active = userType === type.value;
-
-                  return (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => setUserType(type.value)}
-                      className={cn(
-                        'flex items-start gap-3 rounded-lg border p-4 text-left transition-all duration-200',
-                        active
-                          ? 'border-accent bg-accent-soft'
-                          : 'border-line bg-surface hover:border-line-strong',
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'flex size-9 shrink-0 items-center justify-center rounded-md',
-                          active ? 'bg-accent text-accent-ink' : 'bg-surface-raised text-ink-muted',
-                        )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium">{type.label}</span>
-                        <span className="text-ink-muted mt-0.5 block text-xs">{type.blurb}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="What do you do?" hint="Optional">
-                  <Input
-                    placeholder="Software engineering student"
-                    value={occupation}
-                    onChange={(event) => setOccupation(event.target.value)}
-                  />
-                </Field>
-                <Field label="Where are you?" hint="Optional">
-                  <Input
-                    placeholder="Kigali"
-                    value={city}
-                    onChange={(event) => setCity(event.target.value)}
-                  />
-                </Field>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.25),rgba(11,13,16,.55)_50%,rgba(11,13,16,.92))]" />
+        <div className="relative flex h-full flex-col justify-end p-10">
+          <p className="t-eyebrow text-white/70">Your world, taking shape</p>
+          <div className="mt-4 rounded-3xl border border-white/15 bg-black/35 p-6 text-white backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <span className="bg-accent grid size-12 place-items-center rounded-full text-lg font-bold">
+                {displayName.slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-lg font-semibold">{displayName}</div>
+                <div className="truncate text-sm text-white/70">
+                  {[occupation || USER_TYPES.find((type) => type.value === userType)?.label, city]
+                    .filter(Boolean)
+                    .join(' · ') || 'Tell NEXUS about you'}
+                </div>
               </div>
             </div>
-          ) : null}
 
-          {step === 2 ? (
-            <div className="flex flex-col gap-7">
-              {interestGroups.map((group) => (
-                <div key={group.category}>
-                  <p className="text-micro text-ink-subtle mb-3 font-semibold uppercase">
-                    {group.category}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {group.interests.map((interest) => (
-                      <Chip
+            <div className="mt-5">
+              <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
+                Interests
+              </div>
+              <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
+                {interests.length === 0 ? (
+                  <span className="text-sm text-white/50">
+                    Pick a few and your Discover feed fills in
+                  </span>
+                ) : (
+                  interestGroups
+                    .flatMap((group) => group.interests)
+                    .filter((interest) => interests.includes(interest.slug))
+                    .slice(0, 10)
+                    .map((interest) => (
+                      <span
                         key={interest.slug}
-                        active={interests.includes(interest.slug)}
-                        onClick={() => toggle(interests, interest.slug, setInterests)}
+                        className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium"
                       >
                         {interest.label}
-                      </Chip>
-                    ))}
-                  </div>
+                      </span>
+                    ))
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
+                Goals
+              </div>
+              <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
+                {goals.length === 0 ? (
+                  <span className="text-sm text-white/50">What you want this year</span>
+                ) : (
+                  GOALS.filter((goal) => goals.includes(goal.value)).map((goal) => (
+                    <span
+                      key={goal.value}
+                      className="bg-accent/80 rounded-full px-2.5 py-1 text-xs font-medium"
+                    >
+                      {goal.label}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+              {[
+                [interests.length, 'interests'],
+                [goals.length, 'goals'],
+                [blocks.length, 'fixed blocks'],
+              ].map(([value, label]) => (
+                <div key={label as string} className="rounded-2xl bg-white/10 px-2 py-3">
+                  <div className="num text-xl font-bold">{value}</div>
+                  <div className="text-[11px] text-white/60">{label}</div>
                 </div>
               ))}
-              <p className="text-ink-subtle text-xs">
-                {interests.length} selected{interests.length < 3 ? ' · pick at least three' : ''}
-              </p>
             </div>
-          ) : null}
-
-          {step === 3 ? (
-            <div className="flex flex-wrap gap-2">
-              {GOALS.map((goal) => (
-                <Chip
-                  key={goal.value}
-                  active={goals.includes(goal.value)}
-                  onClick={() => toggle(goals, goal.value, setGoals)}
-                >
-                  {goal.label}
-                </Chip>
-              ))}
-            </div>
-          ) : null}
-
-          {step === 4 ? <ScheduleBuilder blocks={blocks} onChange={setBlocks} /> : null}
-
-          {step === 5 ? (
-            <div className="flex flex-wrap gap-2">
-              {HELP.map((item) => (
-                <Chip
-                  key={item.value}
-                  active={help.includes(item.value)}
-                  onClick={() => toggle(help, item.value, setHelp)}
-                >
-                  {item.label}
-                </Chip>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        {error ? (
-          <div className="border-danger/35 mb-4 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3">
-            <p className="text-sm">{error}</p>
           </div>
-        ) : null}
-
-        <div className="flex items-center gap-3">
-          {step > 1 ? (
-            <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={pending}>
-              <ArrowLeft /> Back
-            </Button>
-          ) : null}
-
-          <Button
-            onClick={next}
-            loading={pending}
-            disabled={!canAdvance}
-            size="lg"
-            className="ml-auto"
-          >
-            {step === 5 ? 'Finish' : 'Continue'}
-            {step === 5 ? <Lightbulb /> : <ArrowRight />}
-          </Button>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }
