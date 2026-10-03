@@ -7,11 +7,13 @@ import { ProgressBoard } from '@/components/learning/progress-board';
 import { BadgeWall } from '@/components/learning/badge-wall';
 import { getBadges, getProgress } from '@/lib/learning-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProgressPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -21,11 +23,11 @@ export default async function ProgressPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow="Progress"
+        eyebrow={t('pages.progress.eyebrow')}
         tint="var(--module-events)"
         image={IMG.footballNight}
-        title={<>Progress</>}
-        description={<>Not a score. Just what you have actually done — tasks finished, modules completed, hours studied, and the events you turned up to.</>}
+        title={t('pages.progress.title')}
+        description={t('pages.progress.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
@@ -41,8 +43,8 @@ export default async function ProgressPage() {
         ) : (
           <EmptyState
             icon={<Trophy className="size-6" />}
-            title="Nothing to show yet"
-            description="Finish a task, complete a module or log some study time and this page starts filling in."
+            title={t('pages.progress.emptyTitle')}
+            description={t('pages.progress.emptyBody')}
           />
         )}
       </div>

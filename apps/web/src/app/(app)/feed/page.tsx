@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { FeedBoard } from '@/components/social/feed-board';
 import { getSession } from '@/lib/session';
 import { getFeed } from '@/lib/social-server';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default async function FeedPage({
   searchParams: Promise<{ scope?: string }>;
 }) {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -24,11 +26,11 @@ export default async function FeedPage({
     <div>
       <PageHero
         width="max-w-2xl"
-        eyebrow="Feed"
+        eyebrow={t('pages.feed.eyebrow')}
         tint="var(--accent)"
         image={IMG.crowd}
-        title={<>Feed</>}
-        description={<>Ranked by who you are connected to and what you care about, not by whatever is loudest.</>}
+        title={t('pages.feed.title')}
+        description={t('pages.feed.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-2xl px-4 pb-10 md:px-8">
 

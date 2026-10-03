@@ -6,10 +6,13 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState, type FormEvent } from 'react';
 import { authClient, type AuthError } from '@/lib/auth-client';
+import { useErrorText, useT } from '@/i18n/client';
 
 function ResetForm() {
   const params = useSearchParams();
   const token = params.get('token') ?? '';
+  const t = useT();
+  const errorText = useErrorText();
 
   const [password, setPassword] = useState('');
   const [done, setDone] = useState(false);
@@ -36,12 +39,12 @@ function ResetForm() {
   if (!token) {
     return (
       <div>
-        <h1 className="t-h1">Link not valid</h1>
+        <h1 className="t-h1">{t('auth.reset.invalidTitle')}</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
-          This reset link is missing its token. Request a new one and try again.
+          {t('auth.reset.invalidBody')}
         </p>
         <Button asChild className="mt-7 w-full" size="lg">
-          <Link href="/forgot-password">Request a new link</Link>
+          <Link href="/forgot-password">{t('auth.reset.requestNew')}</Link>
         </Button>
       </div>
     );
@@ -53,13 +56,12 @@ function ResetForm() {
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--success)_16%,transparent)] text-success">
           <ShieldCheck className="size-5" />
         </span>
-        <h1 className="t-h1">Password updated</h1>
+        <h1 className="t-h1">{t('auth.reset.doneTitle')}</h1>
         <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">
-          For safety, every device that was signed in has been signed out. Use your new password to
-          sign back in.
+          {t('auth.reset.doneBody')}
         </p>
         <Button asChild className="mt-7 w-full" size="lg">
-          <Link href="/sign-in">Sign in</Link>
+          <Link href="/sign-in">{t('common.signIn')}</Link>
         </Button>
       </div>
     );
@@ -67,8 +69,8 @@ function ResetForm() {
 
   return (
     <div>
-      <h1 className="t-h1">Set a new password</h1>
-      <p className="text-ink-muted mt-2.5 text-sm">Choose something only you would pick.</p>
+      <h1 className="t-h1">{t('auth.reset.title')}</h1>
+      <p className="text-ink-muted mt-2.5 text-sm">{t('auth.reset.subtitle')}</p>
 
       {error ? (
         <div
@@ -76,18 +78,18 @@ function ResetForm() {
           className="border-danger/35 mt-6 flex items-start gap-2.5 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3"
         >
           <AlertCircle className="text-danger mt-0.5 size-4 shrink-0" />
-          <p className="text-sm">{error.message}</p>
+          <p className="text-sm">{errorText(error.message)}</p>
         </div>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-5">
-        <Field label="New password">
+        <Field label={t('auth.fields.newPassword')}>
           <Input
             type="password"
             autoComplete="new-password"
             required
             icon={<Lock />}
-            placeholder="At least 10 characters"
+            placeholder={t('auth.fields.atLeast10')}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -104,12 +106,12 @@ function ResetForm() {
             {longEnough ? <Check className="size-2.5" /> : null}
           </span>
           <span className={longEnough ? 'text-ink-muted' : 'text-ink-subtle'}>
-            At least 10 characters
+            {t('auth.fields.atLeast10')}
           </span>
         </div>
 
         <Button type="submit" size="lg" loading={pending} disabled={!longEnough} className="w-full">
-          Update password
+          {t('auth.reset.submit')}
         </Button>
       </form>
     </div>

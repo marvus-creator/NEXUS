@@ -8,6 +8,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spark } from '@/components/landing/bits';
 import { aiItem, mobilePrimary, navGroups } from './nav-config';
+import { useT } from '@/i18n/client';
+import { LanguageSwitcher } from './language-switcher';
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -15,6 +17,7 @@ function isActive(pathname: string, href: string) {
 
 export function MobileNav() {
   const pathname = usePathname();
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -59,7 +62,7 @@ export function MobileNav() {
                   style={active ? { color: 'var(--accent)' } : undefined}
                   strokeWidth={active ? 2.3 : 1.8}
                 />
-                {item.label}
+                {t(`nav.items.${item.key}`)}
               </Link>
             );
           })}
@@ -67,7 +70,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Open menu"
+            aria-label={t('nav.openMenu')}
             className={cn(
               'relative flex flex-col items-center justify-center gap-1 text-[10.5px] font-medium',
               !inPrimary ? 'text-ink' : 'text-ink-muted',
@@ -77,7 +80,7 @@ export function MobileNav() {
               <span className="bg-accent absolute top-0 h-0.5 w-8 rounded-full" />
             ) : null}
             <LayoutGrid className="size-[22px]" strokeWidth={1.8} />
-            More
+            {t('nav.more')}
           </button>
         </div>
       </nav>
@@ -87,7 +90,7 @@ export function MobileNav() {
           <div className="fixed inset-0 z-50 lg:hidden">
             <motion.button
               type="button"
-              aria-label="Close menu"
+              aria-label={t('nav.closeMenu')}
               onClick={() => setOpen(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               initial={{ opacity: 0 }}
@@ -105,10 +108,11 @@ export function MobileNav() {
               <div className="bg-line-strong mx-auto mt-2.5 h-1 w-10 rounded-full" />
               <div className="flex items-center justify-between px-5 pb-2 pt-3">
                 <Logo />
+                <LanguageSwitcher />
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close menu"
+                  aria-label={t('nav.closeMenu')}
                   className="text-ink-muted hover:bg-surface-raised grid size-9 place-items-center rounded-[10px]"
                 >
                   <X className="size-5" />
@@ -121,16 +125,16 @@ export function MobileNav() {
                   className="ai-border ai-glow bg-surface-raised rounded-2xl p-4"
                 >
                   <div className="flex items-center gap-2 text-sm font-semibold">
-                    <Spark /> <span className="text-ai-gradient">Plan my day</span>
+                    <Spark /> <span className="text-ai-gradient">{t('nav.items.ai')}</span>
                   </div>
                   <p className="text-ink-muted mt-1.5 text-xs">
-                    Fit your tasks and study into the free time you actually have.
+                    {t('nav.aiBlurbShort')}
                   </p>
                 </Link>
 
                 {navGroups.map((group) => (
-                  <div key={group.label}>
-                    <p className="t-eyebrow text-ink-subtle mb-3">{group.label}</p>
+                  <div key={group.key}>
+                    <p className="t-eyebrow text-ink-subtle mb-3">{t(`nav.groups.${group.key}`)}</p>
                     <div className="grid grid-cols-3 gap-2">
                       {group.items.map((item) => {
                         const Icon = item.icon;
@@ -149,7 +153,7 @@ export function MobileNav() {
                               className="size-5"
                               style={{ color: item.tint ?? 'var(--accent)' }}
                             />
-                            <span className="truncate">{item.label}</span>
+                            <span className="truncate">{t(`nav.items.${item.key}`)}</span>
                           </Link>
                         );
                       })}

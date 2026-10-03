@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { OrdersBoard } from '@/components/market/orders-board';
 import { getOrders } from '@/lib/market-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function OrdersPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -18,11 +20,11 @@ export default async function OrdersPage() {
     <div>
       <PageHero
         width="max-w-3xl"
-        eyebrow="Orders"
+        eyebrow={t('pages.orders.eyebrow')}
         tint="var(--module-events)"
         image={IMG.beads}
-        title={<>Orders</>}
-        description={<>Every request, both directions. Sellers accept or decline; buyers pay once accepted.</>}
+        title={t('pages.orders.title')}
+        description={t('pages.orders.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-3xl px-4 pb-10 md:px-8">
 

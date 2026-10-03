@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, Geist, Geist_Mono } from 'next/font/google';
 import { ServiceWorker } from '@/components/app/service-worker';
 import './globals.css';
+import { I18nProvider } from '@/i18n/client';
+import { getLocale } from '@/i18n/server';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -34,14 +36,18 @@ export const viewport: Viewport = {
   themeColor: '#0b0d10',
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} font-sans antialiased`}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <I18nProvider locale={locale}>{children}</I18nProvider>
+        </ThemeProvider>
         <ServiceWorker />
       </body>
     </html>

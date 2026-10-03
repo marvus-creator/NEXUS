@@ -14,6 +14,8 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import type { ProgressOverview } from '@/lib/learning-client';
+import { useFormatDate, useT } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/types';
 
 function hours(minutes: number) {
   if (minutes === 0) return '0';
@@ -25,15 +27,17 @@ function hours(minutes: number) {
   return rest === 0 ? `${whole}h` : `${whole}h ${rest}m`;
 }
 
-function Delta({ now, before, unit }: { now: number; before: number; unit: string }) {
+function Delta({ now, before }: { now: number; before: number }) {
+  const t = useT();
+
   if (before === 0 && now === 0) {
-    return <span className="text-ink-subtle text-xs">nothing last week either</span>;
+    return <span className="text-ink-subtle text-xs">{t('progress.delta.nothing')}</span>;
   }
 
   if (before === 0) {
     return (
       <span className="text-nearby flex items-center gap-1 text-xs">
-        <TrendingUp className="size-3.5" /> new this week
+        <TrendingUp className="size-3.5" /> {t('progress.delta.new')}
       </span>
     );
   }
@@ -41,7 +45,7 @@ function Delta({ now, before, unit }: { now: number; before: number; unit: strin
   const change = Math.round(((now - before) / before) * 100);
 
   if (change === 0) {
-    return <span className="text-ink-subtle text-xs">same as last week</span>;
+    return <span className="text-ink-subtle text-xs">{t('progress.delta.same')}</span>;
   }
 
   const up = change > 0;
@@ -49,12 +53,14 @@ function Delta({ now, before, unit }: { now: number; before: number; unit: strin
   return (
     <span className={cn('flex items-center gap-1 text-xs', up ? 'text-nearby' : 'text-ink-subtle')}>
       {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-      {Math.abs(change)}% {up ? 'more' : 'less'} {unit} than last week
+      {t(up ? 'progress.delta.more' : 'progress.delta.less', { n: Math.abs(change) })}
     </span>
   );
 }
 
 function Heatmap({ series, timezone }: { series: ProgressOverview['series']; timezone: string }) {
+  const t = useT();
+  const format = useFormatDate();
   const max = Math.max(1, ...series.map((day) => day.tasks + day.modules + day.sessions));
   const weeks: ProgressOverview['series'][] = [];
 
@@ -72,11 +78,6 @@ function Heatmap({ series, timezone }: { series: ProgressOverview['series']; tim
 
   if (current.length > 0) weeks.push(current);
 
-  const formatter = new Intl.DateTimeFormat('en-GB', {
-    timeZone: timezone,
-    day: 'numeric',
-    month: 'short',
-  });
 
   const monthFor = (week: ProgressOverview['series']) => {
     const first = week.find(Boolean);
@@ -86,14 +87,14 @@ function Heatmap({ series, timezone }: { series: ProgressOverview['series']; tim
     const date = new Date(`${first.date}T12:00:00Z`);
 
     return date.getUTCDate() <= 7
-      ? new Intl.DateTimeFormat('en-GB', { month: 'short' }).format(date)
+      ? format(date, 'monthShort')
       : null;
   };
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1">
       <div className="text-ink-subtle grid shrink-0 grid-rows-7 gap-1 pt-[1.125rem] text-[0.625rem]">
-        {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((label, index) => (
+        {['', t('progress.heatmap.mon'), '', t('progress.heatmap.wed'), '', t('progress.heatmap.fri'), ''].map((label, index) => (
           <span key={index} className="flex h-4 items-center leading-none">
             {label}
           </span>
@@ -117,8 +118,8 @@ function Heatmap({ series, timezone }: { series: ProgressOverview['series']; tim
                 key={day.date}
                 title={
                   total === 0
-                    ? `${formatter.format(new Date(`${day.date}T12:00:00Z`))} — nothing logged`
-                    : `${formatter.format(new Date(`${day.date}T12:00:00Z`))} — ${day.tasks} tasks, ${day.modules} modules, ${hours(day.minutes)} studied`
+                    ? t('progress.heatmap.nothing', { date: format(`${day.date}T12:00:00Z`, 'dayShort', timezone) })
+                    : t('progress.heatmap.day', { date: format(`${day.date}T12:00:00Z`, 'dayShort', timezone), tasks: day.tasks, modules: day.modules, studied: hours(day.minutes) })
                 }
                 className="border-border/60 size-4 rounded-[3px] border"
                 style={
@@ -139,38 +140,50 @@ function Heatmap({ series, timezone }: { series: ProgressOverview['series']; tim
 }
 
 export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
+  const t = useT();
+  const format = useFormatDate();
   const { totals, week, previousWeek } = progress;
 
   const stats = [
     {
-      label: 'Tasks completed',
+      label: t('progress.stats.tasks'),
       value: String(totals.tasksCompleted),
-      caption: `${totals.tasksOpen} still open`,
+      caption: t('progress.stats.tasksCaption', { n: totals.tasksOpen }),
       icon: CheckCircle2,
       tint: 'var(--accent)',
     },
     {
-      label: 'Time studied',
+      label: t('progress.stats.time'),
       value: hours(totals.studyMinutes),
-      caption: `across ${totals.pathsActive + totals.pathsCompleted} ${totals.pathsActive + totals.pathsCompleted === 1 ? 'path' : 'paths'}`,
+      caption: t(totals.pathsActive + totals.pathsCompleted === 1 ? 'progress.stats.timeCaptionOne' : 'progress.stats.timeCaptionMany', { n: totals.pathsActive + totals.pathsCompleted }),
       icon: Timer,
       tint: 'var(--module-learn)',
     },
     {
-      label: 'Goals achieved',
+      label: t('progress.stats.goals'),
       value: String(totals.goalsAchieved),
-      caption: `${totals.goalsActive} in progress · ${totals.milestonesDone} milestones`,
+      caption: t('progress.stats.goalsCaption', { active: totals.goalsActive, milestones: totals.milestonesDone }),
       icon: Target,
       tint: 'var(--module-people)',
     },
     {
-      label: 'Events attended',
+      label: t('progress.stats.events'),
       value: String(totals.eventsAttended),
-      caption: 'checked in at the door',
+      caption: t('progress.stats.eventsCaption'),
       icon: CalendarCheck,
       tint: 'var(--module-events)',
     },
   ];
+
+  const insightText = (insight: ProgressOverview['insights'][number]) => {
+    if (!insight.key) return insight.text;
+    const vars = { ...insight.vars };
+    if (insight.key === 'bestDay') {
+      vars.day = format(Date.UTC(2026, 0, 4 + Number(vars.day), 12), 'weekday', 'UTC');
+    }
+    const text = t(`progress.insights.${insight.key}` as MessageKey, vars);
+    return text.startsWith('progress.insights.') ? insight.text : text;
+  };
 
   const tones = {
     up: { icon: TrendingUp, color: 'var(--color-nearby, #22C55E)' },
@@ -183,14 +196,14 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
     <div>
       {progress.insights.length > 0 ? (
         <Card className="mb-6 p-5">
-          <h2 className="text-[0.9375rem] font-semibold">Your week in a sentence or four</h2>
+          <h2 className="text-[0.9375rem] font-semibold">{t('progress.week.title')}</h2>
           <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {progress.insights.map((insight) => {
               const tone = tones[insight.tone];
               return (
                 <li key={insight.text} className="bg-surface-raised/60 flex items-start gap-3 rounded-xl p-3 text-sm">
                   <tone.icon className="mt-0.5 size-4 shrink-0" style={{ color: tone.color }} />
-                  <span className="leading-relaxed">{insight.text}</span>
+                  <span className="leading-relaxed">{insightText(insight)}</span>
                 </li>
               );
             })}
@@ -214,10 +227,9 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <Card className="min-w-0 p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-[0.9375rem] font-semibold">The last twelve weeks</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('progress.week.twelve')}</h2>
             <p className="text-ink-subtle text-xs">
-              {progress.activeDays} active {progress.activeDays === 1 ? 'day' : 'days'} of{' '}
-              {progress.windowDays}
+              {t(progress.activeDays === 1 ? 'progress.week.activeDay' : 'progress.week.activeDays', { n: progress.activeDays, total: progress.windowDays })}
             </p>
           </div>
 
@@ -226,8 +238,7 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
           </div>
 
           <p className="text-ink-subtle mt-3 text-xs">
-            A square fills in on any day you finished a task, completed a module, or logged study
-            time. Counted in {progress.timezone.replace('_', ' ')}.
+            {t('progress.week.legend', { zone: progress.timezone.replace('_', ' ') })}
           </p>
         </Card>
 
@@ -238,49 +249,49 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
           >
             <div className="flex items-center gap-2">
               <Flame className="size-4" style={{ color: 'var(--module-events)' }} />
-              <p className="text-ink-muted text-xs font-medium">Current streak</p>
+              <p className="text-ink-muted text-xs font-medium">{t('progress.week.streak')}</p>
             </div>
             <p className="mt-2 text-4xl font-semibold tracking-tight tabular-nums">
               {progress.streak}
             </p>
             <p className="text-ink-subtle mt-1 text-xs">
               {progress.streak === 0
-                ? 'Finish one thing today to start it.'
-                : `consecutive ${progress.streak === 1 ? 'day' : 'days'} with something done`}
+                ? t('progress.week.streakStart')
+                : t(progress.streak === 1 ? 'progress.week.streakDay' : 'progress.week.streakDays')}
             </p>
           </Card>
 
           <Card className="p-5">
-            <h2 className="text-[0.9375rem] font-semibold">This week</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('progress.week.thisWeek')}</h2>
 
             <dl className="mt-3.5 space-y-3.5">
               <div>
                 <dt className="flex items-baseline justify-between">
-                  <span className="text-ink-muted text-[0.8125rem]">Tasks done</span>
+                  <span className="text-ink-muted text-[0.8125rem]">{t('progress.week.tasksDone')}</span>
                   <span className="font-semibold tabular-nums">{week.tasks}</span>
                 </dt>
                 <dd className="mt-0.5">
-                  <Delta now={week.tasks} before={previousWeek.tasks} unit="done" />
+                  <Delta now={week.tasks} before={previousWeek.tasks} />
                 </dd>
               </div>
 
               <div>
                 <dt className="flex items-baseline justify-between">
-                  <span className="text-ink-muted text-[0.8125rem]">Studied</span>
+                  <span className="text-ink-muted text-[0.8125rem]">{t('progress.week.studied')}</span>
                   <span className="font-semibold tabular-nums">{hours(week.minutes)}</span>
                 </dt>
                 <dd className="mt-0.5">
-                  <Delta now={week.minutes} before={previousWeek.minutes} unit="studied" />
+                  <Delta now={week.minutes} before={previousWeek.minutes} />
                 </dd>
               </div>
 
               <div>
                 <dt className="flex items-baseline justify-between">
-                  <span className="text-ink-muted text-[0.8125rem]">Modules finished</span>
+                  <span className="text-ink-muted text-[0.8125rem]">{t('progress.week.modules')}</span>
                   <span className="font-semibold tabular-nums">{week.modules}</span>
                 </dt>
                 <dd className="mt-0.5">
-                  <Delta now={week.modules} before={previousWeek.modules} unit="finished" />
+                  <Delta now={week.modules} before={previousWeek.modules} />
                 </dd>
               </div>
             </dl>
@@ -290,18 +301,14 @@ export function ProgressBoard({ progress }: { progress: ProgressOverview }) {
             <Card className="p-5">
               <h2 className="flex items-center gap-2 text-[0.9375rem] font-semibold">
                 <GraduationCap className="size-4" style={{ color: 'var(--module-events)' }} />
-                Rooms you turned up in
+                {t('progress.week.rooms')}
               </h2>
               <ul className="mt-3 space-y-2.5">
                 {progress.attended.slice(0, 5).map((entry) => (
                   <li key={`${entry.title}-${entry.startAt}`} className="text-[0.8125rem]">
                     <p className="truncate font-medium">{entry.title}</p>
                     <p className="text-ink-subtle text-xs">
-                      {new Intl.DateTimeFormat('en-GB', {
-                        timeZone: progress.timezone,
-                        day: 'numeric',
-                        month: 'short',
-                      }).format(new Date(entry.startAt))}
+                      {format(entry.startAt, 'dayShort', progress.timezone)}
                     </p>
                   </li>
                 ))}

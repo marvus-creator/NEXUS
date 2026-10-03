@@ -4,6 +4,7 @@ import { LogoMark, cn } from '@nexus/ui';
 import { motion } from 'motion/react';
 import { IMG, PEOPLE } from '@/lib/photos';
 import { Reveal } from './bits';
+import { useT } from '@/i18n/client';
 
 type Node = {
   id: string;
@@ -17,16 +18,16 @@ type Node = {
 
 const NODES: Node[] = [
   { id: 'you', x: 50, y: 50, kind: 'you', label: 'You' },
-  { id: 'aline', x: 30, y: 26, kind: 'person', label: 'Aline', sub: 'Product designer', img: PEOPLE.aline },
-  { id: 'kevin', x: 70, y: 24, kind: 'person', label: 'Kevin', sub: '12 mutual friends', img: PEOPLE.kevin },
-  { id: 'eric', x: 76, y: 70, kind: 'person', label: 'Eric', sub: 'Sunday football', img: PEOPLE.eric },
+  { id: 'aline', x: 30, y: 26, kind: 'person', label: 'Aline', sub: 'alineSub', img: PEOPLE.aline },
+  { id: 'kevin', x: 70, y: 24, kind: 'person', label: 'Kevin', sub: 'kevinSub', img: PEOPLE.kevin },
+  { id: 'eric', x: 76, y: 70, kind: 'person', label: 'Eric', sub: 'ericSub', img: PEOPLE.eric },
   { id: 'grace', x: 24, y: 72, kind: 'person', label: 'Grace', sub: 'Founder, Nyamirambo', img: PEOPLE.grace },
   { id: 'crit', x: 12, y: 40, kind: 'event', label: 'Design Critique Night', sub: 'Tue 18:30', img: IMG.designNight },
   { id: 'meetup', x: 88, y: 42, kind: 'event', label: 'Kigali Tech Meetup', sub: 'Thu 18:00', img: IMG.techMeetup },
   { id: 'football', x: 90, y: 88, kind: 'event', label: 'Sunday Football', sub: 'Sun 07:00', img: IMG.football },
-  { id: 'norrsken', x: 50, y: 8, kind: 'place', label: 'Norrsken House', sub: 'Workspace', img: IMG.cowork2 },
-  { id: 'amahoro', x: 62, y: 92, kind: 'place', label: 'Amahoro Stadium', sub: 'Sport', img: IMG.footballNight },
-  { id: 'imigongo', x: 10, y: 88, kind: 'place', label: 'Imigongo Studio', sub: 'Store', img: IMG.beads },
+  { id: 'norrsken', x: 50, y: 8, kind: 'place', label: 'Norrsken House', sub: 'workspace', img: IMG.cowork2 },
+  { id: 'amahoro', x: 62, y: 92, kind: 'place', label: 'Amahoro Stadium', sub: 'sport', img: IMG.footballNight },
+  { id: 'imigongo', x: 10, y: 88, kind: 'place', label: 'Imigongo Studio', sub: 'store', img: IMG.beads },
 ];
 
 const LINKS: [string, string, string][] = [
@@ -47,11 +48,16 @@ const LINKS: [string, string, string][] = [
 
 const TINT = { you: '#3B82F6', person: '#FF7A59', event: '#F5A524', place: '#22C55E' } as const;
 
+const SUB_KEYS = new Set(['alineSub', 'kevinSub', 'ericSub', 'workspace', 'sport', 'store']);
+
+type SubKey = 'alineSub' | 'kevinSub' | 'ericSub' | 'workspace' | 'sport' | 'store';
+
 function find(id: string) {
   return NODES.find((node) => node.id === id)!;
 }
 
 export function Constellation() {
+  const t = useT();
   return (
     <section className="relative overflow-hidden py-24 md:py-32">
       <style>{`
@@ -63,19 +69,19 @@ export function Constellation() {
 
       <div className="relative mx-auto max-w-[1280px] px-5 md:px-10">
         <Reveal>
-          <div className="t-eyebrow text-accent text-center">One connected ecosystem</div>
+          <div className="t-eyebrow text-accent text-center">{t('landing.constellation.eyebrow')}</div>
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="t-d1 mx-auto mt-5 max-w-4xl text-center">
-            Every person, place and plan, <span className="text-ink-muted">linked to you.</span>
+            {t('landing.constellation.title')} <span className="text-ink-muted">{t('landing.constellation.titleMuted')}</span>
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
           <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
             {[
-              ['People', TINT.person],
-              ['Events', TINT.event],
-              ['Places', TINT.place],
+              [t('landing.constellation.people'), TINT.person],
+              [t('landing.constellation.events'), TINT.event],
+              [t('landing.constellation.places'), TINT.place],
             ].map(([label, color]) => (
               <span key={label} className="text-ink-muted flex items-center gap-2">
                 <span className="size-2.5 rounded-full" style={{ background: color, boxShadow: `0 0 12px ${color}` }} />
@@ -149,7 +155,7 @@ export function Constellation() {
                   <div className="border-accent/60 relative grid size-20 place-items-center rounded-full border-2 bg-[#0B0F16] shadow-[0_0_40px_rgba(59,130,246,.6)] md:size-24">
                     <LogoMark className="size-11 md:size-12" />
                   </div>
-                  <span className="mt-2 text-sm font-bold">You</span>
+                  <span className="mt-2 text-sm font-bold">{t('landing.constellation.you')}</span>
                 </div>
               ) : (
                 <div className="group flex flex-col items-center">
@@ -164,7 +170,7 @@ export function Constellation() {
                   </div>
                   <div className="mt-2 max-w-[120px] text-center leading-tight">
                     <div className="text-[12px] font-semibold md:text-[13px]">{node.label}</div>
-                    <div className="text-ink-muted hidden text-[11px] sm:block">{node.sub}</div>
+                    <div className="text-ink-muted hidden text-[11px] sm:block">{node.sub && SUB_KEYS.has(node.sub) ? t(`landing.constellation.${node.sub as SubKey}`) : node.sub}</div>
                   </div>
                 </div>
               )}

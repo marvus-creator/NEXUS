@@ -16,11 +16,12 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import { socialClient, type FeedPost, type PostComment } from '@/lib/social-client';
+import { useRelativeTime, useT } from '@/i18n/client';
 
 const REACTIONS = [
-  { type: 'LIKE', label: 'Like', icon: ThumbsUp },
-  { type: 'CELEBRATE', label: 'Celebrate', icon: PartyPopper },
-  { type: 'SUPPORT', label: 'Support', icon: Users },
+  { type: 'LIKE', icon: ThumbsUp },
+  { type: 'CELEBRATE', icon: PartyPopper },
+  { type: 'SUPPORT', icon: Users },
 ] as const;
 
 const VISIBILITY_ICON = {
@@ -29,22 +30,9 @@ const VISIBILITY_ICON = {
   PRIVATE: Lock,
 } as const;
 
-function relative(iso: string) {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m`;
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-
-  const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d`;
-
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
 export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id: string) => void }) {
+  const t = useT();
+  const relative = useRelativeTime();
   const [reactions, setReactions] = useState(post.reactions);
   const [saved, setSaved] = useState(post.saved);
   const [poll, setPoll] = useState(post.poll);
@@ -176,7 +164,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
           <button
             type="button"
             onClick={() => void remove()}
-            aria-label="Delete post"
+            aria-label={t('social.post.delete')}
             className="text-ink-subtle hover:text-danger transition-colors"
           >
             <Trash2 className="size-3.5" />
@@ -185,7 +173,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
           <button
             type="button"
             onClick={() => void report()}
-            aria-label="Report post"
+            aria-label={t('social.post.report')}
             disabled={reported}
             className="text-ink-subtle hover:text-warning transition-colors disabled:opacity-50"
           >
@@ -202,7 +190,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
         </div>
       ) : null}
 
-      {reported ? <p className="text-warning mt-2 text-xs">Reported. Thanks for flagging it.</p> : null}
+      {reported ? <p className="text-warning mt-2 text-xs">{t('social.post.reported')}</p> : null}
 
       {poll ? (
         <div className="mt-4 flex flex-col gap-2">
@@ -236,7 +224,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
             );
           })}
           <p className="text-ink-subtle text-xs">
-            {poll.totalVotes} {poll.totalVotes === 1 ? 'vote' : 'votes'}
+            {t(poll.totalVotes === 1 ? 'social.post.vote' : 'social.post.votes', { n: poll.totalVotes })}
           </p>
         </div>
       ) : null}
@@ -260,7 +248,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
               )}
             >
               <Icon className="size-3.5" />
-              {count > 0 ? count : reaction.label}
+              {count > 0 ? count : t(`social.reactions.${reaction.type}`)}
             </button>
           );
         })}
@@ -271,7 +259,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
           className="text-ink-muted hover:bg-surface-hover inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors"
         >
           <MessageSquare className="size-3.5" />
-          {commentCount > 0 ? commentCount : 'Comment'}
+          {commentCount > 0 ? commentCount : t('social.post.comment')}
         </button>
 
         <button
@@ -283,14 +271,14 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
           )}
         >
           <Bookmark className={cn('size-3.5', saved && 'fill-current')} />
-          {saved ? 'Saved' : 'Save'}
+          {saved ? t('social.post.saved') : t('social.post.save')}
         </button>
       </div>
 
       {comments !== null ? (
         <div className="border-line mt-3 flex flex-col gap-3 border-t pt-4">
           {comments.length === 0 ? (
-            <p className="text-ink-subtle text-xs">No comments yet.</p>
+            <p className="text-ink-subtle text-xs">{t('social.post.noComments')}</p>
           ) : (
             comments.map((comment) => (
               <div key={comment.id} className={cn('flex gap-3', comment.parentId && 'ml-8')}>
@@ -315,7 +303,7 @@ export function PostCard({ post, onRemoved }: { post: FeedPost; onRemoved?: (id:
           <div className="flex gap-2">
             <Input
               value={draft}
-              placeholder="Write a comment"
+              placeholder={t('social.post.writeComment')}
               className="h-9 text-sm"
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {

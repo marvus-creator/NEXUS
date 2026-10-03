@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, cn } from '@nexus/ui';
 import {
   Award,
@@ -19,6 +21,8 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import { useT } from '@/i18n/client';
+import { messages } from '@/i18n/messages';
 
 export type BadgeItem = {
   key: string;
@@ -58,12 +62,15 @@ const TINTS: Record<BadgeItem['group'], string> = {
   world: '#22C55E',
 };
 
-const GROUPS: { key: BadgeItem['group']; label: string }[] = [
-  { key: 'focus', label: 'Focus' },
-  { key: 'growth', label: 'Growth' },
-  { key: 'people', label: 'People' },
-  { key: 'world', label: 'Out in the world' },
-];
+const GROUPS: BadgeItem['group'][] = ['focus', 'growth', 'people', 'world'];
+
+type ItemKey = keyof (typeof messages)['badges']['items'];
+
+function useBadgeText() {
+  const t = useT();
+  return (badge: BadgeItem, field: 'title' | 'description') =>
+    badge.key in messages.badges.items ? t(`badges.items.${badge.key as ItemKey}.${field}`) : badge[field];
+}
 
 function Medal({ badge, size = 'md' }: { badge: BadgeItem; size?: 'sm' | 'md' }) {
   const Icon = ICONS[badge.icon] ?? Award;
@@ -104,6 +111,8 @@ function formatValue(badge: BadgeItem) {
 }
 
 export function BadgeWall({ set }: { set: BadgeSet }) {
+  const t = useT();
+  const text = useBadgeText();
   const percent = Math.round((set.earned / Math.max(1, set.total)) * 100);
 
   return (
@@ -113,14 +122,14 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
           <Award className="size-6" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-xl font-bold tracking-tight">Achievements</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight">{t('badges.title')}</h2>
           <p className="text-ink-muted text-sm">
-            {set.earned} of {set.total} earned. Each one comes from something you actually did.
+            {t('badges.summary', { earned: set.earned, total: set.total })}
           </p>
         </div>
         <div className="w-full sm:w-48">
           <div className="text-ink-muted mb-1.5 flex justify-between text-xs">
-            <span>Collection</span>
+            <span>{t('badges.collection')}</span>
             <span className="num font-semibold">{percent}%</span>
           </div>
           <div className="bg-surface-raised h-2 overflow-hidden rounded-full">
@@ -134,13 +143,13 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
 
       <div className="grid gap-8 p-6">
         {GROUPS.map((group) => {
-          const items = set.badges.filter((badge) => badge.group === group.key);
+          const items = set.badges.filter((badge) => badge.group === group);
           if (items.length === 0) return null;
 
           return (
-            <section key={group.key}>
-              <h3 className="t-eyebrow" style={{ color: TINTS[group.key] }}>
-                {group.label}
+            <section key={group}>
+              <h3 className="t-eyebrow" style={{ color: TINTS[group] }}>
+                {t(`badges.groups.${group}`)}
               </h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((badge) => {
@@ -157,12 +166,12 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
                       <Medal badge={badge} />
                       <div className="min-w-0 flex-1">
                         <div className={cn('font-semibold', !badge.earned && 'text-ink-muted')}>
-                          {badge.title}
+                          {text(badge, 'title')}
                         </div>
-                        <p className="text-ink-muted truncate text-xs">{badge.description}</p>
+                        <p className="text-ink-muted truncate text-xs">{text(badge, 'description')}</p>
                         {badge.earned ? (
                           <p className="mt-1.5 text-[11px] font-semibold" style={{ color: TINTS[badge.group] }}>
-                            Earned
+                            {t('common.earned')}
                           </p>
                         ) : (
                           <div className="mt-2 flex items-center gap-2">
@@ -189,24 +198,26 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
 }
 
 export function BadgeStrip({ set }: { set: BadgeSet }) {
+  const t = useT();
+  const text = useBadgeText();
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-[0.9375rem] font-semibold">Achievements</h2>
+        <h2 className="text-[0.9375rem] font-semibold">{t('badges.title')}</h2>
         <span className="text-ink-subtle text-xs">
-          {set.earned} of {set.total}
+          {t('badges.ofTotal', { earned: set.earned, total: set.total })}
         </span>
       </div>
       {set.badges.length === 0 ? (
-        <p className="text-ink-muted mt-3 text-sm">No achievements yet.</p>
+        <p className="text-ink-muted mt-3 text-sm">{t('badges.none')}</p>
       ) : (
         <div className="mt-4 flex flex-wrap gap-3">
           {set.badges.map((badge) => (
-            <div key={badge.key} className="flex items-center gap-2.5 pr-2" title={badge.description}>
+            <div key={badge.key} className="flex items-center gap-2.5 pr-2" title={text(badge, 'description')}>
               <Medal badge={badge} size="sm" />
               <div>
-                <div className="text-sm font-semibold">{badge.title}</div>
-                <div className="text-ink-subtle text-[11px]">{badge.description}</div>
+                <div className="text-sm font-semibold">{text(badge, 'title')}</div>
+                <div className="text-ink-subtle text-[11px]">{text(badge, 'description')}</div>
               </div>
             </div>
           ))}

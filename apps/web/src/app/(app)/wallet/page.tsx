@@ -6,11 +6,13 @@ import { redirect } from 'next/navigation';
 import { WalletBoard } from '@/components/market/wallet-board';
 import { getWallet } from '@/lib/market-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function WalletPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -20,11 +22,11 @@ export default async function WalletPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow="Wallet"
+        eyebrow={t('pages.wallet.eyebrow')}
         tint="var(--accent)"
         image={IMG.downtown}
-        title={<>Wallet</>}
-        description={<>Money you hold inside Nexus, and every movement that got it there.</>}
+        title={t('pages.wallet.title')}
+        description={t('pages.wallet.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 

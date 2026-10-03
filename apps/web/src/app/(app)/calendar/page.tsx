@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { WeekView } from '@/components/planner/week-view';
 import { getCalendar } from '@/lib/planner-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ export default async function CalendarPage({
   searchParams: Promise<{ week?: string }>;
 }) {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -49,11 +51,11 @@ export default async function CalendarPage({
     <div>
       <PageHero
         width="max-w-6xl"
-        eyebrow="Calendar"
+        eyebrow={t('pages.calendar.eyebrow')}
         tint="var(--accent)"
         image={IMG.hills}
-        title={<>Calendar</>}
-        description={<>{rangeLabel} · {calendar.timezone}. Your fixed commitments come from onboarding, events sit on top, and the pale green is what is genuinely left.</>}
+        title={t('pages.calendar.title')}
+        description={t('pages.calendar.description', { range: rangeLabel, timezone: calendar.timezone })}
       />
       <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
 

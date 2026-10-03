@@ -6,11 +6,13 @@ import { getCircles } from '@/lib/community-server';
 import { getEvents, getForYou, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
 import { getSuggestions } from '@/lib/social-server';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DiscoverPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -29,11 +31,11 @@ export default async function DiscoverPage() {
   return (
     <div>
       <PageHero
-        eyebrow="Discover"
+        eyebrow={t('pages.discover.eyebrow')}
         tint="var(--module-discover)"
         image={IMG.kigaliAerial}
-        title={<>{city ? `For you, in ${city}.` : 'For you.'}</>}
-        description={<>{total > 0 ? `${total} things across events, places, circles and people${ labels.length > 0 ? `, ranked against your interests — ${labels.slice(0, 3).join(', ')}${labels.length > 3 ? ' and more' : ''}` : '' }.` : 'Nothing here yet. Add a place, create an event or start a circle and this page fills in.'}</>}
+        title={city ? t('pages.discover.titleCity', { city }) : t('pages.discover.title')}
+        description={total > 0 ? (labels.length > 0 ? t('pages.discover.countRanked', { n: total, interests: labels.slice(0, 3).join(', ') + (labels.length > 3 ? ` ${t('pages.discover.andMore')}` : '') }) : t('pages.discover.count', { n: total })) : t('pages.discover.empty')}
       />
       <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 

@@ -6,11 +6,13 @@ import { redirect } from 'next/navigation';
 import { PlanBoard } from '@/components/learning/plan-board';
 import { getDayPlan } from '@/lib/learning-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AiPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -20,11 +22,11 @@ export default async function AiPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow="Nexus AI"
+        eyebrow={t('pages.ai.eyebrow')}
         tint="var(--module-ai)"
         image={IMG.kigaliAerial}
-        title={<>Plan my day</>}
-        description={<>Nexus knows what is already fixed in your day, what you owe, and what you are trying to learn. It suggests where the work fits. You decide what sticks.</>}
+        title={t('pages.ai.title')}
+        description={t('pages.ai.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 

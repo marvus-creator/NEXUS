@@ -23,6 +23,8 @@ import { circleImage, eventImage, IMG, placeImage } from '@/lib/photos';
 import { getCalendar, getGoals, getTaskCounts, getTasks } from '@/lib/planner-server';
 import { getEvents, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
+import { getI18n } from '@/i18n/server';
+import type { messages } from '@/i18n/messages';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,16 +44,18 @@ function duration(minutes: number) {
   return `${hours}h ${rest}m`;
 }
 
-function greeting(timezone: string) {
+type PlaceKey = keyof (typeof messages)['enums']['place'];
+
+function greeting(timezone: string): 'morning' | 'afternoon' | 'evening' {
   const hour = Number(
     new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: timezone }).format(
       new Date(),
     ),
   );
 
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
 }
 
 function heroImage(timezone: string) {
@@ -103,9 +107,10 @@ export default async function HomePage() {
 
   if (!user) redirect('/sign-in');
 
+  const { t, date, locale } = await getI18n();
   const profile = user.profile;
   const timezone = profile?.timezone ?? 'Africa/Kigali';
-  const firstName = (profile?.displayName ?? '').split(' ')[0] || 'there';
+  const firstName = (profile?.displayName ?? '').split(' ')[0] || t('home.greeting.there');
   const onboarded = Boolean(profile?.onboardedAt);
 
   const now = new Date();
@@ -125,12 +130,7 @@ export default async function HomePage() {
   ]);
 
   const today = calendar.days[0];
-  const todayLabel = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: timezone,
-  }).format(now);
+  const todayLabel = `${date(now, 'weekday', timezone)}, ${date(now, 'dayMonth', timezone)}`;
 
   const openTasks = tasks.filter((task) => task.status === 'TODO' || task.status === 'DOING');
   const activeGoals = goals.filter((goal) => goal.status === 'ACTIVE');
@@ -152,37 +152,37 @@ export default async function HomePage() {
   const priorities = [
     !user.emailVerified
       ? {
-          title: 'Confirm your email address',
-          blurb: `Messaging, events and posting publicly stay locked until ${user.email} is confirmed.`,
+          title: t('home.priorities.confirmTitle'),
+          blurb: t('home.priorities.confirmBlurb', { email: user.email }),
           href: '/settings',
-          cta: 'Settings',
+          cta: t('common.settings'),
         }
       : null,
     !onboarded
       ? {
-          title: 'Build your NEXUS',
-          blurb: 'Five short steps. It is what makes this page personal.',
+          title: t('home.priorities.buildTitle'),
+          blurb: t('home.priorities.buildBlurb'),
           href: '/onboarding',
-          cta: 'Start',
+          cta: t('home.priorities.start'),
         }
       : null,
     overdue.length > 0
       ? {
-          title: `${overdue.length} ${overdue.length === 1 ? 'task is' : 'tasks are'} overdue`,
+          title: t(overdue.length === 1 ? 'home.priorities.overdueOne' : 'home.priorities.overdueMany', { n: overdue.length }),
           blurb: overdue
             .slice(0, 3)
             .map((task) => `"${task.title}"`)
             .join(' · '),
           href: '/tasks',
-          cta: 'Review tasks',
+          cta: t('home.priorities.reviewTasks'),
         }
       : null,
     onboarded && (profile?.scheduleBlocks.length ?? 0) === 0
       ? {
-          title: 'Add your week',
-          blurb: 'NEXUS cannot find free time until it knows what is already fixed.',
+          title: t('home.priorities.weekTitle'),
+          blurb: t('home.priorities.weekBlurb'),
           href: '/profile',
-          cta: 'Add your week',
+          cta: t('home.priorities.weekTitle'),
         }
       : null,
   ].filter((item): item is NonNullable<typeof item> => item !== null);
@@ -190,12 +190,12 @@ export default async function HomePage() {
   const aiFocus = dueSoon[0]?.title ?? overdue[0]?.title ?? interestLabels[0] ?? null;
   const aiDetail =
     nextEvent && new Date(nextEvent.startAt).toDateString() === now.toDateString()
-      ? `"${nextEvent.title}" is on tonight, so this is your clearest stretch.`
+      ? t('home.ai.tonight', { event: nextEvent.title })
       : dueSoon[0]
-        ? `"${dueSoon[0].title}" is your next deadline.`
+        ? t('home.ai.deadline', { task: dueSoon[0].title })
         : overdue[0]
-          ? 'It is overdue, so this window is the best time to clear it.'
-          : 'Nothing reaches your calendar without your confirmation.';
+          ? t('home.ai.overdue')
+          : t('home.ai.confirm');
 
   const streak = progress?.streak ?? 0;
   const lastWeek = (progress?.series ?? []).slice(-7);
@@ -232,7 +232,7 @@ export default async function HomePage() {
           key: `g-${gap.startMinute}`,
           start: gap.startMinute,
           end: gap.endMinute,
-          title: `Free · ${duration(gap.minutes)}`,
+          title: t('home.timeline.free', { duration: duration(gap.minutes) }),
           color: 'var(--accent)',
           kind: 'gap' as const,
         })),
@@ -249,36 +249,34 @@ export default async function HomePage() {
         <Spark className="size-5" />
         <span className="text-ai-gradient">Nexus AI</span>
         <Badge variant="ai" className="ml-auto">
-          Suggestion
+          {t('home.ai.suggestion')}
         </Badge>
       </div>
       {bestGap ? (
         <p className="relative mt-3 text-[17px] font-medium leading-snug">
-          You have{' '}
           <span className="text-accent">
-            {duration(bestGap.minutes)} free from {label(bestGap.startMinute)}
+            {t('home.ai.free', { duration: duration(bestGap.minutes), time: label(bestGap.startMinute) })}
           </span>
-          .
           {aiFocus
             ? dueSoon[0] || overdue[0]
-              ? ` Enough to get "${aiFocus}" done.`
-              : ` Enough for a focused session on ${aiFocus}.`
+              ? t('home.ai.enoughTask', { task: aiFocus })
+              : t('home.ai.enoughTopic', { topic: aiFocus })
             : ''}
         </p>
       ) : (
         <p className="relative mt-3 text-[17px] font-medium leading-snug">
           {todayCount > 0
-            ? 'Your day is fully committed. Nothing worth squeezing into it.'
-            : 'Add your fixed week and NEXUS finds the gaps worth using.'}
+            ? t('home.ai.full')
+            : t('home.ai.addWeek')}
         </p>
       )}
       <p className="text-ink-muted relative mt-2 text-[13px]">{aiDetail}</p>
       <div className="relative mt-4 flex flex-wrap gap-2">
         <Button size="sm" asChild>
-          <Link href="/ai">Plan my day</Link>
+          <Link href="/ai">{t('nav.items.ai')}</Link>
         </Button>
         <Button size="sm" variant="secondary" asChild>
-          <Link href="/calendar">Open calendar</Link>
+          <Link href="/calendar">{t('home.ai.openCalendar')}</Link>
         </Button>
       </div>
     </div>
@@ -301,24 +299,22 @@ export default async function HomePage() {
             <CalendarDays className="size-4" /> {todayLabel} · Kigali
           </div>
           <h1 className="t-d2 mt-2 text-white drop-shadow-sm">
-            {greeting(timezone)}, {firstName}.
+            {t(`home.greeting.${greeting(timezone)}`)}, {firstName}.
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="flex items-center gap-1.5 rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
               <Flame className="text-module-events size-3.5" />{' '}
-              <span className="num">{streak}-day streak</span>
+              <span className="num">{t('home.chips.streak', { n: streak })}</span>
             </span>
             <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-              <span className="num">{todayCount}</span> {todayCount === 1 ? 'thing' : 'things'}{' '}
-              today
+              {t(todayCount === 1 ? 'home.chips.thingToday' : 'home.chips.thingsToday', { n: todayCount })}
             </span>
             <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-              <span className="num">{counts.open}</span> open {counts.open === 1 ? 'task' : 'tasks'}
+              {t(counts.open === 1 ? 'home.chips.openTask' : 'home.chips.openTasks', { n: counts.open })}
             </span>
             {myEvents.length > 0 ? (
               <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-                <span className="num">{myEvents.length}</span>{' '}
-                {myEvents.length === 1 ? 'event' : 'events'} ahead
+                {t(myEvents.length === 1 ? 'home.chips.eventAhead' : 'home.chips.eventsAhead', { n: myEvents.length })}
               </span>
             ) : null}
           </div>
@@ -336,7 +332,7 @@ export default async function HomePage() {
               <AlertTriangle className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="t-eyebrow text-danger">Needs you</div>
+              <div className="t-eyebrow text-danger">{t('home.priorities.needsYou')}</div>
               <div className="mt-1 font-semibold">
                 {priorities.map((item) => item.title).join(' · ')}
               </div>
@@ -365,10 +361,10 @@ export default async function HomePage() {
 
             <Card data-tour="timeline" className="p-5">
               <SectionTitle
-                eyebrow="Today"
-                title="Your timeline"
+                eyebrow={t('common.today')}
+                title={t('home.timeline.title')}
                 href="/calendar"
-                action="Open calendar"
+                action={t('home.ai.openCalendar')}
               />
               {timeline.length > 0 ? (
                 <div className="relative">
@@ -413,7 +409,7 @@ export default async function HomePage() {
                               className="mt-2 flex items-center gap-1.5 text-xs font-semibold"
                             >
                               <Spark className="size-3.5" />
-                              <span className="text-ai-gradient">Let NEXUS fill this gap</span>
+                              <span className="text-ai-gradient">{t('home.timeline.fill')}</span>
                             </Link>
                           ) : null}
                         </div>
@@ -424,11 +420,10 @@ export default async function HomePage() {
               ) : (
                 <div className="py-4">
                   <p className="text-ink-muted text-sm leading-relaxed">
-                    Nothing on your calendar today. Add your classes or work hours and NEXUS starts
-                    planning around them.
+                    {t('home.timeline.empty')}
                   </p>
                   <Button asChild variant="secondary" size="sm" className="mt-4">
-                    <Link href="/profile">Add your week</Link>
+                    <Link href="/profile">{t('home.priorities.weekTitle')}</Link>
                   </Button>
                 </div>
               )}
@@ -436,10 +431,10 @@ export default async function HomePage() {
 
             <div className="grid gap-5 md:grid-cols-2">
               <Card className="p-5">
-                <SectionTitle title="Next up" href="/tasks" action="All tasks" />
+                <SectionTitle title={t('home.tasks.title')} href="/tasks" action={t('home.tasks.all')} />
                 {nextTasks.length === 0 ? (
                   <p className="text-ink-muted py-2 text-sm leading-relaxed">
-                    Nothing with a deadline. Add a task and it shows up here and on your calendar.
+                    {t('home.tasks.empty')}
                   </p>
                 ) : (
                   <div className="-mx-2">
@@ -474,11 +469,8 @@ export default async function HomePage() {
                                   )}
                                 >
                                   <Clock className="size-3" />
-                                  {isOverdue ? 'Overdue · ' : ''}
-                                  {due.toLocaleDateString('en-GB', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                  })}
+                                  {isOverdue ? t('home.tasks.overdue') : ''}
+                                  {date(due, 'dayShort', timezone)}
                                 </span>
                               ) : null}
                               {task.goal ? (
@@ -499,21 +491,21 @@ export default async function HomePage() {
                   className="text-ink-muted hover:bg-surface-raised hover:text-ink mt-2 flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm"
                 >
                   <Plus className="size-4" />
-                  Add task
+                  {t('home.tasks.add')}
                 </Link>
               </Card>
 
               <Card className="p-5">
                 <SectionTitle
-                  eyebrow="Coming up"
+                  eyebrow={t('home.events.eyebrow')}
                   tint="var(--module-events)"
-                  title="Events"
+                  title={t('home.events.title')}
                   href="/events"
-                  action="See all"
+                  action={t('common.seeAll')}
                 />
                 {events.length === 0 ? (
                   <p className="text-ink-muted py-2 text-sm leading-relaxed">
-                    No events coming up. Host one and invite the people who should be there.
+                    {t('home.events.empty')}
                   </p>
                 ) : (
                   <div className="-mx-2 space-y-1">
@@ -535,7 +527,7 @@ export default async function HomePage() {
                             <div className="absolute inset-0 grid place-items-center text-center leading-none text-white">
                               <div>
                                 <div className="font-mono text-[9px] font-semibold uppercase">
-                                  {start.toLocaleDateString('en-GB', { month: 'short' })}
+                                  {date(start, 'monthShort', timezone)}
                                 </div>
                                 <div className="font-display text-lg font-extrabold">
                                   {start.getDate()}
@@ -546,10 +538,7 @@ export default async function HomePage() {
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-semibold">{event.title}</div>
                             <div className="text-ink-muted mt-0.5 truncate text-xs">
-                              {start.toLocaleTimeString('en-GB', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                              {date(start, 'time', timezone)}
                               {event.place
                                 ? ` · ${event.place.name}`
                                 : event.locationText
@@ -558,10 +547,10 @@ export default async function HomePage() {
                             </div>
                             <div className="text-module-events mt-0.5 text-xs font-medium">
                               {event.isHost
-                                ? 'You are hosting'
+                                ? t('home.events.hosting')
                                 : event.myStatus === 'GOING'
-                                  ? 'You are going'
-                                  : `${event.goingCount} going`}
+                                  ? t('home.events.going')
+                                  : t('home.events.goingCount', { n: event.goingCount })}
                             </div>
                           </div>
                         </Link>
@@ -574,15 +563,15 @@ export default async function HomePage() {
 
             <Card className="p-5">
               <SectionTitle
-                eyebrow="Nearby"
+                eyebrow={t('home.places.eyebrow')}
                 tint="var(--module-nearby)"
-                title="Places worth knowing"
+                title={t('home.places.title')}
                 href="/nearby"
-                action="Open map"
+                action={t('home.places.openMap')}
               />
               {places.length === 0 ? (
                 <p className="text-ink-muted py-2 text-sm">
-                  No places yet. Add the cafés and venues you actually use.
+                  {t('home.places.empty')}
                 </p>
               ) : (
                 <div className="no-scrollbar -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
@@ -601,7 +590,7 @@ export default async function HomePage() {
                       <div className="absolute inset-x-0 bottom-0 p-3 text-white">
                         <div className="truncate font-semibold">{place.name}</div>
                         <div className="flex items-center gap-1.5 text-xs text-white/75">
-                          <span className="capitalize">{place.category.toLowerCase()}</span>
+                          <span>{t(`enums.place.${place.category as PlaceKey}`)}</span>
                           {place.rating !== null ? (
                             <>
                               <span>·</span>
@@ -627,17 +616,17 @@ export default async function HomePage() {
                 <div>
                   <div className="text-ink-muted flex items-center gap-1.5 text-sm">
                     <Flame className="text-module-events size-4" />
-                    Streak
+                    {t('home.streak.title')}
                   </div>
                   <div className="num font-display mt-1 text-5xl font-extrabold tracking-tighter">
                     {streak}
                     <span className="text-ink-muted ml-1 text-lg">
-                      {streak === 1 ? 'day' : 'days'}
+                      {streak === 1 ? t('home.streak.day') : t('home.streak.days')}
                     </span>
                   </div>
                 </div>
                 <Link href="/progress" className="text-accent text-xs font-medium hover:underline">
-                  Progress
+                  {t('home.streak.progress')}
                 </Link>
               </div>
               {lastWeek.length > 0 ? (
@@ -660,7 +649,7 @@ export default async function HomePage() {
                           {on ? (
                             <Check className="size-3.5" strokeWidth={3} />
                           ) : (
-                            new Date(day.date).toLocaleDateString('en-GB', { weekday: 'narrow' })
+                            date(`${day.date}T12:00:00Z`, 'weekdayShort').slice(0, locale === 'rw' ? 3 : 1)
                           )}
                         </div>
                       </div>
@@ -671,15 +660,15 @@ export default async function HomePage() {
             </Card>
 
             <Card className="p-5">
-              <SectionTitle title="Goals" href="/goals" action="All goals" />
+              <SectionTitle title={t('home.goals.title')} href="/goals" action={t('home.goals.all')} />
               {goals.length === 0 ? (
                 <div>
                   <p className="text-ink-muted text-sm leading-relaxed">
-                    No goals yet. A goal with milestones gives your tasks somewhere to point.
+                    {t('home.goals.empty')}
                   </p>
                   <Button asChild variant="secondary" size="sm" className="mt-4">
                     <Link href="/goals">
-                      <Target /> Create a goal
+                      <Target /> {t('home.goals.create')}
                     </Link>
                   </Button>
                 </div>
@@ -706,7 +695,7 @@ export default async function HomePage() {
                             {goal.milestones.filter((milestone) => milestone.doneAt).length}/
                             {goal.milestones.length}
                           </span>{' '}
-                          milestones
+                          {t('home.goals.milestones')}
                         </div>
                       </div>
                       <ChevronRight className="text-ink-muted size-4" />
@@ -718,7 +707,7 @@ export default async function HomePage() {
 
             {circles.length > 0 ? (
               <Card className="p-5">
-                <SectionTitle title="Your circles" href="/circles" action="All" />
+                <SectionTitle title={t('home.circles.title')} href="/circles" action={t('home.circles.all')} />
                 <div className="-mx-1 space-y-1">
                   {circles.slice(0, 3).map((circle) => (
                     <Link
@@ -735,8 +724,7 @@ export default async function HomePage() {
                         <div className="truncate text-sm font-semibold">{circle.name}</div>
                         <div className="text-ink-muted flex items-center gap-1 text-xs">
                           <Users className="size-3" />
-                          <span className="num">{circle.members}</span> members ·{' '}
-                          <span className="num">{circle.posts}</span> posts
+                          {t('home.circles.stats', { members: circle.members, posts: circle.posts })}
                         </div>
                       </div>
                     </Link>
@@ -747,7 +735,7 @@ export default async function HomePage() {
 
             {!onboarded || (profile?.interests.length ?? 0) < 3 ? (
               <Card className="p-5">
-                <SectionTitle title="Finish your setup" />
+                <SectionTitle title={t('home.setup.title')} />
                 <Progress
                   value={Math.min(
                     (onboarded ? 40 : 0) +
@@ -759,7 +747,7 @@ export default async function HomePage() {
                 />
                 <Button asChild variant="secondary" size="sm" className="mt-4">
                   <Link href={onboarded ? '/profile' : '/onboarding'}>
-                    <ListTodo /> Continue
+                    <ListTodo /> {t('home.setup.continue')}
                   </Link>
                 </Button>
               </Card>
@@ -773,8 +761,8 @@ export default async function HomePage() {
                 <MapPin className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold">Explore the map</div>
-                <div className="text-ink-muted text-xs">{places.length} places in your city</div>
+                <div className="text-sm font-semibold">{t('home.map.title')}</div>
+                <div className="text-ink-muted text-xs">{t('home.map.count', { n: places.length })}</div>
               </div>
               <ChevronRight className="text-ink-muted size-4" />
             </Link>

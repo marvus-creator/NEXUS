@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { EventsBoard } from '@/components/events/events-board';
 import { getEvents, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default async function EventsPage({
   searchParams: Promise<{ scope?: string }>;
 }) {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -24,11 +26,11 @@ export default async function EventsPage({
   return (
     <div>
       <PageHero
-        eyebrow="Events"
+        eyebrow={t('pages.events.eyebrow')}
         tint="var(--module-events)"
         image={IMG.concert}
-        title={<>What&apos;s on in Kigali.</>}
-        description={<>From finding something to standing in the room. Invite friends, check in at the door with a code, and leave a review afterwards.</>}
+        title={t('pages.events.title')}
+        description={t('pages.events.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 

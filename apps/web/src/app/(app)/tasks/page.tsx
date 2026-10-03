@@ -5,11 +5,13 @@ import { redirect } from 'next/navigation';
 import { TaskBoard } from '@/components/planner/task-board';
 import { getGoals, getTaskCounts, getTasks } from '@/lib/planner-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TasksPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -19,11 +21,11 @@ export default async function TasksPage() {
     <div>
       <PageHero
         width="max-w-4xl"
-        eyebrow="Tasks"
+        eyebrow={t('pages.tasks.eyebrow')}
         tint="var(--module-events)"
         image={IMG.cowork4}
-        title={<>Tasks</>}
-        description={<>Every task can point at a goal and land on your calendar. That link is the whole point.</>}
+        title={t('pages.tasks.title')}
+        description={t('pages.tasks.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
 

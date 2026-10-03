@@ -8,19 +8,20 @@ import { socialClient, type FeedPost } from '@/lib/social-client';
 import { PostCard } from './post-card';
 import type { SessionUser } from '@/lib/session';
 import { ImagePicker } from '@/components/app/image-picker';
+import { useT } from '@/i18n/client';
 
 const SCOPES = [
-  { value: 'for-you', label: 'For You' },
-  { value: 'following', label: 'Following' },
-  { value: 'friends', label: 'Friends' },
-  { value: 'mine', label: 'Yours' },
-  { value: 'saved', label: 'Saved' },
+  { value: 'for-you' },
+  { value: 'following' },
+  { value: 'friends' },
+  { value: 'mine' },
+  { value: 'saved' },
 ] as const;
 
 const VISIBILITIES = [
-  { value: 'PUBLIC', label: 'Public', icon: Globe },
-  { value: 'FRIENDS', label: 'Friends', icon: Users },
-  { value: 'PRIVATE', label: 'Only me', icon: Lock },
+  { value: 'PUBLIC', icon: Globe },
+  { value: 'FRIENDS', icon: Users },
+  { value: 'PRIVATE', icon: Lock },
 ] as const;
 
 export function FeedBoard({
@@ -33,6 +34,7 @@ export function FeedBoard({
   user: SessionUser;
 }) {
   const router = useRouter();
+  const t = useT();
 
   const [posts, setPosts] = useState(initialPosts);
   const [body, setBody] = useState('');
@@ -88,7 +90,7 @@ export function FeedBoard({
           <div className="min-w-0 flex-1">
             <Textarea
               value={body}
-              placeholder="What is happening in your world?"
+              placeholder={t('social.composer.placeholder')}
               className="min-h-20 border-0 bg-transparent px-0 py-1 focus:ring-0"
               onChange={(event) => setBody(event.target.value)}
             />
@@ -98,7 +100,7 @@ export function FeedBoard({
                 folder="posts"
                 value={photo}
                 onChange={setPhoto}
-                label="Add a photo"
+                label={t('social.composer.addPhoto')}
                 className="mt-3"
               />
             ) : null}
@@ -109,7 +111,7 @@ export function FeedBoard({
                   <div key={index} className="flex gap-2">
                     <input
                       value={option}
-                      placeholder={`Option ${index + 1}`}
+                      placeholder={t('social.composer.option', { n: index + 1 })}
                       className="border-line bg-surface-raised focus:border-accent-line h-9 flex-1 rounded-md border px-3 text-sm outline-none focus:ring-4 focus:ring-[var(--accent-soft)]"
                       onChange={(event) =>
                         setOptions((current) =>
@@ -140,7 +142,7 @@ export function FeedBoard({
                     className="self-start"
                     onClick={() => setOptions((current) => [...current, ''])}
                   >
-                    <Plus /> Add option
+                    <Plus /> {t('social.composer.addOption')}
                   </Button>
                 ) : null}
               </div>
@@ -164,7 +166,7 @@ export function FeedBoard({
                     )}
                   >
                     <Icon className="size-3" />
-                    {option.label}
+                    {t(`social.visibility.${option.value}`)}
                   </button>
                 );
               })}
@@ -180,7 +182,7 @@ export function FeedBoard({
                 )}
               >
                 <BarChart3 className="size-3" />
-                Poll
+                {t('social.composer.poll')}
               </button>
 
               <button
@@ -197,7 +199,7 @@ export function FeedBoard({
                 )}
               >
                 <ImagePlus className="size-3" />
-                Photo
+                {t('social.composer.photo')}
               </button>
 
               <Button
@@ -207,13 +209,13 @@ export function FeedBoard({
                 disabled={!body.trim()}
                 onClick={() => void publish()}
               >
-                Post
+                {t('common.post')}
               </Button>
             </div>
 
             {!user.emailVerified && visibility === 'PUBLIC' ? (
               <p className="text-warning mt-3 text-xs">
-                Confirm your email address to post publicly. Friends and private posts work now.
+                {t('social.composer.confirmEmail')}
               </p>
             ) : null}
 
@@ -235,7 +237,7 @@ export function FeedBoard({
                 : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
             )}
           >
-            {item.label}
+            {t(`social.scopes.${item.value}`)}
           </button>
         ))}
       </div>
@@ -244,13 +246,13 @@ export function FeedBoard({
         {posts.length === 0 ? (
           <EmptyState
             icon={<MessageSquare />}
-            title={scope === 'saved' ? 'Nothing saved yet' : 'Nothing here yet'}
+            title={scope === 'saved' ? t('social.empty.saved') : t('social.empty.default')}
             description={
               scope === 'friends'
-                ? 'Posts from people you are friends with will appear here.'
+                ? t('social.empty.friends')
                 : scope === 'following'
-                  ? 'Follow a few people and their posts land here.'
-                  : 'Be the first to post something.'
+                  ? t('social.empty.following')
+                  : t('social.empty.first')
             }
           />
         ) : (

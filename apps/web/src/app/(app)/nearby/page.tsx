@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { NearbyBoard } from '@/components/places/nearby-board';
 import { getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NearbyPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -18,11 +20,11 @@ export default async function NearbyPage() {
   return (
     <div>
       <PageHero
-        eyebrow="Nearby"
+        eyebrow={t('pages.nearby.eyebrow')}
         tint="var(--module-nearby)"
         image={IMG.kigaliRooftops}
-        title={<>{city ? `Nearby in ${city}` : 'Nearby'}</>}
-        description={<>Cafés, workspaces, venues and the places worth knowing. Share your location and distances are computed for real.</>}
+        title={city ? t('pages.nearby.titleCity', { city }) : t('pages.nearby.title')}
+        description={t('pages.nearby.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 

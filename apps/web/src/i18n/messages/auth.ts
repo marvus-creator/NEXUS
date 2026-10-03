@@ -1,0 +1,200 @@
+export const auth = {
+  side: {
+    alt: [
+      'Friends working together in a Kigali co-working space',
+      'Inshuti zikorera hamwe ahantu ho gukorera i Kigali',
+      'Des amis qui travaillent ensemble dans un espace de coworking à Kigali',
+    ],
+    hosting: ['is hosting Design Critique Night', 'arategura Ijoro ry’isesengura', 'organise la Soirée critique design'],
+    going: ['+38 going', '+38 bazaza', '+38 participants'],
+    when: ['Tue · 18:30 · Norrsken', 'Kab · 18:30 · Norrsken', 'mar. · 18 h 30 · Norrsken'],
+    title: [
+      'Your world. Your people. Your places. Your life.',
+      'Isi yawe. Abantu bawe. Ahantu hawe. Ubuzima bwawe.',
+      'Votre monde. Vos proches. Vos lieux. Votre vie.',
+    ],
+    body: [
+      'Your schedule, your friends, the city around you and the things you are learning, in one place.',
+      'Gahunda yawe, inshuti zawe, umujyi ukuzengurutse n’ibyo urimo kwiga, ahantu hamwe.',
+      'Votre emploi du temps, vos amis, la ville autour de vous et ce que vous apprenez, au même endroit.',
+    ],
+    built: ['Built in Kigali', 'Byubakiwe i Kigali', 'Conçu à Kigali'],
+  },
+  fields: {
+    email: ['Email', 'Imeyili', 'E-mail'],
+    password: ['Password', 'Ijambobanga', 'Mot de passe'],
+    newPassword: ['New password', 'Ijambobanga rishya', 'Nouveau mot de passe'],
+    name: ['Your name', 'Izina ryawe', 'Votre nom'],
+    username: ['Username', 'Izina ukoresha', 'Nom d’utilisateur'],
+    emailPlaceholder: ['you@example.com', 'wowe@urugero.com', 'vous@exemple.com'],
+    passwordPlaceholder: ['Your password', 'Ijambobanga ryawe', 'Votre mot de passe'],
+    newPasswordPlaceholder: ['Something only you would pick', 'Icyo wowe wenyine wahitamo', 'Quelque chose que vous seul choisiriez'],
+    usernameHint: [
+      'This is how people find you on Nexus.',
+      'Iri ni ryo abantu bazakubona ho kuri Nexus.',
+      'C’est ainsi que les gens vous trouvent sur Nexus.',
+    ],
+    usernameError: [
+      '3-24 lowercase letters, numbers or underscores',
+      'Inyuguti nto 3-24, imibare cyangwa utunyerezo (_)',
+      '3 à 24 minuscules, chiffres ou tirets bas',
+    ],
+    atLeast10: ['At least 10 characters', 'Nibura inyuguti 10', 'Au moins 10 caractères'],
+    notOnlyNumbers: ['Not only numbers', 'Si imibare gusa', 'Pas uniquement des chiffres'],
+  },
+  signIn: {
+    title: ['Welcome back', 'Murakaza neza', 'Bon retour'],
+    subtitle: [
+      'Sign in to pick up where your world left off.',
+      'Injira ukomereze aho isi yawe yari igeze.',
+      'Connectez-vous pour reprendre là où votre monde s’était arrêté.',
+    ],
+    forgot: ['Forgot your password?', 'Wibagiwe ijambobanga?', 'Mot de passe oublié ?'],
+    submit: ['Sign in', 'Injira', 'Se connecter'],
+    newHere: ['New to NEXUS?', 'Uri mushya kuri NEXUS?', 'Nouveau sur NEXUS ?'],
+    create: ['Create an account', 'Fungura konti', 'Créer un compte'],
+    exploreAs: ['Or explore as', 'Cyangwa urebe nka', 'Ou explorez en tant que'],
+  },
+  personas: {
+    malvynRole: ['Student · admin', 'Umunyeshuri · umuyobozi', 'Étudiant · admin'],
+    malvynBlurb: [
+      'Planner, streaks and the control center',
+      'Gahunda, uruhererekane n’ikigo cy’ubugenzuzi',
+      'Agenda, séries et centre de contrôle',
+    ],
+    kevinRole: ['Backend engineer', 'Enjeniyeri wa backend', 'Ingénieur backend'],
+    kevinBlurb: ['Hosts the Kigali Tech Meetup', 'Ategura Kigali Tech Meetup', 'Organise le Kigali Tech Meetup'],
+    graceRole: ['Founder', 'Rwiyemezamirimo', 'Fondatrice'],
+    graceBlurb: [
+      'Runs Imigongo Studio in the market',
+      'Ayobora Imigongo Studio mu isoko',
+      'Gère Imigongo Studio sur le marché',
+    ],
+  },
+  create: {
+    title: ['Create your Nexus', 'Rema Nexus yawe', 'Créez votre Nexus'],
+    subtitle: [
+      'Three minutes of setup, then a version of the internet that is actually yours.',
+      'Iminota itatu yo gutegura, hanyuma murandasi iba iyawe koko.',
+      'Trois minutes de configuration, puis un internet qui vous ressemble vraiment.',
+    ],
+    submit: ['Create account', 'Fungura konti', 'Créer le compte'],
+    note: [
+      'We will send a confirmation link to your email. You can start using Nexus straight away while it is on its way.',
+      'Tuzakoherereza ihuza ryo kwemeza kuri imeyili yawe. Ushobora gutangira gukoresha Nexus ako kanya uko riza.',
+      'Nous vous enverrons un lien de confirmation par e-mail. Vous pouvez utiliser Nexus tout de suite en attendant.',
+    ],
+    haveAccount: ['Already have an account?', 'Usanzwe ufite konti?', 'Vous avez déjà un compte ?'],
+  },
+  forgot: {
+    title: ['Reset your password', 'Hindura ijambobanga ryawe', 'Réinitialisez votre mot de passe'],
+    subtitle: [
+      'Enter your email and we will send you a link to set a new one.',
+      'Andika imeyili yawe tukoherereze ihuza ryo gushyiraho irindi.',
+      'Saisissez votre e-mail et nous vous enverrons un lien pour en définir un nouveau.',
+    ],
+    submit: ['Send reset link', 'Ohereza ihuza', 'Envoyer le lien'],
+    checkTitle: ['Check your email', 'Reba imeyili yawe', 'Consultez vos e-mails'],
+    checkBody: [
+      'If an account exists for {email}, a reset link is on its way. The link expires in one hour.',
+      'Niba hari konti ya {email}, ihuza ryo guhindura riraje. Rirangira mu isaha imwe.',
+      'Si un compte existe pour {email}, un lien est en route. Il expire dans une heure.',
+    ],
+    devOnly: ['Development only', 'Mu igerageza gusa', 'Développement uniquement'],
+    devBody: [
+      'No mail provider is configured yet, so the link is shown here.',
+      'Nta serivisi ya imeyili irashyirwaho, niyo mpamvu ihuza rigaragara hano.',
+      'Aucun service d’e-mail n’est configuré, le lien s’affiche donc ici.',
+    ],
+    openLink: ['Open the reset link', 'Fungura ihuza', 'Ouvrir le lien'],
+    backToSignIn: ['Back to sign in', 'Subira ku kwinjira', 'Retour à la connexion'],
+  },
+  reset: {
+    invalidTitle: ['Link not valid', 'Ihuza ntiryemewe', 'Lien non valide'],
+    invalidBody: [
+      'This reset link is missing its token. Request a new one and try again.',
+      'Iri huza ribura kode yaryo. Saba irindi wongere ugerageze.',
+      'Ce lien n’a pas de jeton. Demandez-en un nouveau et réessayez.',
+    ],
+    requestNew: ['Request a new link', 'Saba ihuza rishya', 'Demander un nouveau lien'],
+    doneTitle: ['Password updated', 'Ijambobanga ryahinduwe', 'Mot de passe mis à jour'],
+    doneBody: [
+      'For safety, every device that was signed in has been signed out. Use your new password to sign back in.',
+      'Ku bw’umutekano, ibikoresho byose byari byinjiye byasohowe. Koresha ijambobanga rishya kugira ngo winjire.',
+      'Par sécurité, tous les appareils connectés ont été déconnectés. Utilisez votre nouveau mot de passe pour vous reconnecter.',
+    ],
+    title: ['Set a new password', 'Shyiraho ijambobanga rishya', 'Définissez un nouveau mot de passe'],
+    subtitle: ['Choose something only you would pick.', 'Hitamo icyo wowe wenyine wahitamo.', 'Choisissez quelque chose que vous seul choisiriez.'],
+    submit: ['Update password', 'Hindura ijambobanga', 'Mettre à jour'],
+  },
+  verify: {
+    confirming: ['Confirming your email…', 'Turimo kwemeza imeyili yawe…', 'Confirmation de votre e-mail…'],
+    doneTitle: ['Email confirmed', 'Imeyili yemejwe', 'E-mail confirmé'],
+    doneBody: [
+      'Your account is fully active. Everything in Nexus is open to you now.',
+      'Konti yawe irakora byuzuye. Ibintu byose bya Nexus birakinguye ubu.',
+      'Votre compte est entièrement actif. Tout Nexus vous est ouvert.',
+    ],
+    go: ['Go to Nexus', 'Jya kuri Nexus', 'Aller sur Nexus'],
+    invalid: ['Link not valid', 'Ihuza ntiryemewe', 'Lien non valide'],
+    failed: ['Could not confirm', 'Ntibyashobotse kwemeza', 'Confirmation impossible'],
+    missing: [
+      'This confirmation link is missing its token.',
+      'Iri huza ryo kwemeza ribura kode yaryo.',
+      'Ce lien de confirmation n’a pas de jeton.',
+    ],
+    notValid: ['That link is not valid.', 'Iryo huza ntiryemewe.', 'Ce lien n’est pas valide.'],
+    back: ['Back to Nexus', 'Subira kuri Nexus', 'Retour à Nexus'],
+  },
+} as const;
+
+export const apiErrors = {
+    'Email or password is incorrect': [
+      'Email or password is incorrect',
+      'Imeyili cyangwa ijambobanga si byo',
+      'E-mail ou mot de passe incorrect',
+    ],
+    'An account with that email already exists': [
+      'An account with that email already exists',
+      'Hari konti isanzwe ikoresha iyo imeyili',
+      'Un compte existe déjà avec cet e-mail',
+    ],
+    'That username is already taken': [
+      'That username is already taken',
+      'Iryo zina ukoresha ryarafashwe',
+      'Ce nom d’utilisateur est déjà pris',
+    ],
+    'New sign-ups are paused right now. Please try again later.': [
+      'New sign-ups are paused right now. Please try again later.',
+      'Kwiyandikisha guhagaritswe by’agateganyo. Ongera ugerageze nyuma.',
+      'Les inscriptions sont suspendues pour le moment. Réessayez plus tard.',
+    ],
+    'This account is not active': ['This account is not active', 'Iyi konti ntikora', 'Ce compte n’est pas actif'],
+    'That reset link has expired': ['That reset link has expired', 'Iryo huza ryarangiye', 'Ce lien a expiré'],
+    'That reset link has already been used': [
+      'That reset link has already been used',
+      'Iryo huza ryamaze gukoreshwa',
+      'Ce lien a déjà été utilisé',
+    ],
+    'That reset link is not valid': ['That reset link is not valid', 'Iryo huza ntiryemewe', 'Ce lien n’est pas valide'],
+    'That confirmation link has expired': [
+      'That confirmation link has expired',
+      'Iryo huza ryo kwemeza ryarangiye',
+      'Ce lien de confirmation a expiré',
+    ],
+    'That confirmation link has already been used': [
+      'That confirmation link has already been used',
+      'Iryo huza ryo kwemeza ryamaze gukoreshwa',
+      'Ce lien de confirmation a déjà été utilisé',
+    ],
+    'That confirmation link is not valid': [
+      'That confirmation link is not valid',
+      'Iryo huza ryo kwemeza ntiryemewe',
+      'Ce lien de confirmation n’est pas valide',
+    ],
+    'Your current password is incorrect': [
+      'Your current password is incorrect',
+      'Ijambobanga ryawe ry’ubu si ryo',
+      'Votre mot de passe actuel est incorrect',
+    ],
+} as const;

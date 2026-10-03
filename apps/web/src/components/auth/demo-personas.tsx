@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import { PEOPLE } from '@/lib/photos';
+import { useErrorText, useT } from '@/i18n/client';
 
 const PERSONAS = [
   {
     key: 'malvyn',
     name: 'Malvyn',
-    role: 'Student · admin',
-    blurb: 'Planner, streaks and the control center',
+    role: 'malvynRole',
+    blurb: 'malvynBlurb',
     email: 'malvyn.1789358144@nexus.local',
     password: 'correct-horse-battery',
     photo: null,
@@ -21,8 +22,8 @@ const PERSONAS = [
   {
     key: 'kevin',
     name: 'Kevin',
-    role: 'Backend engineer',
-    blurb: 'Hosts the Kigali Tech Meetup',
+    role: 'kevinRole',
+    blurb: 'kevinBlurb',
     email: 'kevin@demo.nexus.rw',
     password: 'nexus-demo-2026',
     photo: PEOPLE.kevin,
@@ -31,8 +32,8 @@ const PERSONAS = [
   {
     key: 'grace',
     name: 'Grace',
-    role: 'Founder',
-    blurb: 'Runs Imigongo Studio in the market',
+    role: 'graceRole',
+    blurb: 'graceBlurb',
     email: 'grace@demo.nexus.rw',
     password: 'nexus-demo-2026',
     photo: PEOPLE.grace,
@@ -42,6 +43,8 @@ const PERSONAS = [
 
 export function DemoPersonas({ next }: { next: string }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +58,7 @@ export function DemoPersonas({ next }: { next: string }) {
       router.replace(next);
       router.refresh();
     } catch (caught) {
-      setError((caught as Error).message);
+      setError(errorText((caught as Error).message));
       setBusy(null);
     }
   }
@@ -64,7 +67,7 @@ export function DemoPersonas({ next }: { next: string }) {
     <div className="mt-8">
       <div className="flex items-center gap-3">
         <span className="bg-line h-px flex-1" />
-        <span className="t-eyebrow text-ink-subtle">Or explore as</span>
+        <span className="t-eyebrow text-ink-subtle">{t('auth.signIn.exploreAs')}</span>
         <span className="bg-line h-px flex-1" />
       </div>
       <div className="mt-4 grid gap-2">
@@ -99,10 +102,10 @@ export function DemoPersonas({ next }: { next: string }) {
                     background: `color-mix(in oklab, ${persona.tint} 14%, transparent)`,
                   }}
                 >
-                  {persona.role}
+                  {t(`auth.personas.${persona.role}`)}
                 </span>
               </div>
-              <p className="text-ink-muted truncate text-xs">{persona.blurb}</p>
+              <p className="text-ink-muted truncate text-xs">{t(`auth.personas.${persona.blurb}`)}</p>
             </div>
             {busy === persona.key ? (
               <Loader2 className="text-accent size-4 animate-spin" />

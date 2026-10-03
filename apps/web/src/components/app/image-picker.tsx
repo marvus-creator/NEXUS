@@ -4,13 +4,14 @@ import { cn } from '@nexus/ui';
 import { ImagePlus, Loader2, RefreshCw, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { uploadImage, type UploadFolder } from '@/lib/upload-client';
+import { useT } from '@/i18n/client';
 
 export function ImagePicker({
   folder,
   value,
   onChange,
-  label = 'Add a cover photo',
-  hint = 'JPEG, PNG or WebP. Big photos are resized for you.',
+  label,
+  hint,
   className,
 }: {
   folder: UploadFolder;
@@ -20,6 +21,7 @@ export function ImagePicker({
   hint?: string;
   className?: string;
 }) {
+  const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,12 +63,12 @@ export function ImagePicker({
               className="flex h-8 items-center gap-1.5 rounded-full bg-black/60 px-3 text-xs font-medium text-white backdrop-blur"
             >
               {busy ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-              Replace
+              {t('social.picker.replace')}
             </button>
             <button
               type="button"
               onClick={() => onChange(null)}
-              aria-label="Remove photo"
+              aria-label={t('social.picker.remove')}
               className="grid size-8 place-items-center rounded-full bg-black/60 text-white backdrop-blur"
             >
               <X className="size-3.5" />
@@ -98,8 +100,8 @@ export function ImagePicker({
           ) : (
             <ImagePlus className="text-ink-subtle size-6" />
           )}
-          <span className="text-sm font-medium">{busy ? 'Uploading…' : label}</span>
-          <span className="text-ink-subtle px-4 text-xs">{hint}</span>
+          <span className="text-sm font-medium">{busy ? t('social.picker.uploading') : (label ?? t('social.picker.addCover'))}</span>
+          <span className="text-ink-subtle px-4 text-xs">{hint ?? t('social.picker.hint')}</span>
         </button>
       )}
 

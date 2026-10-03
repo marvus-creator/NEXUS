@@ -7,11 +7,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState, type FormEvent } from 'react';
 import { DemoPersonas } from '@/components/auth/demo-personas';
 import { authClient, type AuthError } from '@/lib/auth-client';
+import { useErrorText, useT } from '@/i18n/client';
 
 function SignInForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get('next') ?? '/home';
+  const t = useT();
+  const errorText = useErrorText();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,8 +38,8 @@ function SignInForm() {
 
   return (
     <div>
-      <h1 className="t-h1">Welcome back</h1>
-      <p className="text-ink-muted mt-2.5 text-sm">Sign in to pick up where your world left off.</p>
+      <h1 className="t-h1">{t('auth.signIn.title')}</h1>
+      <p className="text-ink-muted mt-2.5 text-sm">{t('auth.signIn.subtitle')}</p>
 
       {error ? (
         <div
@@ -44,32 +47,32 @@ function SignInForm() {
           className="border-danger/35 mt-6 flex items-start gap-2.5 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3"
         >
           <AlertCircle className="text-danger mt-0.5 size-4 shrink-0" />
-          <p className="text-sm">{error.message}</p>
+          <p className="text-sm">{errorText(error.message)}</p>
         </div>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-5">
-        <Field label="Email">
+        <Field label={t('auth.fields.email')}>
           <Input
             type="email"
             name="email"
             autoComplete="email"
             required
             icon={<Mail />}
-            placeholder="you@example.com"
+            placeholder={t('auth.fields.emailPlaceholder')}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
         </Field>
 
-        <Field label="Password">
+        <Field label={t('auth.fields.password')}>
           <Input
             type="password"
             name="password"
             autoComplete="current-password"
             required
             icon={<Lock />}
-            placeholder="Your password"
+            placeholder={t('auth.fields.passwordPlaceholder')}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -77,21 +80,21 @@ function SignInForm() {
 
         <div className="flex justify-end">
           <Link href="/forgot-password" className="text-accent text-xs hover:underline">
-            Forgot your password?
+            {t('auth.signIn.forgot')}
           </Link>
         </div>
 
         <Button type="submit" size="lg" loading={pending} className="w-full">
-          Sign In
+          {t('auth.signIn.submit')}
         </Button>
       </form>
 
       <DemoPersonas next={next} />
 
       <p className="text-ink-muted mt-8 text-center text-sm">
-        New to NEXUS?{' '}
+        {t('auth.signIn.newHere')}{' '}
         <Link href="/create-account" className="text-accent font-medium hover:underline">
-          Create an account
+          {t('auth.signIn.create')}
         </Link>
       </p>
     </div>

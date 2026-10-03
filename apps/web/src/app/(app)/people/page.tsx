@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { PeopleBoard } from '@/components/people/people-board';
 import { getSession } from '@/lib/session';
 import { getConnections, getSuggestions } from '@/lib/social-server';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PeoplePage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -18,11 +20,11 @@ export default async function PeoplePage() {
     <div>
       <PageHero
         width="max-w-6xl"
-        eyebrow="People"
+        eyebrow={t('pages.people.eyebrow')}
         tint="var(--module-people)"
         image={IMG.nyamirambo}
-        title={<>Your people.</>}
-        description={<>Following is one way. Friendship is mutual and has to be accepted. Suggestions come from mutual friends, shared interests and your city — never from anything private.</>}
+        title={t('pages.people.title')}
+        description={t('pages.people.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
 

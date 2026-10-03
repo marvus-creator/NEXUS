@@ -2,19 +2,23 @@ import { Logo } from '@nexus/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { IMG, PEOPLE } from '@/lib/photos';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
+import { getT } from '@/i18n/server';
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default async function AuthLayout({ children }: { children: ReactNode }) {
+  const t = await getT();
+
   return (
     <div className="bg-ground grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src={IMG.auth}
-          alt="Friends working together in a Kigali co-working space"
+          alt={t('auth.side.alt')}
           className="absolute inset-0 size-full animate-[auth-zoom_1.6s_ease-out_both] object-cover"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.3),transparent_30%,transparent_55%,rgba(11,13,16,.88))]" />
         <div className="relative flex h-full flex-col justify-between p-10 text-white">
-          <Link href="/" className="w-fit" aria-label="NEXUS home">
+          <Link href="/" className="w-fit" aria-label={t('nav.home')}>
             <Logo />
           </Link>
           <div>
@@ -22,7 +26,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-3">
                 <img src={PEOPLE.aline} alt="" className="size-9 rounded-full object-cover" />
                 <div className="text-sm">
-                  <b>Aline</b> <span className="text-white/70">is hosting Design Critique Night</span>
+                  <b>Aline</b> <span className="text-white/70">{t('auth.side.hosting')}</span>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-white/70">
@@ -36,15 +40,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                       style={{ marginLeft: index ? -8 : 0 }}
                     />
                   ))}
-                  <span className="ml-2 font-mono">+38 going</span>
+                  <span className="ml-2 font-mono">{t('auth.side.going')}</span>
                 </span>
-                <span className="font-mono">Tue · 18:30 · Norrsken</span>
+                <span className="font-mono">{t('auth.side.when')}</span>
               </div>
             </div>
-            <h2 className="t-d2 max-w-lg">Your world. Your people. Your places. Your life.</h2>
+            <h2 className="t-d2 max-w-lg">{t('auth.side.title')}</h2>
             <p className="mt-3 max-w-md text-white/70">
-              Your schedule, your friends, the city around you and the things you are learning, in
-              one place.
+              {t('auth.side.body')}
             </p>
           </div>
         </div>
@@ -55,10 +58,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <img src={IMG.auth} className="size-full object-cover opacity-60" alt="" />
           <div className="to-ground absolute inset-0 bg-gradient-to-b from-transparent" />
         </div>
-        <div className="relative lg:hidden">
-          <Link href="/" className="inline-flex w-fit" aria-label="NEXUS home">
+        <div className="relative flex items-center justify-between lg:justify-end">
+          <Link href="/" className="inline-flex w-fit lg:hidden" aria-label={t('nav.home')}>
             <Logo />
           </Link>
+          <LanguageSwitcher />
         </div>
 
         <div className="relative flex flex-1 items-center justify-center py-10">
@@ -66,7 +70,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         <p className="text-ink-subtle relative text-center text-xs">
-          © {new Date().getFullYear()} NEXUS · Built in Kigali
+          © {new Date().getFullYear()} NEXUS · {t('auth.side.built')}
         </p>
       </div>
     </div>

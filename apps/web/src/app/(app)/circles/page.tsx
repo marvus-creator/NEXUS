@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { CirclesBoard } from '@/components/circles/circles-board';
 import { getCircles } from '@/lib/community-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CirclesPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -17,11 +19,11 @@ export default async function CirclesPage() {
   return (
     <div>
       <PageHero
-        eyebrow="Circles"
+        eyebrow={t('pages.circles.eyebrow')}
         tint="var(--accent)"
         image={IMG.cowork1}
-        title={<>Your circles.</>}
-        description={<>Communities with real structure — posts, members, roles, moderation and a chat of their own. Public circles anyone can join, private ones approve requests.</>}
+        title={t('pages.circles.title')}
+        description={t('pages.circles.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 

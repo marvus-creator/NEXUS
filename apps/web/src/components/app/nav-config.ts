@@ -19,7 +19,27 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+export type NavKey =
+  | 'home'
+  | 'discover'
+  | 'people'
+  | 'feed'
+  | 'messages'
+  | 'calendar'
+  | 'tasks'
+  | 'goals'
+  | 'learn'
+  | 'progress'
+  | 'circles'
+  | 'events'
+  | 'nearby'
+  | 'market'
+  | 'wallet'
+  | 'ai'
+  | 'admin';
+
 export type NavItem = {
+  key: NavKey;
   label: string;
   href: string;
   icon: LucideIcon;
@@ -29,16 +49,19 @@ export type NavItem = {
 };
 
 export type NavGroup = {
+  key: 'nexus' | 'life' | 'world';
   label: string;
   items: NavItem[];
 };
 
 export const navGroups: NavGroup[] = [
   {
+    key: 'nexus',
     label: 'NEXUS',
     items: [
-      { label: 'Home', href: '/home', icon: Home, tint: 'var(--module-home)', available: true },
+      { key: 'home', label: 'Home', href: '/home', icon: Home, tint: 'var(--module-home)', available: true },
       {
+        key: 'discover',
         label: 'Discover',
         href: '/discover',
         icon: Compass,
@@ -46,37 +69,42 @@ export const navGroups: NavGroup[] = [
         available: true,
       },
       {
+        key: 'people',
         label: 'People',
         href: '/people',
         icon: Users,
         tint: 'var(--module-people)',
         available: true,
       },
-      { label: 'Feed', href: '/feed', icon: Newspaper, available: true },
-      { label: 'Messages', href: '/messages', icon: MessageCircle, available: true },
+      { key: 'feed', label: 'Feed', href: '/feed', icon: Newspaper, available: true },
+      { key: 'messages', label: 'Messages', href: '/messages', icon: MessageCircle, available: true },
     ],
   },
   {
+    key: 'life',
     label: 'Your life',
     items: [
-      { label: 'Calendar', href: '/calendar', icon: Calendar, available: true },
-      { label: 'Tasks', href: '/tasks', icon: CheckSquare, available: true },
-      { label: 'Goals', href: '/goals', icon: Flag, available: true },
+      { key: 'calendar', label: 'Calendar', href: '/calendar', icon: Calendar, available: true },
+      { key: 'tasks', label: 'Tasks', href: '/tasks', icon: CheckSquare, available: true },
+      { key: 'goals', label: 'Goals', href: '/goals', icon: Flag, available: true },
       {
+        key: 'learn',
         label: 'Learn',
         href: '/learn',
         icon: BookOpen,
         tint: 'var(--module-learn)',
         available: true,
       },
-      { label: 'Progress', href: '/progress', icon: TrendingUp, available: true },
+      { key: 'progress', label: 'Progress', href: '/progress', icon: TrendingUp, available: true },
     ],
   },
   {
+    key: 'world',
     label: 'Your world',
     items: [
-      { label: 'Circles', href: '/circles', icon: CircleDot, available: true },
+      { key: 'circles', label: 'Circles', href: '/circles', icon: CircleDot, available: true },
       {
+        key: 'events',
         label: 'Events',
         href: '/events',
         icon: Ticket,
@@ -84,19 +112,21 @@ export const navGroups: NavGroup[] = [
         available: true,
       },
       {
+        key: 'nearby',
         label: 'Nearby',
         href: '/nearby',
         icon: MapPin,
         tint: 'var(--module-nearby)',
         available: true,
       },
-      { label: 'Market', href: '/market', icon: ShoppingBag, available: true },
-      { label: 'Wallet', href: '/wallet', icon: Wallet, available: true },
+      { key: 'market', label: 'Market', href: '/market', icon: ShoppingBag, available: true },
+      { key: 'wallet', label: 'Wallet', href: '/wallet', icon: Wallet, available: true },
     ],
   },
 ];
 
 export const aiItem: NavItem = {
+  key: 'ai',
   label: 'Plan my day',
   href: '/ai',
   icon: Sparkles,
@@ -105,6 +135,7 @@ export const aiItem: NavItem = {
 };
 
 export const staffItem: NavItem = {
+  key: 'admin',
   label: 'Control center',
   href: '/admin',
   icon: ShieldCheck,

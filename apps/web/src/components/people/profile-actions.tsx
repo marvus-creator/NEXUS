@@ -5,6 +5,7 @@ import { Check, Clock, UserCheck, UserMinus, UserPlus, UserX } from 'lucide-reac
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { socialClient, type Relationship } from '@/lib/social-client';
+import { useT } from '@/i18n/client';
 
 export function ProfileActions({
   username,
@@ -13,6 +14,7 @@ export function ProfileActions({
   username: string;
   relationship: Relationship;
 }) {
+  const t = useT();
   const router = useRouter();
 
   const [state, setState] = useState(relationship);
@@ -39,7 +41,7 @@ export function ProfileActions({
   if (state.isSelf) return null;
 
   if (state.isBlockedBy) {
-    return <Badge size="sm">Not available</Badge>;
+    return <Badge size="sm">{t('people.actions.notAvailable')}</Badge>;
   }
 
   if (state.hasBlocked) {
@@ -51,9 +53,9 @@ export function ProfileActions({
           loading={busy === 'unblock'}
           onClick={() => void act('unblock', () => socialClient.unblock(username), { hasBlocked: false })}
         >
-          Unblock
+          {t('people.actions.unblock')}
         </Button>
-        <span className="text-ink-subtle text-xs">You blocked this person</span>
+        <span className="text-ink-subtle text-xs">{t('people.actions.youBlocked')}</span>
       </div>
     );
   }
@@ -70,7 +72,7 @@ export function ProfileActions({
               void act('unfriend', () => socialClient.removeFriend(username), { isFriend: false })
             }
           >
-            <UserCheck /> Friends
+            <UserCheck /> {t('people.actions.friends')}
           </Button>
         ) : state.incomingRequestId ? (
           <>
@@ -85,7 +87,7 @@ export function ProfileActions({
                 )
               }
             >
-              <Check /> Accept request
+              <Check /> {t('people.actions.acceptRequest')}
             </Button>
             <Button
               variant="ghost"
@@ -99,7 +101,7 @@ export function ProfileActions({
                 )
               }
             >
-              Decline
+              {t('people.actions.decline')}
             </Button>
           </>
         ) : state.outgoingRequestId ? (
@@ -113,7 +115,7 @@ export function ProfileActions({
               })
             }
           >
-            <Clock /> Request sent
+            <Clock /> {t('people.actions.requestSent')}
           </Button>
         ) : (
           <Button
@@ -125,7 +127,7 @@ export function ProfileActions({
               })
             }
           >
-            <UserPlus /> Add friend
+            <UserPlus /> {t('people.actions.addFriend')}
           </Button>
         )}
 
@@ -144,13 +146,13 @@ export function ProfileActions({
             )
           }
         >
-          {state.isFollowing ? 'Following' : 'Follow'}
+          {state.isFollowing ? t('people.actions.following') : t('people.actions.follow')}
         </Button>
 
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Block this person"
+          aria-label={t('people.actions.block')}
           loading={busy === 'block'}
           onClick={() =>
             void act('block', () => socialClient.block(username), {
@@ -172,7 +174,7 @@ export function ProfileActions({
         ) : null}
         {state.isFollowedBy ? (
           <Badge size="sm">
-            <UserMinus /> Follows you
+            <UserMinus /> {t('people.actions.followsYou')}
           </Badge>
         ) : null}
       </div>

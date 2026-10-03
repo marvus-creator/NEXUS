@@ -5,51 +5,15 @@ import { Compass, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { useT } from '@/i18n/client';
 
-type Step = { target: string; title: string; body: string };
+type Target = 'greeting' | 'needs' | 'timeline' | 'ai' | 'streak' | 'sidebar' | 'search' | 'bell';
 
-const STEPS: Step[] = [
-  {
-    target: 'greeting',
-    title: 'Your day, at a glance',
-    body: 'NEXUS greets you with what matters today: your streak, what is on and what is open.',
-  },
-  {
-    target: 'needs',
-    title: 'What needs you',
-    body: 'Overdue tasks, unconfirmed email and setup gaps surface here before anything else.',
-  },
-  {
-    target: 'timeline',
-    title: 'Your real timeline',
-    body: 'Classes, events and the free time between them. Free gaps are highlighted so you can use them.',
-  },
-  {
-    target: 'ai',
-    title: 'Plan my day',
-    body: 'NEXUS proposes study and task blocks for your free time, each with a reason. Nothing is added until you accept.',
-  },
-  {
-    target: 'streak',
-    title: 'Streaks and goals',
-    body: 'Study sessions, finished tasks and check-ins keep the streak alive. Goals fill as milestones get done.',
-  },
-  {
-    target: 'sidebar',
-    title: 'Everything is connected',
-    body: 'People, circles with live chat, events, a live map of Kigali, a marketplace with a wallet, learning and more.',
-  },
-  {
-    target: 'search',
-    title: 'Find anything',
-    body: 'Search people, places, events and circles from anywhere in NEXUS.',
-  },
-  {
-    target: 'bell',
-    title: 'Notifications',
-    body: 'Friend requests, event invites, orders and messages from the NEXUS team land here.',
-  },
-];
+type Step = { target: Target };
+
+const STEPS: Step[] = (
+  ['greeting', 'needs', 'timeline', 'ai', 'streak', 'sidebar', 'search', 'bell'] as const
+).map((target) => ({ target }));
 
 const STORAGE_KEY = 'nexus-tour-done';
 
@@ -67,6 +31,7 @@ export function TourButton() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const t = useT();
   const [index, setIndex] = useState<number | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
 
@@ -161,7 +126,7 @@ export function TourButton() {
         onClick={start}
         className="text-ink-muted hover:bg-surface-raised hover:text-ink hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition md:flex"
       >
-        <Compass className="size-4" /> Tour
+        <Compass className="size-4" /> {t('nav.tour')}
       </button>
 
       <AnimatePresence>
@@ -200,19 +165,19 @@ export function TourButton() {
             >
               <div className="flex items-start justify-between gap-3">
                 <span className="t-eyebrow text-accent">
-                  {(index ?? 0) + 1} of {steps.length}
+                  {t('tour.of', { n: (index ?? 0) + 1, total: steps.length })}
                 </span>
                 <button
                   type="button"
                   onClick={finish}
-                  aria-label="Close tour"
+                  aria-label={t('tour.close')}
                   className="text-ink-muted hover:text-ink -mr-1 -mt-1"
                 >
                   <X className="size-4" />
                 </button>
               </div>
-              <h3 className="font-display mt-2 text-xl font-bold tracking-tight">{step.title}</h3>
-              <p className="text-ink-muted mt-1.5 text-sm leading-relaxed">{step.body}</p>
+              <h3 className="font-display mt-2 text-xl font-bold tracking-tight">{t(`tour.steps.${step.target}.title`)}</h3>
+              <p className="text-ink-muted mt-1.5 text-sm leading-relaxed">{t(`tour.steps.${step.target}.body`)}</p>
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex gap-1">
                   {steps.map((entry, dot) => (
@@ -225,11 +190,11 @@ export function TourButton() {
                 <div className="flex gap-2">
                   {index && index > 0 ? (
                     <Button size="sm" variant="ghost" onClick={() => setIndex(index - 1)}>
-                      Back
+                      {t('common.back')}
                     </Button>
                   ) : null}
                   <Button size="sm" onClick={next}>
-                    {index === steps.length - 1 ? 'Finish' : 'Next'}
+                    {index === steps.length - 1 ? t('common.finish') : t('common.next')}
                   </Button>
                 </div>
               </div>

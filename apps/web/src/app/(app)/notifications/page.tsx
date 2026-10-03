@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { NotificationCenter } from '@/components/notifications/notification-center';
 import { getNotificationPreferences, getNotifications } from '@/lib/planner-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NotificationsPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -18,11 +20,11 @@ export default async function NotificationsPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow="Notifications"
+        eyebrow={t('pages.notifications.eyebrow')}
         tint="var(--accent)"
         image={IMG.kigaliRooftops}
-        title={<>What needs you</>}
-        description={<>Grouped so the important things do not get buried under the rest.</>}
+        title={t('pages.notifications.title')}
+        description={t('pages.notifications.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
 

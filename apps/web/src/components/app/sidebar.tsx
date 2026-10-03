@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spark } from '@/components/landing/bits';
 import { aiItem, navGroups, staffItem, type NavItem } from './nav-config';
+import { useT } from '@/i18n/client';
 
 const STORAGE_KEY = 'nexus-sidebar-collapsed';
 
@@ -26,12 +27,14 @@ function NavRow({
 }) {
   const Icon = item.icon;
   const tint = item.tint ?? 'var(--accent)';
+  const t = useT();
+  const label = t(`nav.items.${item.key}`);
 
   return (
     <Link
       href={item.href}
       aria-current={active ? 'page' : undefined}
-      title={collapsed ? item.label : undefined}
+      title={collapsed ? label : undefined}
       className={cn(
         'group relative mb-0.5 flex h-10 w-full items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition',
         active
@@ -48,7 +51,7 @@ function NavRow({
         />
       ) : null}
       <Icon className="size-[18px] shrink-0" style={active ? { color: tint } : undefined} />
-      {collapsed ? null : <span className="flex-1 truncate text-left">{item.label}</span>}
+      {collapsed ? null : <span className="flex-1 truncate text-left">{label}</span>}
     </Link>
   );
 }
@@ -65,6 +68,7 @@ export function Sidebar({
   avatarUrl?: string | null;
 }) {
   const pathname = usePathname();
+  const t = useT();
   const isStaff = role === 'ADMIN' || role === 'MODERATOR';
   const [collapsed, setCollapsed] = useState(false);
 
@@ -92,7 +96,7 @@ export function Sidebar({
       className="border-line bg-surface/60 sticky top-0 hidden h-dvh shrink-0 flex-col border-r lg:flex"
     >
       <div className={cn('flex h-16 items-center px-5', collapsed && 'justify-center px-0')}>
-        <Link href="/home" aria-label="NEXUS home">
+        <Link href="/home" aria-label={t('nav.home')}>
           {collapsed ? <LogoMark className="size-[30px]" /> : <Logo />}
         </Link>
       </div>
@@ -103,7 +107,7 @@ export function Sidebar({
             {collapsed ? (
               <div className="bg-line mx-auto mb-2 h-px w-6" />
             ) : (
-              <div className="t-eyebrow text-ink-subtle mb-2 px-3">{group.label}</div>
+              <div className="t-eyebrow text-ink-subtle mb-2 px-3">{t(`nav.groups.${group.key}`)}</div>
             )}
             {group.items.map((item) => (
               <NavRow
@@ -118,7 +122,7 @@ export function Sidebar({
 
         {isStaff ? (
           <div className="mt-4">
-            {collapsed ? null : <div className="t-eyebrow text-ink-subtle mb-2 px-3">Staff</div>}
+            {collapsed ? null : <div className="t-eyebrow text-ink-subtle mb-2 px-3">{t('nav.groups.staff')}</div>}
             <NavRow
               item={staffItem}
               active={isActive(pathname, staffItem.href)}
@@ -130,7 +134,7 @@ export function Sidebar({
         {collapsed ? (
           <Link
             href={aiItem.href}
-            title={aiItem.label}
+            title={t('nav.items.ai')}
             className="bg-surface-raised mt-5 flex h-10 items-center justify-center rounded-[10px]"
           >
             <Spark className="size-5" />
@@ -144,10 +148,10 @@ export function Sidebar({
             )}
           >
             <div className="flex items-center gap-2 text-sm font-semibold">
-              <Spark /> <span className="text-ai-gradient">Plan my day</span>
+              <Spark /> <span className="text-ai-gradient">{t('nav.items.ai')}</span>
             </div>
             <p className="text-ink-muted mt-1.5 text-xs leading-relaxed">
-              Let NEXUS fit your tasks and study into the free time you actually have.
+              {t('nav.aiBlurb')}
             </p>
           </Link>
         )}
@@ -176,7 +180,7 @@ export function Sidebar({
         <button
           type="button"
           onClick={toggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
           className="text-ink-muted hover:bg-surface-raised hover:text-ink grid size-9 place-items-center rounded-[10px] transition"
         >
           <ChevronsLeft className={cn('size-[18px] transition', collapsed && 'rotate-180')} />

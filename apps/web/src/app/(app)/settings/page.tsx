@@ -9,6 +9,8 @@ import {
 } from '@/components/settings/settings-panels';
 import { API_BASE } from '@/lib/api';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
+import { LanguagePicker } from '@/components/app/language-switcher';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +33,7 @@ async function getSessions(): Promise<ActiveSession[]> {
 
 export default async function SettingsPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -40,21 +43,27 @@ export default async function SettingsPage() {
     <div>
       <PageHero
         width="max-w-3xl"
-        eyebrow="Settings"
+        eyebrow={t('pages.settings.eyebrow')}
         tint="var(--ink-muted)"
         image={IMG.hills}
-        title={<>Privacy and security</>}
-        description={<>You control what Nexus shares and what it learns from.</>}
+        title={t('pages.settings.title')}
+        description={t('pages.settings.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-3xl px-4 pb-10 md:px-8">
 
       <section className="mt-10">
-        <h2 className="mb-5 text-lg font-semibold tracking-tight">Privacy</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t('language.label')}</h2>
+        <p className="text-ink-muted mt-1 mb-5 text-sm">{t('language.hint')}</p>
+        <LanguagePicker />
+      </section>
+
+      <section className="mt-12">
+        <h2 className="mb-5 text-lg font-semibold tracking-tight">{t('pages.settings.privacy')}</h2>
         <PrivacyPanel user={user} />
       </section>
 
       <section className="mt-12 mb-4">
-        <h2 className="mb-5 text-lg font-semibold tracking-tight">Security</h2>
+        <h2 className="mb-5 text-lg font-semibold tracking-tight">{t('pages.settings.security')}</h2>
         <SecurityPanel sessions={sessions} />
       </section>
       </div>

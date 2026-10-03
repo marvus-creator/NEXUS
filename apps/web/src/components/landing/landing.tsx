@@ -22,77 +22,79 @@ import { IMG, PEOPLE } from '@/lib/photos';
 import { Faces, Reveal, Ring, Spark } from './bits';
 import { Constellation } from './constellation';
 import { GlobeHero } from './globe-hero';
+import { useT } from '@/i18n/client';
+import { LanguageSwitcher } from '@/components/app/language-switcher';
 
-const NAV = ['People', 'Places', 'Planner', 'Market', 'AI'];
+const NAV = ['people', 'places', 'planner', 'market', 'ai'] as const;
 const MARQUEE = [
-  'People',
-  'Circles',
-  'Events',
-  'Nearby',
-  'Planner',
-  'Learning',
-  'Streaks',
-  'Market',
-  'Wallet',
-  'Nexus AI',
-];
+  'people',
+  'circles',
+  'events',
+  'nearby',
+  'planner',
+  'learning',
+  'streaks',
+  'market',
+  'wallet',
+  'ai',
+] as const;
 
 const SAMPLE_PEOPLE = [
-  { name: 'Aline Uwase', photo: PEOPLE.aline, cover: IMG.designNight, reason: 'Also into design' },
+  { name: 'Aline Uwase', photo: PEOPLE.aline, cover: IMG.designNight, reason: 'reasonDesign' },
   {
     name: 'Kevin Mugisha',
     photo: PEOPLE.kevin,
     cover: IMG.techMeetup,
-    reason: '12 mutual friends',
+    reason: 'reasonMutual',
   },
   {
     name: 'Eric Habimana',
     photo: PEOPLE.eric,
     cover: IMG.football,
-    reason: 'Plays Sunday football',
+    reason: 'reasonFootball',
   },
   {
     name: 'Grace Ingabire',
     photo: PEOPLE.grace,
     cover: IMG.beads,
-    reason: 'Founder in Nyamirambo',
+    reason: 'reasonFounder',
   },
-];
+] as const;
 
 const SAMPLE_CIRCLES = [
   {
     name: 'Kigali Builders',
-    privacy: 'Public',
-    desc: 'Developers, designers and founders shipping from Kigali.',
+    privacy: 'public',
+    desc: 'builders',
     img: IMG.cowork1,
     members: 2340,
   },
   {
     name: 'UR CS · Year 2',
-    privacy: 'Private',
-    desc: 'Coursework, past papers, and panic. University of Rwanda.',
+    privacy: 'private',
+    desc: 'year2',
     img: IMG.cowork4,
     members: 148,
   },
   {
     name: 'Sunday Ballers',
-    privacy: 'Invite-only',
-    desc: 'Amahoro outer pitch, every Sunday 07:00.',
+    privacy: 'inviteOnly',
+    desc: 'ballers',
     img: IMG.footballNight,
     members: 64,
   },
   {
     name: 'Design Kigali',
-    privacy: 'Public',
-    desc: 'Critique, jobs, inspiration. Monthly crit night.',
+    privacy: 'public',
+    desc: 'design',
     img: IMG.designNight,
     members: 910,
   },
-];
+] as const;
 
 const SAMPLE_EVENTS = [
   {
-    title: 'Kigali Tech Meetup',
+    title: 'meetup',
     day: '14',
     month: 'NOV',
     time: '18:00 – 21:00',
@@ -103,7 +105,7 @@ const SAMPLE_EVENTS = [
     capacity: 200,
   },
   {
-    title: 'Sunday Football at Amahoro',
+    title: 'football',
     day: '17',
     month: 'NOV',
     time: '07:00 – 09:30',
@@ -114,7 +116,7 @@ const SAMPLE_EVENTS = [
     capacity: 30,
   },
   {
-    title: 'Design Critique Night',
+    title: 'crit',
     day: '19',
     month: 'NOV',
     time: '18:30 – 20:30',
@@ -124,9 +126,10 @@ const SAMPLE_EVENTS = [
     going: 41,
     capacity: 60,
   },
-];
+] as const;
 
 export function Landing() {
+  const t = useT();
 
   return (
     <div className="bg-ground text-ink">
@@ -136,27 +139,24 @@ export function Landing() {
             <Logo className="text-white" />
           </Link>
           <nav className="hidden items-center gap-7 text-[14px] text-white/75 md:flex">
-            {NAV.map((label) => (
-              <a
-                key={label}
-                href={`#${label.toLowerCase()}`}
-                className="transition hover:text-white"
-              >
-                {label}
+            {NAV.map((key) => (
+              <a key={key} href={`#${key}`} className="transition hover:text-white">
+                {t(`landing.nav.${key}`)}
               </a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher tone="glass" />
             <Button
               variant="ghost"
               size="sm"
               asChild
               className="hidden text-white hover:bg-white/10 sm:inline-flex"
             >
-              <Link href="/sign-in">Sign in</Link>
+              <Link href="/sign-in">{t('common.signIn')}</Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/create-account">Get started</Link>
+              <Link href="/create-account">{t('common.getStarted')}</Link>
             </Button>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function Landing() {
                 key={`${copy}-${word}`}
                 className="font-display text-ink/85 flex items-center gap-10 text-3xl font-extrabold tracking-tight md:text-4xl"
               >
-                {word}
+                {t(`landing.marquee.${word}`)}
                 <span className="bg-accent size-2 rounded-full" />
               </span>
             )),
@@ -184,15 +184,15 @@ export function Landing() {
 
       <Feature
         id="people"
-        eyebrow="Your people"
+        eyebrow={t('landing.people.eyebrow')}
         tint="#FF7A59"
         title={
           <>
-            Friends who show up, <br className="hidden md:block" />
-            not just follow.
+            {t('landing.people.title1')} <br className="hidden md:block" />
+            {t('landing.people.title2')}
           </>
         }
-        body="See who's free, who's nearby and who shares your ambitions. Every suggestion tells you why, with no mystery algorithm."
+        body={t('landing.people.body')}
         bg={IMG.nyamirambo}
       >
         <div className="grid gap-3 sm:grid-cols-2">
@@ -210,14 +210,14 @@ export function Landing() {
                     className="ring-surface relative size-[52px] rounded-full object-cover ring-2"
                   />
                   <div className="mt-2 font-semibold">{person.name}</div>
-                  <div className="text-module-people text-xs">{person.reason}</div>
+                  <div className="text-module-people text-xs">{t(`landing.people.${person.reason}`)}</div>
                   <Button
                     size="sm"
                     variant={index === 1 ? 'secondary' : 'primary'}
                     className="mt-3 w-full"
                     tabIndex={-1}
                   >
-                    {index === 1 ? 'Requested' : 'Add friend'}
+                    {index === 1 ? t('landing.people.requested') : t('landing.people.addFriend')}
                   </Button>
                 </div>
               </Card>
@@ -229,10 +229,10 @@ export function Landing() {
       <Feature
         id="circles"
         flip
-        eyebrow="Your circles"
+        eyebrow={t('landing.circles.eyebrow')}
         tint="#3B82F6"
-        title="Your crews, classes and communities."
-        body="Public, private or invite-only. Each circle gets its own posts, live chat, roles and events, like a clubhouse that fits in your pocket."
+        title={t('landing.circles.title')}
+        body={t('landing.circles.body')}
       >
         <div className="space-y-3">
           {SAMPLE_CIRCLES.map((circle, index) => (
@@ -244,21 +244,21 @@ export function Landing() {
                     <span className="truncate font-semibold">{circle.name}</span>
                     <Badge
                       variant={
-                        circle.privacy === 'Public'
+                        circle.privacy === 'public'
                           ? 'success'
-                          : circle.privacy === 'Private'
+                          : circle.privacy === 'private'
                             ? 'neutral'
                             : 'warning'
                       }
                     >
-                      {circle.privacy}
+                      {t(`common.${circle.privacy}`)}
                     </Badge>
                   </div>
-                  <div className="text-ink-muted mt-1 truncate text-xs">{circle.desc}</div>
+                  <div className="text-ink-muted mt-1 truncate text-xs">{t(`landing.circles.${circle.desc}`)}</div>
                 </div>
                 <div className="hidden text-right sm:block">
                   <div className="num text-sm font-semibold">{circle.members.toLocaleString()}</div>
-                  <div className="text-ink-muted text-[11px]">members</div>
+                  <div className="text-ink-muted text-[11px]">{t('common.members')}</div>
                 </div>
               </Card>
             </Reveal>
@@ -269,15 +269,15 @@ export function Landing() {
       <section id="events" className="relative overflow-hidden py-24 md:py-32">
         <div className="mx-auto max-w-[1280px] px-5 md:px-10">
           <Reveal>
-            <div className="t-eyebrow text-module-events mb-4">Events near you</div>
+            <div className="t-eyebrow text-module-events mb-4">{t('landing.events.eyebrow')}</div>
           </Reveal>
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <Reveal delay={0.05}>
-              <h2 className="t-d2 max-w-2xl">What Kigali is doing this week.</h2>
+              <h2 className="t-d2 max-w-2xl">{t('landing.events.title')}</h2>
             </Reveal>
             <Reveal delay={0.1}>
               <p className="text-ink-muted max-w-sm">
-                RSVP in one tap. See which friends are going. Check in with a code at the door.
+                {t('landing.events.body')}
               </p>
             </Reveal>
           </div>
@@ -296,25 +296,25 @@ export function Landing() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                   <div className="absolute left-4 top-4 rounded-xl bg-white/95 px-3 py-2 text-center text-black">
-                    <div className="font-mono text-[10px] font-semibold">{event.month}</div>
+                    <div className="font-mono text-[10px] font-semibold">{t('landing.events.month')}</div>
                     <div className="font-display text-2xl font-extrabold leading-none">
                       {event.day}
                     </div>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                     <div className="text-module-events text-xs font-semibold">
-                      {event.friends.length} friends are going
+                      {t('landing.events.friendsGoing', { n: event.friends.length })}
                     </div>
                     <div className="font-display mt-1 text-2xl font-bold tracking-tight">
-                      {event.title}
+                      {event.title === 'meetup' ? 'Kigali Tech Meetup' : t(`landing.events.${event.title}`)}
                     </div>
                     <div className="mt-1 text-sm text-white/70">
                       {event.time} · {event.place}
                     </div>
                     <div className="mt-4 flex items-center justify-between">
-                      <Faces srcs={event.friends} extra={event.going - event.friends.length} />
+                      <Faces srcs={[...event.friends]} extra={event.going - event.friends.length} />
                       <span className="font-mono text-xs text-white/80">
-                        {event.capacity - event.going} spots left
+                        {t('landing.events.spotsLeft', { n: event.capacity - event.going })}
                       </span>
                     </div>
                   </div>
@@ -329,30 +329,29 @@ export function Landing() {
         <div className="border-line relative mx-auto max-w-[1280px] overflow-hidden rounded-[28px] border">
           <img
             src={IMG.kigaliAerial}
-            alt="Kigali from above"
+            alt={t('landing.places.alt')}
             className="h-[560px] w-full object-cover md:h-[640px]"
           />
           <MapPins />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(11,13,16,.92)_0%,rgba(11,13,16,.55)_40%,transparent_70%)]" />
           <div className="absolute left-0 top-0 max-w-md p-7 md:p-12">
             <Reveal>
-              <div className="t-eyebrow text-module-nearby">The map</div>
+              <div className="t-eyebrow text-module-nearby">{t('landing.places.eyebrow')}</div>
             </Reveal>
             <Reveal delay={0.05}>
               <h2 className="t-d2 mt-4 text-white">
-                Your city, <br />
-                with the good parts lit up.
+                {t('landing.places.title1')} <br />
+                {t('landing.places.title2')}
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <p className="mt-4 text-white/70">
-                Cafés with fast Wi-Fi. Pitches with open slots. The rooftop where your friends are
-                right now.
+                {t('landing.places.body')}
               </p>
             </Reveal>
             <Reveal delay={0.15}>
               <div className="mt-6 flex flex-wrap gap-2">
-                {['Cafés', 'Workspaces', 'Food', 'Sport'].map((label, index) => (
+                {[t('landing.places.cafes'), t('landing.places.workspaces'), t('landing.places.food'), t('landing.places.sport')].map((label, index) => (
                   <span
                     key={label}
                     className={cn(
@@ -374,11 +373,11 @@ export function Landing() {
               <div className="min-w-0">
                 <div className="font-semibold">Question Coffee</div>
                 <div className="text-ink-muted flex items-center gap-1 text-xs">
-                  <Star className="fill-module-events text-module-events size-3" /> 4.8 · Café ·{' '}
+                  <Star className="fill-module-events text-module-events size-3" /> 4.8 · {t('landing.places.cafe')} ·{' '}
                   <span className="num">600 m</span>
                 </div>
                 <div className="text-module-nearby mt-1.5 text-xs">
-                  Because you saved Norrsken House
+                  {t('landing.places.because')}
                 </div>
               </div>
             </div>
@@ -388,21 +387,21 @@ export function Landing() {
 
       <Feature
         id="planner"
-        eyebrow="Your planner"
+        eyebrow={t('landing.planner.eyebrow')}
         tint="#3B82F6"
-        title="Your week, with the free time made visible."
-        body="Lectures, shifts, events and deadlines on one timeline. The gaps are highlighted, because that's where life actually happens."
+        title={t('landing.planner.title')}
+        body={t('landing.planner.body')}
       >
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
-            <div className="font-semibold">Today · Thu 14 Nov</div>
-            <Badge variant="accent">3h free</Badge>
+            <div className="font-semibold">{t('landing.planner.today')}</div>
+            <Badge variant="accent">{t('landing.planner.free')}</Badge>
           </div>
           {[
-            ['08:00', 'Algorithms lecture', 'fixed'],
-            ['10:30', 'Databases lab', 'fixed'],
-            ['12:30', 'Lunch with Kevin', 'social'],
-            ['14:00', 'Free · 3 hours', 'gap'],
+            ['08:00', t('landing.planner.algorithms'), 'fixed'],
+            ['10:30', t('landing.planner.databases'), 'fixed'],
+            ['12:30', t('landing.planner.lunch'), 'social'],
+            ['14:00', t('landing.planner.gap'), 'gap'],
             ['18:00', 'Kigali Tech Meetup', 'event'],
           ].map(([time, label, kind], index) => (
             <Reveal key={time} delay={index * 0.06}>
@@ -431,25 +430,25 @@ export function Landing() {
       <Feature
         id="learning"
         flip
-        eyebrow="Learning & streaks"
+        eyebrow={t('landing.learning.eyebrow')}
         tint="#14B8A6"
-        title="Small sessions. Serious streaks."
-        body="Learning paths built from modules, a study timer that counts, and a heatmap that makes you not want to break the chain."
+        title={t('landing.learning.title')}
+        body={t('landing.learning.body')}
       >
         <Card className="p-6">
           <div className="flex items-center gap-6">
             <div>
               <div className="text-ink-muted flex items-center gap-2 text-sm">
-                <Flame className="text-module-events size-4" /> Current streak
+                <Flame className="text-module-events size-4" /> {t('landing.learning.current')}
               </div>
               <div className="num font-display mt-1 text-7xl font-extrabold tracking-tighter">
-                23<span className="text-ink-muted text-2xl"> days</span>
+                23<span className="text-ink-muted text-2xl"> {t('landing.learning.days')}</span>
               </div>
             </div>
             <Ring value={68} size={96} stroke={8} color="#14B8A6">
               <div className="text-center">
                 <div className="num text-lg font-bold">68%</div>
-                <div className="text-ink-muted text-[10px]">Java path</div>
+                <div className="text-ink-muted text-[10px]">{t('landing.learning.javaPath')}</div>
               </div>
             </Ring>
           </div>
@@ -481,15 +480,15 @@ export function Landing() {
 
       <Feature
         id="market"
-        eyebrow="Market & wallet"
+        eyebrow={t('landing.market.eyebrow')}
         tint="#F5A524"
-        title="Buy local. Pay in a tap. In RWF."
-        body="Shop Kigali's makers, cafés and creators. Sellers accept before you pay, so nothing gets lost. Send to friends and pay local businesses from one wallet."
+        title={t('landing.market.title')}
+        body={t('landing.market.body')}
       >
         <div className="grid grid-cols-2 gap-3">
           {[
-            { title: 'Imigongo wall panel', price: 'RWF 45,000', img: IMG.beads },
-            { title: 'Agaseke woven basket set', price: 'RWF 28,000', img: IMG.hats },
+            { title: t('landing.market.imigongo'), price: 'RWF 45,000', img: IMG.beads },
+            { title: t('landing.market.agaseke'), price: 'RWF 28,000', img: IMG.hats },
           ].map((item, index) => (
             <Reveal key={item.title} delay={index * 0.08}>
               <Card className="overflow-hidden">
@@ -505,16 +504,16 @@ export function Landing() {
             <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#1E3A8A,#3B82F6_60%,#60A5FA)] p-5 text-white">
               <div className="absolute -right-10 -top-10 size-40 rounded-full bg-white/10" />
               <div className="flex items-center gap-2 text-sm text-white/80">
-                <Wallet className="size-4" /> NEXUS Wallet
+                <Wallet className="size-4" /> {t('landing.market.wallet')}
               </div>
               <div className="num mt-2 text-4xl font-semibold tracking-tight">RWF 184,500</div>
               <div className="mt-4 flex gap-2">
                 <span className="flex items-center gap-1.5 rounded-lg bg-white/20 px-3 py-1.5 text-xs font-semibold">
                   <Send className="size-3.5" />
-                  Send
+                  {t('landing.market.send')}
                 </span>
                 <span className="rounded-lg bg-white/20 px-3 py-1.5 text-xs font-semibold">
-                  Pay a business
+                  {t('landing.market.pay')}
                 </span>
               </div>
             </div>
@@ -529,18 +528,17 @@ export function Landing() {
             <Reveal>
               <div className="t-eyebrow flex items-center gap-2">
                 <Spark />
-                <span className="text-ai-gradient">Nexus AI</span>
+                <span className="text-ai-gradient">{t('landing.ai.eyebrow')}</span>
               </div>
             </Reveal>
             <Reveal delay={0.05}>
               <h2 className="t-d1 mt-5">
-                A planner that works <span className="text-ai-gradient">around your life.</span>
+                {t('landing.ai.title1')} <span className="text-ai-gradient">{t('landing.ai.title2')}</span>
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <p className="text-ink-muted mt-5 max-w-md text-[17px]">
-                It reads your commitments, deadlines and goals, then proposes blocks for your free
-                time, each with a reason. You stay in charge: accept, decline, or accept all.
+                {t('landing.ai.body')}
               </p>
             </Reveal>
           </div>
@@ -548,24 +546,24 @@ export function Landing() {
             <div className="ai-border ai-glow bg-surface rounded-3xl p-5 md:p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2 font-semibold">
-                  <Spark className="size-5" /> Proposed for today
+                  <Spark className="size-5" /> {t('landing.ai.proposed')}
                 </div>
                 <Button size="sm" variant="ai" tabIndex={-1}>
-                  Accept all
+                  {t('landing.ai.acceptAll')}
                 </Button>
               </div>
               {[
                 [
                   '14:00 – 15:30',
-                  'Finish Java assignment',
-                  'Due tonight and you focus best after lunch.',
+                  t('landing.ai.java'),
+                  t('landing.ai.javaWhy'),
                 ],
                 [
                   '15:45 – 16:30',
-                  'Review algorithms chapter 4',
-                  'Overdue since Monday. 45 minutes clears it.',
+                  t('landing.ai.review'),
+                  t('landing.ai.reviewWhy'),
                 ],
-                ['17:00 – 17:30', 'Easy 3K run', 'Keeps your Run 5K goal on track this week.'],
+                ['17:00 – 17:30', t('landing.ai.run'), t('landing.ai.runWhy')],
               ].map(([time, title, reason], index) => (
                 <PlanRow
                   key={time}
@@ -584,10 +582,10 @@ export function Landing() {
         <div className="mx-auto max-w-[1280px] px-5 md:px-10">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {[
-              ['9', 'connected modules'],
-              ['1', 'account for all of it'],
-              ['RWF', 'native currency'],
-              ['3', 'themes: dark, light, system'],
+              ['9', t('landing.stats.modules')],
+              ['1', t('landing.stats.account')],
+              ['RWF', t('landing.stats.currency')],
+              ['3', t('landing.stats.themes')],
             ].map(([number, label], index) => (
               <Reveal key={label} delay={index * 0.06}>
                 <div className="num font-display text-5xl font-extrabold tracking-tighter md:text-6xl">
@@ -601,20 +599,20 @@ export function Landing() {
             {[
               {
                 icon: GraduationCap,
-                who: 'The student',
-                text: 'Lectures, coursework deadlines and study sessions on one timeline, with Plan my day filling the gaps and a streak that keeps you honest.',
+                who: t('landing.personas.student'),
+                text: t('landing.personas.studentText'),
                 color: '#14B8A6',
               },
               {
                 icon: Rocket,
-                who: 'The creator',
-                text: 'Host a meetup, see who RSVPs, check people in with a code at the door, and grow a circle around the people who keep coming back.',
+                who: t('landing.personas.creator'),
+                text: t('landing.personas.creatorText'),
                 color: '#FF7A59',
               },
               {
                 icon: Store,
-                who: 'The founder',
-                text: 'List what you make, accept orders before anyone pays, and get found by people nearby who have never walked down your street.',
+                who: t('landing.personas.founder'),
+                text: t('landing.personas.founderText'),
                 color: '#F5A524',
               },
             ].map((persona, index) => (
@@ -642,7 +640,7 @@ export function Landing() {
         <img
           src={IMG.kigaliSunset}
           className="absolute inset-0 size-full object-cover"
-          alt="Kigali at sunset"
+          alt={t('landing.cta.alt')}
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#0B0D10_0%,rgba(11,13,16,.35)_40%,rgba(11,13,16,.7)_100%)]" />
         <div className="relative mx-auto flex max-w-[1280px] flex-col items-center px-5 py-32 text-center md:py-48">
@@ -651,25 +649,24 @@ export function Landing() {
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="t-d1 mt-8 max-w-4xl text-white">
-              Your whole life, <br />
-              finally in one place.
+              {t('landing.cta.title1')} <br />
+              {t('landing.cta.title2')}
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-5 max-w-md text-lg text-white/80">
-              Free for individuals. Takes two minutes to set up. Built for the connections you
-              actually have.
+              {t('landing.cta.body')}
             </p>
           </Reveal>
           <Reveal delay={0.15}>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <Button size="xl" asChild>
                 <Link href="/create-account">
-                  Create your world <ArrowRight />
+                  {t('landing.hero.create')} <ArrowRight />
                 </Link>
               </Button>
               <Button size="xl" variant="glass" asChild>
-                <Link href="/sign-in">Sign in</Link>
+                <Link href="/sign-in">{t('common.signIn')}</Link>
               </Button>
             </div>
           </Reveal>
@@ -681,35 +678,35 @@ export function Landing() {
           <div>
             <Logo />
             <p className="text-ink-muted mt-4 max-w-xs text-sm">
-              Your world. Your people. Your places. Your life. Made with care in Kigali, Rwanda.
+              {t('landing.footer.tagline')}
             </p>
           </div>
           {[
             [
-              'Product',
+              t('landing.footer.product'),
               [
-                ['People', '#people'],
-                ['Events', '#events'],
-                ['Nearby', '#places'],
-                ['Planner', '#planner'],
-                ['Market', '#market'],
+                [t('landing.footer.people'), '#people'],
+                [t('landing.footer.events'), '#events'],
+                [t('landing.footer.nearby'), '#places'],
+                [t('landing.footer.planner'), '#planner'],
+                [t('landing.footer.market'), '#market'],
                 ['Nexus AI', '#ai'],
               ],
             ],
             [
-              'Account',
+              t('landing.footer.account'),
               [
-                ['Create account', '/create-account'],
-                ['Sign in', '/sign-in'],
-                ['Reset password', '/forgot-password'],
+                [t('common.createAccount'), '/create-account'],
+                [t('common.signIn'), '/sign-in'],
+                [t('common.resetPassword'), '/forgot-password'],
               ],
             ],
             [
-              'Explore',
+              t('landing.footer.explore'),
               [
-                ['Learning', '#learning'],
-                ['Circles', '#circles'],
-                ['Wallet', '#market'],
+                [t('landing.footer.learning'), '#learning'],
+                [t('landing.footer.circles'), '#circles'],
+                [t('landing.footer.wallet'), '#market'],
               ],
             ],
           ].map(([heading, links]) => (
@@ -731,7 +728,7 @@ export function Landing() {
           <span>© {new Date().getFullYear()} NEXUS · Kigali</span>
           <span className="flex items-center gap-1.5">
             <MapPin className="size-3.5" />
-            Kigali · Rwanda
+            {t('common.kigaliRwanda')}
           </span>
         </div>
       </footer>
@@ -786,6 +783,8 @@ function Feature({
   flip?: boolean;
   bg?: string;
 }) {
+  const t = useT();
+
   return (
     <section id={id} className="relative overflow-hidden py-20 md:py-32">
       <div
@@ -822,7 +821,7 @@ function Feature({
           </Reveal>
           <Reveal delay={0.15}>
             <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-              {['Private by default', 'Your data, your rules', 'Built for Kigali'].map((point) => (
+              {[t('landing.points.private'), t('landing.points.rules'), t('landing.points.kigali')].map((point) => (
                 <span key={point} className="text-ink/80 flex items-center gap-1.5">
                   <Check className="size-4" style={{ color: tint }} />
                   {point}
@@ -849,6 +848,7 @@ function PlanRow({
   delay: number;
 }) {
   const [state, setState] = useState<'accepted' | 'declined' | null>(null);
+  const t = useT();
 
   return (
     <Reveal delay={delay}>
@@ -879,19 +879,19 @@ function PlanRow({
           {state === 'accepted' ? (
             <span className="text-accent flex items-center gap-1.5 text-xs font-semibold">
               <Check className="size-4" />
-              Added to calendar
+              {t('landing.ai.added')}
             </span>
           ) : state === 'declined' ? (
             <button onClick={() => setState(null)} className="text-ink-muted text-xs font-semibold">
-              Undo
+              {t('common.undo')}
             </button>
           ) : (
             <>
               <Button size="sm" variant="ghost" onClick={() => setState('declined')}>
-                Decline
+                {t('common.decline')}
               </Button>
               <Button size="sm" onClick={() => setState('accepted')}>
-                Accept
+                {t('common.accept')}
               </Button>
             </>
           )}

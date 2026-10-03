@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { GlobeInstance } from 'globe.gl';
 import { IMG } from '@/lib/photos';
 import { Spark } from './bits';
+import { useT } from '@/i18n/client';
 
 const KIGALI = { lat: -1.9441, lng: 30.0619 };
 
@@ -46,6 +47,7 @@ function baseOffset(width: number) {
 type Country = { properties: { CONTINENT?: string; ISO_A3?: string; ADMIN?: string } };
 
 export function GlobeHero() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeInstance | null>(null);
@@ -252,11 +254,11 @@ export function GlobeHero() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#F5A524] opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-[#F5A524]" />
             </span>
-            Live from Kigali, connected to everywhere
+            {t('landing.hero.live')}
           </motion.div>
 
           <h1 className="t-hero max-w-[760px] text-white">
-            {['Your world.', 'Connected.'].map((line, index) => (
+            {[t('landing.hero.line1'), t('landing.hero.line2')].map((line, index) => (
               <motion.span
                 key={line}
                 className={cn(
@@ -278,8 +280,7 @@ export function GlobeHero() {
             transition={{ delay: 0.95 }}
             className="mt-7 max-w-md text-[17px] leading-relaxed text-white/75"
           >
-            Your people, your places, your plans and your growth, on one living map. It starts in
-            Kigali and reaches everywhere you go.
+            {t('landing.hero.body')}
           </motion.p>
 
           <motion.div
@@ -290,12 +291,12 @@ export function GlobeHero() {
           >
             <Button size="xl" asChild>
               <Link href="/create-account">
-                Create your world <ArrowRight />
+                {t('landing.hero.create')} <ArrowRight />
               </Link>
             </Button>
             <Button size="xl" variant="glass" asChild>
               <Link href="/sign-in">
-                <Play className="fill-current" /> See it live
+                <Play className="fill-current" /> {t('landing.hero.seeLive')}
               </Link>
             </Button>
           </motion.div>
@@ -306,7 +307,7 @@ export function GlobeHero() {
             transition={{ delay: 1.6 }}
             className="mt-14 flex items-center gap-3 text-xs text-white/45"
           >
-            <span className="h-px w-10 bg-white/25" /> Drag the globe · scroll to fly into Kigali
+            <span className="h-px w-10 bg-white/25" /> {t('landing.hero.hint')}
           </motion.div>
         </motion.div>
 
@@ -324,8 +325,7 @@ export function GlobeHero() {
               <span className="ml-auto font-mono text-[11px] text-[#8A93A3]">13:58</span>
             </div>
             <p className="mt-2 text-[14px] leading-snug text-white">
-              You have <b className="text-[#60A5FA]">3h free</b> from 14:00. Kevin and Aline are at
-              Norrsken until 18:00.
+              {t('landing.hero.aiChip', { free: t('landing.hero.threeFree') })}
             </p>
           </div>
         </motion.div>
@@ -335,7 +335,7 @@ export function GlobeHero() {
           className="pointer-events-none absolute inset-x-0 bottom-0 z-20 mx-auto max-w-[1280px] px-5 pb-20 opacity-0 md:px-10"
         >
           <div className="t-eyebrow text-[#F5A524]">-1.9441° S · 30.0619° E</div>
-          <h2 className="t-d1 mt-4 max-w-3xl text-white">This is Kigali. This is where your world begins.</h2>
+          <h2 className="t-d1 mt-4 max-w-3xl text-white">{t('landing.hero.cityTitle')}</h2>
         </div>
       </div>
     </section>

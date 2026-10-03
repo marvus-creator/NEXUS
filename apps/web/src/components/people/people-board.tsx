@@ -7,14 +7,16 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { IMG } from '@/lib/photos';
 import { socialClient, type Connections, type PersonSummary } from '@/lib/social-client';
+import { useT } from '@/i18n/client';
+import { translateReason } from '@/i18n/reasons';
 
 const TABS = [
-  { value: 'suggestions', label: 'For you' },
-  { value: 'requests', label: 'Requests' },
-  { value: 'friends', label: 'Friends' },
-  { value: 'following', label: 'Following' },
-  { value: 'followers', label: 'Followers' },
-  { value: 'search', label: 'Search' },
+  { value: 'suggestions' },
+  { value: 'requests' },
+  { value: 'friends' },
+  { value: 'following' },
+  { value: 'followers' },
+  { value: 'search' },
 ] as const;
 
 const COVERS = [
@@ -43,11 +45,12 @@ function PersonRow({
   reasons?: string[];
   actions: React.ReactNode;
 }) {
+  const t = useT();
   const reason =
     reasons && reasons.length > 0
-      ? reasons.join(' · ')
+      ? reasons.map((entry) => translateReason(entry, t)).join(' · ')
       : person.mutualFriends && person.mutualFriends > 0
-        ? `${person.mutualFriends} mutual ${person.mutualFriends === 1 ? 'friend' : 'friends'}`
+        ? t(person.mutualFriends === 1 ? 'reasons.mutualOne' : 'reasons.mutualMany', { n: person.mutualFriends })
         : null;
 
   return (
@@ -99,6 +102,7 @@ export function PeopleBoard({
   suggestions: PersonSummary[];
 }) {
   const router = useRouter();
+  const t = useT();
 
   const [tab, setTab] = useState<(typeof TABS)[number]['value']>(
     connections.incomingRequests.length > 0 ? 'requests' : 'suggestions',
@@ -163,7 +167,7 @@ export function PeopleBoard({
                 : 'border-line bg-surface text-ink hover:border-line-strong',
             )}
           >
-            {item.label}
+            {t(`people.tabs.${item.value}`)}
             {counts[item.value] > 0 ? (
               <span
                 className={cn(
@@ -186,8 +190,8 @@ export function PeopleBoard({
             <EmptyState
               className="col-span-full"
               icon={<Users />}
-              title="No suggestions yet"
-              description="Suggestions come from mutual friends, shared interests and your city. Add a few interests and they start appearing."
+              title={t('people.empty.suggestionsTitle')}
+              description={t('people.empty.suggestionsBody')}
             />
           ) : (
             suggestions.map((person) => (
@@ -198,7 +202,7 @@ export function PeopleBoard({
                 actions={
                   sent[person.username] ? (
                     <Badge variant="accent" size="sm">
-                      Request sent
+                      {t('people.actions.requestSent')}
                     </Badge>
                   ) : (
                     <>
@@ -212,7 +216,7 @@ export function PeopleBoard({
                           })
                         }
                       >
-                        <UserPlus /> Add
+                        <UserPlus /> {t('people.actions.add')}
                       </Button>
                       <Button
                         size="sm"
@@ -224,7 +228,7 @@ export function PeopleBoard({
                           )
                         }
                       >
-                        Follow
+                        {t('people.actions.follow')}
                       </Button>
                     </>
                   )
@@ -241,8 +245,8 @@ export function PeopleBoard({
               <EmptyState
                 className="col-span-full"
                 icon={<UserPlus />}
-                title="No pending requests"
-                description="Friend requests you send and receive show up here."
+                title={t('people.empty.requestsTitle')}
+                description={t('people.empty.requestsBody')}
               />
             ) : null}
 
@@ -262,7 +266,7 @@ export function PeopleBoard({
                         )
                       }
                     >
-                      <Check /> Accept
+                      <Check /> {t('people.actions.accept')}
                     </Button>
                     <Button
                       size="sm"
@@ -274,7 +278,7 @@ export function PeopleBoard({
                         )
                       }
                     >
-                      <X /> Decline
+                      <X /> {t('people.actions.decline')}
                     </Button>
                   </>
                 }
@@ -282,7 +286,7 @@ export function PeopleBoard({
             ))}
 
             {connections.outgoingRequests.length > 0 ? (
-              <p className="t-eyebrow text-ink-subtle col-span-full mt-4">Sent</p>
+              <p className="t-eyebrow text-ink-subtle col-span-full mt-4">{t('people.sent')}</p>
             ) : null}
 
             {connections.outgoingRequests.map((request) => (
@@ -298,7 +302,7 @@ export function PeopleBoard({
                       void act(`cancel-${request.id}`, () => socialClient.cancelRequest(request.id))
                     }
                   >
-                    Cancel
+                    {t('people.actions.cancel')}
                   </Button>
                 }
               />
@@ -311,8 +315,8 @@ export function PeopleBoard({
             <EmptyState
               className="col-span-full"
               icon={<Users />}
-              title="No friends yet"
-              description="Friendship is mutual — send a request and it becomes real once they accept."
+              title={t('people.empty.friendsTitle')}
+              description={t('people.empty.friendsBody')}
             />
           ) : (
             connections.friends.map((person) => (
@@ -331,7 +335,7 @@ export function PeopleBoard({
                         )
                       }
                     >
-                      <UserMinus /> Remove
+                      <UserMinus /> {t('people.actions.remove')}
                     </Button>
                     <Button
                       size="icon-sm"
@@ -356,8 +360,8 @@ export function PeopleBoard({
             <EmptyState
               className="col-span-full"
               icon={<Users />}
-              title="Not following anyone"
-              description="Following is one-way. You see their posts without needing them to accept."
+              title={t('people.empty.followingTitle')}
+              description={t('people.empty.followingBody')}
             />
           ) : (
             connections.following.map((person) => (
@@ -375,7 +379,7 @@ export function PeopleBoard({
                       )
                     }
                   >
-                    Unfollow
+                    {t('people.actions.unfollow')}
                   </Button>
                 }
               />
@@ -388,8 +392,8 @@ export function PeopleBoard({
             <EmptyState
               className="col-span-full"
               icon={<Users />}
-              title="No followers yet"
-              description="People who follow you appear here."
+              title={t('people.empty.followersTitle')}
+              description={t('people.empty.followersBody')}
             />
           ) : (
             connections.followers.map((person) => (
@@ -407,7 +411,7 @@ export function PeopleBoard({
                       )
                     }
                   >
-                    Follow back
+                    {t('people.actions.followBack')}
                   </Button>
                 }
               />
@@ -421,22 +425,22 @@ export function PeopleBoard({
               <Input
                 icon={<Search />}
                 value={query}
-                placeholder="Name, username, skill or city"
+                placeholder={t('people.search.placeholder')}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') void runSearch();
                 }}
               />
               <Button loading={searching} onClick={() => void runSearch()}>
-                Search
+                {t('common.search')}
               </Button>
             </div>
 
             {results.length === 0 ? (
               <p className="text-ink-subtle col-span-full mt-4 text-sm">
                 {query.trim().length >= 2 && !searching
-                  ? 'Nobody matched that.'
-                  : 'Search by name, username, skill or city. Private profiles never appear.'}
+                  ? t('people.search.none')
+                  : t('people.search.hint')}
               </p>
             ) : (
               results.map((person) => (
@@ -454,7 +458,7 @@ export function PeopleBoard({
                         )
                       }
                     >
-                      Follow
+                      {t('people.actions.follow')}
                     </Button>
                   }
                 />
@@ -465,7 +469,7 @@ export function PeopleBoard({
 
         {tab !== 'search' && connections.blocked.length > 0 && tab === 'friends' ? (
           <div className="col-span-full mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <p className="t-eyebrow text-ink-subtle col-span-full">Blocked</p>
+            <p className="t-eyebrow text-ink-subtle col-span-full">{t('people.blocked')}</p>
             {connections.blocked.map((person) => (
               <PersonRow
                 key={person.id}
@@ -481,7 +485,7 @@ export function PeopleBoard({
                       )
                     }
                   >
-                    Unblock
+                    {t('people.actions.unblock')}
                   </Button>
                 }
               />

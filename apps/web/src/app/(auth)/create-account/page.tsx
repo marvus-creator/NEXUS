@@ -6,18 +6,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, type FormEvent } from 'react';
 import { authClient, type AuthError } from '@/lib/auth-client';
+import { useErrorText, useT } from '@/i18n/client';
 
 const USERNAME_PATTERN = /^[a-z0-9_]{3,24}$/;
 
 function passwordChecks(password: string) {
   return [
-    { label: 'At least 10 characters', ok: password.length >= 10 },
-    { label: 'Not only numbers', ok: password.length > 0 && !/^\d+$/.test(password) },
-  ];
+    { label: 'atLeast10', ok: password.length >= 10 },
+    { label: 'notOnlyNumbers', ok: password.length > 0 && !/^\d+$/.test(password) },
+  ] as const;
 }
 
 export default function CreateAccountPage() {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
@@ -47,9 +50,9 @@ export default function CreateAccountPage() {
 
   return (
     <div>
-      <h1 className="t-h1">Create your Nexus</h1>
+      <h1 className="t-h1">{t('auth.create.title')}</h1>
       <p className="text-ink-muted mt-2.5 text-sm">
-        Three minutes of setup, then a version of the internet that is actually yours.
+        {t('auth.create.subtitle')}
       </p>
 
       {error ? (
@@ -58,12 +61,12 @@ export default function CreateAccountPage() {
           className="border-danger/35 mt-6 flex items-start gap-2.5 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3"
         >
           <AlertCircle className="text-danger mt-0.5 size-4 shrink-0" />
-          <p className="text-sm">{error.message}</p>
+          <p className="text-sm">{errorText(error.message)}</p>
         </div>
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-5">
-        <Field label="Your name">
+        <Field label={t('auth.fields.name')}>
           <Input
             name="displayName"
             autoComplete="name"
@@ -76,9 +79,9 @@ export default function CreateAccountPage() {
         </Field>
 
         <Field
-          label="Username"
-          error={usernameValid ? undefined : '3-24 lowercase letters, numbers or underscores'}
-          hint={usernameValid ? 'This is how people find you on Nexus.' : undefined}
+          label={t('auth.fields.username')}
+          error={usernameValid ? undefined : t('auth.fields.usernameError')}
+          hint={usernameValid ? t('auth.fields.usernameHint') : undefined}
         >
           <Input
             name="username"
@@ -92,27 +95,27 @@ export default function CreateAccountPage() {
           />
         </Field>
 
-        <Field label="Email">
+        <Field label={t('auth.fields.email')}>
           <Input
             type="email"
             name="email"
             autoComplete="email"
             required
             icon={<Mail />}
-            placeholder="you@example.com"
+            placeholder={t('auth.fields.emailPlaceholder')}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
         </Field>
 
-        <Field label="Password">
+        <Field label={t('auth.fields.password')}>
           <Input
             type="password"
             name="password"
             autoComplete="new-password"
             required
             icon={<Lock />}
-            placeholder="Something only you would pick"
+            placeholder={t('auth.fields.newPasswordPlaceholder')}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -130,25 +133,24 @@ export default function CreateAccountPage() {
               >
                 {check.ok ? <Check className="size-2.5" /> : null}
               </span>
-              <span className={check.ok ? 'text-ink-muted' : 'text-ink-subtle'}>{check.label}</span>
+              <span className={check.ok ? 'text-ink-muted' : 'text-ink-subtle'}>{t(`auth.fields.${check.label}`)}</span>
             </li>
           ))}
         </ul>
 
         <Button type="submit" size="lg" loading={pending} disabled={!canSubmit} className="w-full">
-          Create Account
+          {t('auth.create.submit')}
         </Button>
 
         <p className="text-ink-subtle text-xs leading-relaxed">
-          We will send a confirmation link to your email. You can start using Nexus straight away
-          while it is on its way.
+          {t('auth.create.note')}
         </p>
       </form>
 
       <p className="text-ink-muted mt-8 text-center text-sm">
-        Already have an account?{' '}
+        {t('auth.create.haveAccount')}{' '}
         <Link href="/sign-in" className="text-accent font-medium hover:underline">
-          Sign in
+          {t('common.signIn')}
         </Link>
       </p>
     </div>

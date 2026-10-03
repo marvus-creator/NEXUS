@@ -4,11 +4,13 @@ import { redirect } from 'next/navigation';
 import { MarketBoard } from '@/components/market/market-board';
 import { getListings } from '@/lib/market-server';
 import { getSession } from '@/lib/session';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MarketPage() {
   const user = await getSession();
+  const t = await getT();
 
   if (!user) redirect('/sign-in');
 
@@ -18,11 +20,11 @@ export default async function MarketPage() {
   return (
     <div>
       <PageHero
-        eyebrow="Market"
+        eyebrow={t('pages.market.eyebrow')}
         tint="var(--module-events)"
         image={IMG.bags}
-        title={<>Buy local. Pay in RWF.</>}
-        description={<>Things and services from people and businesses around you. Requesting starts a conversation with the seller — nothing is charged until you both agree and you choose to pay.</>}
+        title={t('pages.market.title')}
+        description={t('pages.market.description')}
       />
       <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 

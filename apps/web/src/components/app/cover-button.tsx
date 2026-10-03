@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { API_BASE } from '@/lib/api';
 import { uploadImage, type UploadFolder } from '@/lib/upload-client';
+import { useT } from '@/i18n/client';
 
 type Target =
   | { kind: 'event'; slug: string }
@@ -24,6 +25,7 @@ const ROUTES: Record<Target['kind'], { folder: UploadFolder; path: (target: Targ
 
 export function CoverButton({ target, className }: { target: Target; className?: string }) {
   const router = useRouter();
+  const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function CoverButton({ target, className }: { target: Target; className?:
         className="flex h-9 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-black/60"
       >
         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
-        {busy ? 'Uploading…' : 'Change cover'}
+        {busy ? t('social.picker.uploading') : t('social.picker.changeCover')}
       </button>
       {error ? (
         <span className="rounded-md bg-black/70 px-2 py-1 text-[11px] text-red-300">{error}</span>

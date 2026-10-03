@@ -1,0 +1,152 @@
+export const home = {
+  greeting: {
+    morning: ['Good morning', 'Mwaramutse', 'Bonjour'],
+    afternoon: ['Good afternoon', 'Mwiriwe', 'Bon après-midi'],
+    evening: ['Good evening', 'Muraho', 'Bonsoir'],
+    there: ['there', 'nshuti', 'à vous'],
+  },
+  chips: {
+    streak: ['{n}-day streak', 'Iminsi {n} ikurikiranye', 'Série de {n} jours'],
+    thingToday: ['{n} thing today', 'Ikintu {n} uyu munsi', '{n} chose aujourd’hui'],
+    thingsToday: ['{n} things today', 'Ibintu {n} uyu munsi', '{n} choses aujourd’hui'],
+    openTask: ['{n} open task', 'Umurimo {n} utarakorwa', '{n} tâche ouverte'],
+    openTasks: ['{n} open tasks', 'Imirimo {n} itarakorwa', '{n} tâches ouvertes'],
+    eventAhead: ['{n} event ahead', 'Ikirori {n} kiri imbere', '{n} événement à venir'],
+    eventsAhead: ['{n} events ahead', 'Ibirori {n} biri imbere', '{n} événements à venir'],
+  },
+  priorities: {
+    needsYou: ['Needs you', 'Ibigukeneye', 'À faire'],
+    confirmTitle: ['Confirm your email address', 'Emeza imeyili yawe', 'Confirmez votre adresse e-mail'],
+    confirmBlurb: [
+      'Messaging, events and posting publicly stay locked until {email} is confirmed.',
+      'Ubutumwa, ibirori no gushyiraho ku mugaragaro bifunze kugeza {email} yemejwe.',
+      'Messages, événements et publications publiques restent bloqués tant que {email} n’est pas confirmé.',
+    ],
+    buildTitle: ['Build your NEXUS', 'Rema NEXUS yawe', 'Construisez votre NEXUS'],
+    buildBlurb: [
+      'Five short steps. It is what makes this page personal.',
+      'Intambwe eshanu ngufi. Ni zo zituma iyi paji iba iyawe.',
+      'Cinq étapes courtes. C’est ce qui rend cette page personnelle.',
+    ],
+    start: ['Start', 'Tangira', 'Commencer'],
+    overdueOne: ['{n} task is overdue', 'Umurimo {n} waratinze', '{n} tâche en retard'],
+    overdueMany: ['{n} tasks are overdue', 'Imirimo {n} yaratinze', '{n} tâches en retard'],
+    reviewTasks: ['Review tasks', 'Reba imirimo', 'Voir les tâches'],
+    weekTitle: ['Add your week', 'Ongeraho icyumweru cyawe', 'Ajoutez votre semaine'],
+    weekBlurb: [
+      'NEXUS cannot find free time until it knows what is already fixed.',
+      'NEXUS ntishobora kubona igihe cy’ubusa itazi ibyamaze gushyirwaho.',
+      'NEXUS ne peut pas trouver de temps libre sans savoir ce qui est déjà fixé.',
+    ],
+  },
+  ai: {
+    suggestion: ['Suggestion', 'Igitekerezo', 'Suggestion'],
+    free: ['You have {duration} free from {time}.', 'Ufite {duration} y’ubusa guhera {time}.', 'Vous avez {duration} de libre dès {time}.'],
+    enoughTask: [' Enough to get “{task}” done.', ' Bihagije ngo urangize “{task}”.', ' Assez pour finir « {task} ».'],
+    enoughTopic: [
+      ' Enough for a focused session on {topic}.',
+      ' Bihagije ngo wige {topic} witonze.',
+      ' Assez pour une session concentrée sur {topic}.',
+    ],
+    full: [
+      'Your day is fully committed. Nothing worth squeezing into it.',
+      'Umunsi wawe wuzuye. Nta kindi gikwiye kongerwamo.',
+      'Votre journée est pleine. Rien ne vaut la peine d’y être ajouté.',
+    ],
+    addWeek: [
+      'Add your fixed week and NEXUS finds the gaps worth using.',
+      'Ongeraho icyumweru cyawe, NEXUS ibone ibyuho bikwiye gukoreshwa.',
+      'Ajoutez votre semaine fixe et NEXUS trouvera les créneaux utiles.',
+    ],
+    tonight: [
+      '“{event}” is on tonight, so this is your clearest stretch.',
+      '“{event}” ni iri joro, iki ni cyo gihe cyawe cyiza.',
+      '« {event} » a lieu ce soir, c’est donc votre meilleur créneau.',
+    ],
+    deadline: ['“{task}” is your next deadline.', '“{task}” ni cyo kirangira vuba.', '« {task} » est votre prochaine échéance.'],
+    overdue: [
+      'It is overdue, so this window is the best time to clear it.',
+      'Byaratinze, iki ni cyo gihe cyiza cyo kubirangiza.',
+      'C’est en retard, ce créneau est le meilleur moment pour le régler.',
+    ],
+    confirm: [
+      'Nothing reaches your calendar without your confirmation.',
+      'Nta kigera kuri kalendari yawe utabyemeje.',
+      'Rien n’arrive dans votre calendrier sans votre accord.',
+    ],
+    openCalendar: ['Open calendar', 'Fungura kalendari', 'Ouvrir le calendrier'],
+  },
+  timeline: {
+    title: ['Your timeline', 'Gahunda y’uyu munsi', 'Votre journée'],
+    free: ['Free · {duration}', 'Ubusa · {duration}', 'Libre · {duration}'],
+    fill: ['Let NEXUS fill this gap', 'Reka NEXUS yuzuze iki cyuho', 'Laissez NEXUS remplir ce créneau'],
+    empty: [
+      'Nothing on your calendar today. Add your classes or work hours and NEXUS starts planning around them.',
+      'Nta kintu kiri kuri kalendari yawe uyu munsi. Ongeraho amasomo cyangwa amasaha y’akazi, NEXUS itangire kubiteganya.',
+      'Rien dans votre calendrier aujourd’hui. Ajoutez vos cours ou heures de travail et NEXUS planifiera autour.',
+    ],
+  },
+  tasks: {
+    title: ['Next up', 'Ibikurikira', 'À venir'],
+    all: ['All tasks', 'Imirimo yose', 'Toutes les tâches'],
+    empty: [
+      'Nothing with a deadline. Add a task and it shows up here and on your calendar.',
+      'Nta kintu gifite itariki ntarengwa. Ongeraho umurimo ugaragare hano no kuri kalendari.',
+      'Rien avec échéance. Ajoutez une tâche, elle apparaîtra ici et dans votre calendrier.',
+    ],
+    overdue: ['Overdue · ', 'Byatinze · ', 'En retard · '],
+    add: ['Add task', 'Ongeraho umurimo', 'Ajouter une tâche'],
+  },
+  events: {
+    eyebrow: ['Coming up', 'Biri imbere', 'Bientôt'],
+    title: ['Events', 'Ibirori', 'Événements'],
+    empty: [
+      'No events coming up. Host one and invite the people who should be there.',
+      'Nta birori biri imbere. Tegura kimwe utumire abakwiye kuhaba.',
+      'Aucun événement à venir. Organisez-en un et invitez les bonnes personnes.',
+    ],
+    hosting: ['You are hosting', 'Ni wowe utegura', 'Vous organisez'],
+    going: ['You are going', 'Uzajyayo', 'Vous y allez'],
+    goingCount: ['{n} going', '{n} bazajyayo', '{n} participants'],
+  },
+  places: {
+    eyebrow: ['Nearby', 'Hafi yawe', 'À proximité'],
+    title: ['Places worth knowing', 'Ahantu ho kumenya', 'Lieux à connaître'],
+    openMap: ['Open map', 'Fungura ikarita', 'Ouvrir la carte'],
+    empty: [
+      'No places yet. Add the cafés and venues you actually use.',
+      'Nta hantu harashyirwaho. Ongeraho amakawa n’ahantu ujya koko.',
+      'Pas encore de lieux. Ajoutez les cafés et salles que vous fréquentez.',
+    ],
+  },
+  streak: {
+    title: ['Streak', 'Uruhererekane', 'Série'],
+    day: ['day', 'umunsi', 'jour'],
+    days: ['days', 'iminsi', 'jours'],
+    progress: ['Progress', 'Iterambere', 'Progrès'],
+  },
+  goals: {
+    title: ['Goals', 'Intego', 'Objectifs'],
+    all: ['All goals', 'Intego zose', 'Tous les objectifs'],
+    empty: [
+      'No goals yet. A goal with milestones gives your tasks somewhere to point.',
+      'Nta ntego urashyiraho. Intego ifite intambwe iha imirimo yawe icyerekezo.',
+      'Pas encore d’objectifs. Un objectif avec étapes donne une direction à vos tâches.',
+    ],
+    create: ['Create a goal', 'Shyiraho intego', 'Créer un objectif'],
+    milestones: ['milestones', 'intambwe', 'étapes'],
+  },
+  circles: {
+    title: ['Your circles', 'Amatsinda yawe', 'Vos cercles'],
+    all: ['All', 'Yose', 'Tous'],
+    stats: ['{members} members · {posts} posts', 'Abanyamuryango {members} · inyandiko {posts}', '{members} membres · {posts} publications'],
+  },
+  setup: {
+    title: ['Finish your setup', 'Soza gutegura konti', 'Terminez la configuration'],
+    continue: ['Continue', 'Komeza', 'Continuer'],
+  },
+  map: {
+    title: ['Explore the map', 'Reba ikarita', 'Explorer la carte'],
+    count: ['{n} places in your city', 'Ahantu {n} mu mujyi wawe', '{n} lieux dans votre ville'],
+  },
+} as const;
