@@ -24,6 +24,7 @@ import {
   updatePath,
   type LearningPath,
 } from '@/lib/learning-client';
+import { useErrorText, useT } from '@/i18n/client';
 
 const SOURCE_ICON = {
   SELF: GraduationCap,
@@ -53,6 +54,8 @@ function PathCard({
   onRemove: (id: string) => void;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
+  const t = useT();
+  const errorText = useErrorText();
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [moduleTitle, setModuleTitle] = useState('');
@@ -69,7 +72,7 @@ function PathCard({
     try {
       onChange(await setModuleDone(path.id, moduleId, done));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not update that module.');
+      setError(cause instanceof Error ? cause.message : t('learn.moduleFailed'));
     } finally {
       setBusy(null);
     }
@@ -88,7 +91,7 @@ function PathCard({
       setModuleTitle('');
       onChange(await fetchPath(path.id));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not add that module.');
+      setError(cause instanceof Error ? cause.message : t('learn.addFailed'));
     } finally {
       setBusy(null);
     }
@@ -100,7 +103,7 @@ function PathCard({
     const value = Number(minutes);
 
     if (!Number.isFinite(value) || value < 1) {
-      setError('Enter how many minutes you studied.');
+      setError(t('learn.enterMinutes'));
       return;
     }
 
@@ -112,7 +115,7 @@ function PathCard({
       setLogging(false);
       onChange(await fetchPath(path.id));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not log that session.');
+      setError(cause instanceof Error ? cause.message : t('learn.logFailed'));
     } finally {
       setBusy(null);
     }
@@ -131,7 +134,7 @@ function PathCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-[0.975rem] font-semibold">{path.title}</h3>
-            {complete ? <Badge className="text-nearby">Finished</Badge> : null}
+            {complete ? <Badge className="text-nearby">{t('learn.finished')}</Badge> : null}
             {path.goal ? <Badge>{path.goal.title}</Badge> : null}
           </div>
 
@@ -153,14 +156,14 @@ function PathCard({
           </div>
 
           <p className="text-ink-subtle mt-2 text-xs">
-            {path.modulesDone} of {path.moduleCount} done
-            {path.minutesLeft > 0 ? ` · ${minutesLabel(path.minutesLeft)} left` : ''}
-            {path.minutesLogged > 0 ? ` · ${minutesLabel(path.minutesLogged)} studied` : ''}
+            {t('learn.progress', { done: path.modulesDone, total: path.moduleCount })}
+            {path.minutesLeft > 0 ? ` · ${t('learn.left', { time: minutesLabel(path.minutesLeft) })}` : ''}
+            {path.minutesLogged > 0 ? ` · ${t('learn.studied', { time: minutesLabel(path.minutesLogged) })}` : ''}
           </p>
 
           {path.nextModule && !expanded ? (
             <p className="text-ink-muted mt-2.5 text-[0.8125rem]">
-              Next: <span className="text-ink">{path.nextModule.title}</span>
+              {t('learn.next')} <span className="text-ink">{path.nextModule.title}</span>
             </p>
           ) : null}
 
@@ -205,7 +208,7 @@ function PathCard({
                   <Input
                     value={moduleTitle}
                     onChange={(event) => setModuleTitle(event.target.value)}
-                    placeholder="Add a module"
+                    placeholder={t('learn.addModule')}
                     className="h-9 text-[0.875rem]"
                   />
                   <Button type="submit" variant="ghost" size="sm" disabled={busy === 'new'}>
@@ -218,7 +221,7 @@ function PathCard({
 
           {logging ? (
             <form onSubmit={submitSession} className="mt-3 flex items-end gap-2">
-              <Field label="Minutes studied" className="flex-1">
+              <Field label={t('learn.minutesStudied')} className="flex-1">
                 <Input
                   value={minutes}
                   onChange={(event) => setMinutes(event.target.value)}
@@ -227,7 +230,7 @@ function PathCard({
                 />
               </Field>
               <Button type="submit" size="sm" disabled={busy === 'session'}>
-                Log
+                {t('learn.log')}
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={() => setLogging(false)}>
                 <X className="size-4" />
@@ -235,15 +238,15 @@ function PathCard({
             </form>
           ) : null}
 
-          {error ? <p className="text-danger mt-2 text-xs">{error}</p> : null}
+          {error ? <p className="text-danger mt-2 text-xs">{errorText(error)}</p> : null}
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setExpanded((value) => !value)}>
-              {expanded ? 'Hide modules' : 'Modules'}
+              {expanded ? t('learn.hideModules') : t('learn.modules')}
             </Button>
             {!logging ? (
               <Button variant="ghost" size="sm" onClick={() => setLogging(true)}>
-                <Timer className="size-4" /> Log study
+                <Timer className="size-4" /> {t('learn.logStudy')}
               </Button>
             ) : null}
             {!complete ? (
@@ -260,7 +263,7 @@ function PathCard({
                 }}
                 disabled={path.status === 'PAUSED' || busy === 'status'}
               >
-                {path.status === 'PAUSED' ? 'Paused' : 'Pause'}
+                {path.status === 'PAUSED' ? t('learn.paused') : t('learn.pause')}
               </Button>
             ) : null}
             <Button
@@ -289,6 +292,7 @@ function PathCard({
 
 export function LearnBoard({ paths }: { paths: LearningPath[] }) {
   const router = useRouter();
+  const t = useT();
 
   const [items, setItems] = useState(paths);
   const [composing, setComposing] = useState(false);
@@ -308,7 +312,7 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
     event.preventDefault();
 
     if (title.trim().length < 2) {
-      setError('Give it a name you will recognise later.');
+      setError(t('learn.nameIt'));
       return;
     }
 
@@ -333,7 +337,7 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
       setComposing(false);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not create that path.');
+      setError(cause instanceof Error ? cause.message : t('learn.createFailed'));
     } finally {
       setBusy(false);
     }
@@ -355,25 +359,25 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
         <div className="text-ink-muted flex items-center gap-4 text-[0.8125rem]">
           <span className="flex items-center gap-1.5">
             <GraduationCap className="size-4" style={{ color: 'var(--module-learn)' }} />
-            {active.length} active
+            {t('learn.active', { n: active.length })}
           </span>
           {totalLeft > 0 ? (
             <span className="flex items-center gap-1.5">
               <Clock className="size-4" />
-              {minutesLabel(totalLeft)} left
+              {t('learn.left', { time: minutesLabel(totalLeft) })}
             </span>
           ) : null}
           {totalLogged > 0 ? (
             <span className="flex items-center gap-1.5">
               <Timer className="size-4" />
-              {minutesLabel(totalLogged)} studied
+              {t('learn.studied', { time: minutesLabel(totalLogged) })}
             </span>
           ) : null}
         </div>
 
         <Button size="sm" onClick={() => setComposing((value) => !value)}>
           {composing ? <X className="size-4" /> : <Plus className="size-4" />}
-          {composing ? 'Cancel' : 'New path'}
+          {composing ? t('common.cancel') : t('learn.newPath')}
         </Button>
       </div>
 
@@ -381,29 +385,29 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
         <Card className="mt-5 p-5">
           <form onSubmit={submit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="What are you learning?">
+              <Field label={t('learn.form.what')}>
                 <Input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Discrete Mathematics"
+                  placeholder={t('learn.form.whatPlaceholder')}
                   autoFocus
                 />
               </Field>
-              <Field label="Subject" hint="Optional">
+              <Field label={t('learn.form.subject')} hint={t('common.optional')}>
                 <Input
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
-                  placeholder="Mathematics"
+                  placeholder={t('learn.form.subjectPlaceholder')}
                 />
               </Field>
             </div>
 
-            <Field label="Modules" hint="One per line. You can add more later.">
+            <Field label={t('learn.form.modules')} hint={t('learn.form.modulesHint')}>
               <textarea
                 value={modules}
                 onChange={(event) => setModules(event.target.value)}
                 rows={4}
-                placeholder={'Logic and proofs\nSet theory\nGraph theory'}
+                placeholder={t('learn.form.modulesPlaceholder')}
                 className="border-border bg-surface placeholder:text-ink-subtle focus-visible:ring-accent/40 w-full rounded-lg border px-3 py-2 text-[0.875rem] outline-none focus-visible:ring-2"
               />
             </Field>
@@ -411,7 +415,7 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
             {error ? <p className="text-danger text-xs">{error}</p> : null}
 
             <Button type="submit" disabled={busy}>
-              {busy ? 'Creating…' : 'Create path'}
+              {busy ? t('learn.form.creating') : t('learn.form.create')}
             </Button>
           </form>
         </Card>
@@ -421,8 +425,8 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
         <EmptyState
           className="mt-8"
           icon={<GraduationCap className="size-6" />}
-          title="Nothing on the go yet"
-          description="A path is whatever you are working through — a course, a book, a syllabus. Break it into modules and tick them off."
+          title={t('learn.emptyTitle')}
+          description={t('learn.emptyBody')}
         />
       ) : (
         <div className="mt-6 space-y-4">
@@ -433,7 +437,7 @@ export function LearnBoard({ paths }: { paths: LearningPath[] }) {
           {finished.length > 0 ? (
             <>
               <h2 className="text-ink-subtle pt-4 text-xs font-medium tracking-wide uppercase">
-                Finished
+                {t('learn.finished')}
               </h2>
               {finished.map((path) => (
                 <PathCard key={path.id} path={path} onChange={replace} onRemove={drop} />
