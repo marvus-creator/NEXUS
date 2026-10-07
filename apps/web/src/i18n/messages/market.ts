@@ -1,4 +1,5 @@
 export const market = {
+  left: ['{n} left', 'hasigaye {n}', '{n} restants'],
   everything: ['Everything', 'Byose', 'Tout'],
   remove: ['Remove from saved', 'Kuraho mu byabitswe', 'Retirer des enregistrements'],
   saveListing: ['Save listing', 'Bika iki gicuruzwa', 'Enregistrer l’annonce'],

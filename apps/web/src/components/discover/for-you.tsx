@@ -179,7 +179,7 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
             <span className="num">{t('circles.memberMany', { n: item.meta.members })}</span>
           ) : null}
           {item.reasons[1] ? (
-            <span className="line-clamp-1 text-white/60">{item.reasons[1]}</span>
+            <span className="line-clamp-1 text-white/60">{translateReason(item.reasons[1], t)}</span>
           ) : null}
         </div>
       </div>

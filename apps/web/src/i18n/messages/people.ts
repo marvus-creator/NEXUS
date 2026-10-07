@@ -69,6 +69,7 @@ export const people = {
 } as const;
 
 export const reasons = {
+  and: ['and', 'na', 'et'],
   mutualOne: ['{n} mutual friend', 'Inshuti {n} muhuriyeho', '{n} ami en commun'],
   mutualMany: ['{n} mutual friends', 'Inshuti {n} muhuriyeho', '{n} amis en commun'],
   sharedOne: ['{n} shared interest', 'Icyo mukunda {n} muhuriyeho', '{n} intérêt commun'],

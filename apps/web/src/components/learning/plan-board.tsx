@@ -12,6 +12,7 @@ import {
   type PlanProposal,
 } from '@/lib/learning-client';
 import { useFormatDate, useT } from '@/i18n/client';
+import { translateEngineNote, translateRationale } from '@/i18n/planner-text';
 
 function timeIn(iso: string, timezone: string) {
   return new Intl.DateTimeFormat('en-GB', {
@@ -140,7 +141,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
                     </div>
 
                     <p className="text-ink-muted mt-1.5 text-[0.8125rem] leading-relaxed">
-                      {proposal.rationale}
+                      {translateRationale(proposal.rationale, t)}
                     </p>
 
                     <div className="mt-3 flex items-center gap-2">
@@ -221,7 +222,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
             <Sparkles className="size-3.5" style={{ color: 'var(--module-ai)' }} />
             {t('plan.how')}
           </h2>
-          <p className="text-ink-muted mt-2 text-[0.8125rem] leading-relaxed">{day.engineNote}</p>
+          <p className="text-ink-muted mt-2 text-[0.8125rem] leading-relaxed">{translateEngineNote(day.engineNote, t)}</p>
           <p className="text-ink-subtle mt-2.5 text-xs leading-relaxed">
             {t('plan.button')}
           </p>

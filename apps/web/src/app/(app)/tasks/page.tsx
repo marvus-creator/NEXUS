@@ -30,19 +30,19 @@ export default async function TasksPage() {
       <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <Badge size="sm">{counts.open} open</Badge>
+        <Badge size="sm">{t('tasks.counts.open', { n: counts.open })}</Badge>
         {counts.overdue > 0 ? (
           <Badge variant="danger" size="sm">
-            {counts.overdue} overdue
+            {t('tasks.counts.overdue', { n: counts.overdue })}
           </Badge>
         ) : null}
         {counts.dueToday > 0 ? (
           <Badge variant="warning" size="sm">
-            {counts.dueToday} due today
+            {t('tasks.counts.dueToday', { n: counts.dueToday })}
           </Badge>
         ) : null}
         <Badge variant="success" size="sm">
-          {counts.done} done
+          {t('tasks.counts.done', { n: counts.done })}
         </Badge>
       </div>
 

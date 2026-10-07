@@ -167,7 +167,7 @@ function ListingCard({
               </Link>
             ) : null}
             {listing.city ? <span>· {listing.city}</span> : null}
-            {listing.kind === 'PRODUCT' && !soldOut ? <span>· {listing.quantity} left</span> : null}
+            {listing.kind === 'PRODUCT' && !soldOut ? <span>· {t('market.left', { n: listing.quantity })}</span> : null}
           </div>
         </div>
 

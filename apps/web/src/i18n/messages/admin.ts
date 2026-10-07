@@ -66,7 +66,7 @@ export const admin = {
       all: ['Everything', 'Byose', 'Tout'],
     },
     search: ['Search {type}', 'Shakisha {type}', 'Rechercher {type}'],
-    none: ['No {type} here', 'Nta {type} hano', 'Aucun élément ici'],
+    none: ['No {type} here', 'Nta {type} hano', 'Aucun élément dans {type}'],
     tryAnother: ['Try another filter or search.', 'Gerageza akandi kayunguruzo cyangwa ushakishe.', 'Essayez un autre filtre ou une autre recherche.'],
     verified: ['verified', 'byemejwe', 'vérifié'],
     removed: ['removed', 'byakuweho', 'retiré'],

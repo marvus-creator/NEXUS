@@ -16,6 +16,38 @@ export const calendar = {
 } as const;
 
 export const plan = {
+  why: {
+    overdue: ['{n} days overdue', 'Byatinze iminsi {n}', 'En retard de {n} jours'],
+    today: ['Due today', 'Birangira uyu munsi', 'À rendre aujourd’hui'],
+    tomorrow: ['Due tomorrow', 'Birangira ejo', 'À rendre demain'],
+    inDays: ['Due in {n} days', 'Birangira mu minsi {n}', 'À rendre dans {n} jours'],
+    noDue: ['No due date, still open', 'Nta tariki ntarengwa, biracyafunguye', 'Pas d’échéance, toujours ouvert'],
+    notStarted: ['Not started yet', 'Ntibiratangira', 'Pas encore commencé'],
+    studiedToday: ['Studied today already', 'Wize uyu munsi', 'Déjà étudié aujourd’hui'],
+    lastStudied: ['Last studied {n} days ago', 'Wize bwa nyuma hashize iminsi {n}', 'Dernière étude il y a {n} jours'],
+    sentence: [
+      '{reason}. You are free {window}, so this fits without moving anything.',
+      '{reason}. Ufite ubusa {window}, bityo bihakwira nta kindi kimuwe.',
+      '{reason}. Vous êtes libre {window}, ça tient sans rien déplacer.',
+    ],
+  },
+  engine: {
+    assisted: [
+      'Claude chose the order and timing from your calendar, tasks and learning paths. Nothing is added until you accept it.',
+      'Claude yahisemo uko bikurikirana n’igihe ishingiye kuri kalendari, imirimo n’inzira zo kwiga byawe. Nta kongerwaho utabyemeye.',
+      'Claude a choisi l’ordre et les horaires à partir de votre calendrier, vos tâches et vos parcours. Rien n’est ajouté sans votre accord.',
+    ],
+    fallback: [
+      'Planned by rule this time because the AI planner was unavailable. Try again in a moment.',
+      'Byateguwe hakoreshejwe amategeko kuko AI itabonetse. Ongera ugerageze mu kanya.',
+      'Planifié par règles cette fois, le planificateur IA étant indisponible. Réessayez dans un instant.',
+    ],
+    rules: [
+      'Planned from your calendar, tasks and learning paths by rule. No language model is configured.',
+      'Byateguwe hashingiwe kuri kalendari, imirimo n’inzira zo kwiga hakoreshejwe amategeko. Nta AI ihujwe.',
+      'Planifié à partir de votre calendrier, vos tâches et vos parcours, par règles. Aucun modèle de langage n’est configuré.',
+    ],
+  },
   today: ['today', 'uyu munsi', 'aujourd’hui'],
   tomorrow: ['tomorrow', 'ejo', 'demain'],
   failed: ['Could not build a plan.', 'Ntibyashobotse gutegura gahunda.', 'Impossible de construire un plan.'],

@@ -1,4 +1,10 @@
 export const tasks = {
+  counts: {
+    open: ['{n} open', '{n} bitarakorwa', '{n} ouvertes'],
+    overdue: ['{n} overdue', '{n} byatinze', '{n} en retard'],
+    dueToday: ['{n} due today', '{n} birangira uyu munsi', '{n} pour aujourd’hui'],
+    done: ['{n} done', '{n} byarangiye', '{n} terminées'],
+  },
   filters: {
     open: ['Open', 'Bitarakorwa', 'Ouvertes'],
     today: ['Due soon', 'Birarangira vuba', 'Bientôt dues'],
