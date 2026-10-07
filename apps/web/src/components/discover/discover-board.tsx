@@ -7,6 +7,9 @@ import { ForYou, type ForYouFeed } from './for-you';
 import type { CircleSummary } from '@/lib/community-client';
 import type { EventSummary, PlaceSummary } from '@/lib/places-client';
 import type { PersonSummary } from '@/lib/social-client';
+import { useFormatDate, useT } from '@/i18n/client';
+import { translateReason } from '@/i18n/reasons';
+import type { messages } from '@/i18n/messages';
 
 export type DiscoverData = {
   places: PlaceSummary[];
@@ -15,18 +18,17 @@ export type DiscoverData = {
   people: PersonSummary[];
 };
 
-function when(startAt: string) {
-  const start = new Date(startAt);
-  return `${start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
-}
+type PlaceKey = keyof (typeof messages)['enums']['place'];
 
 function EventItem({ event }: { event: EventSummary }) {
+  const t = useT();
+  const format = useFormatDate();
   return (
     <Card interactive className="p-5">
       <div className="flex items-start gap-4">
         <div className="border-line bg-surface-raised flex size-12 shrink-0 flex-col items-center justify-center rounded-lg border">
           <span className="text-micro text-ink-subtle font-semibold uppercase">
-            {new Date(event.startAt).toLocaleDateString('en-GB', { month: 'short' })}
+            {format(event.startAt, 'monthShort')}
           </span>
           <span className="font-mono text-base leading-none font-semibold">
             {new Date(event.startAt).getDate()}
@@ -38,7 +40,7 @@ function EventItem({ event }: { event: EventSummary }) {
             {event.title}
           </Link>
           <p className="text-ink-subtle mt-1 truncate text-xs">
-            {when(event.startAt)}
+            {`${format(event.startAt, 'dayMonthShort')} · ${format(event.startAt, 'time')}`}
             {event.place ? ` · ${event.place.name}` : event.locationText ? ` · ${event.locationText}` : ''}
           </p>
           <div className="mt-2.5 flex items-center gap-3">
@@ -52,7 +54,7 @@ function EventItem({ event }: { event: EventSummary }) {
                 size="xs"
               />
             ) : null}
-            <span className="text-ink-subtle text-xs">{event.goingCount} going</span>
+            <span className="text-ink-subtle text-xs">{t('events.status.goingCount', { n: event.goingCount })}</span>
           </div>
         </div>
       </div>
@@ -61,6 +63,7 @@ function EventItem({ event }: { event: EventSummary }) {
 }
 
 function PlaceItem({ place }: { place: PlaceSummary }) {
+  const t = useT();
   return (
     <Card interactive className="p-5">
       <div className="flex items-start gap-3.5">
@@ -69,8 +72,8 @@ function PlaceItem({ place }: { place: PlaceSummary }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{place.name}</p>
-          <p className="text-ink-subtle mt-0.5 truncate text-xs capitalize">
-            {place.category.toLowerCase()}
+          <p className="text-ink-subtle mt-0.5 truncate text-xs">
+            {t(`enums.place.${place.category as PlaceKey}`)}
             {place.address ? ` · ${place.address}` : ''}
           </p>
           <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs">
@@ -86,7 +89,7 @@ function PlaceItem({ place }: { place: PlaceSummary }) {
                 {place.distanceKm < 1 ? `${Math.round(place.distanceKm * 1000)} m` : `${place.distanceKm} km`}
               </span>
             ) : null}
-            {place.eventCount > 0 ? <Badge size="sm">{place.eventCount} upcoming</Badge> : null}
+            {place.eventCount > 0 ? <Badge size="sm">{t('places.upcoming', { n: place.eventCount })}</Badge> : null}
           </div>
         </div>
       </div>
@@ -95,6 +98,7 @@ function PlaceItem({ place }: { place: PlaceSummary }) {
 }
 
 function CircleItem({ circle }: { circle: CircleSummary }) {
+  const t = useT();
   return (
     <Card interactive className="p-5">
       <div className="flex items-start gap-3.5">
@@ -106,7 +110,7 @@ function CircleItem({ circle }: { circle: CircleSummary }) {
             {circle.name}
           </Link>
           <p className="text-ink-subtle mt-0.5 text-xs">
-            {circle.members} {circle.members === 1 ? 'member' : 'members'} · {circle.posts} posts
+            {t(circle.members === 1 ? 'circles.memberOne' : 'circles.memberMany', { n: circle.members })} · {t(circle.posts === 1 ? 'circles.postOne' : 'circles.postMany', { n: circle.posts })}
           </p>
           {circle.description ? (
             <p className="text-ink-muted mt-2 line-clamp-2 text-sm leading-relaxed">
@@ -114,13 +118,14 @@ function CircleItem({ circle }: { circle: CircleSummary }) {
             </p>
           ) : null}
         </div>
-        {circle.myRole ? <Badge size="sm" className="capitalize">{circle.myRole.toLowerCase()}</Badge> : null}
+        {circle.myRole ? <Badge size="sm">{t(`enums.circleRole.${circle.myRole}`)}</Badge> : null}
       </div>
     </Card>
   );
 }
 
 function PersonItem({ person }: { person: PersonSummary }) {
+  const t = useT();
   return (
     <Card interactive className="p-5">
       <div className="flex items-center gap-3.5">
@@ -136,11 +141,11 @@ function PersonItem({ person }: { person: PersonSummary }) {
             {person.occupation ? ` · ${person.occupation}` : ''}
           </p>
           {person.reasons && person.reasons.length > 0 ? (
-            <p className="text-ink-muted mt-1.5 truncate text-xs">{person.reasons.join(' · ')}</p>
+            <p className="text-ink-muted mt-1.5 truncate text-xs">{person.reasons.map((entry) => translateReason(entry, t)).join(' · ')}</p>
           ) : null}
         </div>
         <Button asChild size="sm" variant="secondary">
-          <Link href={`/u/${person.username}`}>View</Link>
+          <Link href={`/u/${person.username}`}>{t('discover.view')}</Link>
         </Button>
       </div>
     </Card>
@@ -148,13 +153,14 @@ function PersonItem({ person }: { person: PersonSummary }) {
 }
 
 export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYouFeed }) {
+  const t = useT();
 
   const tabs = [
-    { value: 'for-you', label: 'For You', count: feed.items.length },
-    { value: 'events', label: 'Events', count: data.events.length },
-    { value: 'places', label: 'Places', count: data.places.length },
-    { value: 'circles', label: 'Circles', count: data.circles.length },
-    { value: 'people', label: 'People', count: data.people.length },
+    { value: 'for-you', count: feed.items.length },
+    { value: 'events', count: data.events.length },
+    { value: 'places', count: data.places.length },
+    { value: 'circles', count: data.circles.length },
+    { value: 'people', count: data.people.length },
   ];
 
   return (
@@ -162,7 +168,7 @@ export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYou
       <TabsList>
         {tabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
-            {tab.label}
+            {t(`discover.tabs.${tab.value as 'for-you' | 'events' | 'places' | 'circles' | 'people'}`)}
             {tab.count > 0 ? (
               <span className="bg-surface-hover ml-2 rounded-full px-1.5 text-[0.625rem] font-semibold">
                 {tab.count}
@@ -180,11 +186,11 @@ export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYou
         {data.events.length === 0 ? (
           <EmptyState
             icon={<CalendarDays />}
-            title="No events coming up"
-            description="Create one and invite the people who should be there."
+            title={t('discover.empty.eventsTitle')}
+            description={t('discover.empty.eventsBody')}
             action={
               <Button asChild size="sm">
-                <Link href="/events">Go to events</Link>
+                <Link href="/events">{t('discover.empty.eventsGo')}</Link>
               </Button>
             }
           />
@@ -201,11 +207,11 @@ export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYou
         {data.places.length === 0 ? (
           <EmptyState
             icon={<MapPin />}
-            title="No places yet"
-            description="Add the cafés and venues you actually use."
+            title={t('discover.empty.placesTitle')}
+            description={t('discover.empty.placesBody')}
             action={
               <Button asChild size="sm">
-                <Link href="/nearby">Go to nearby</Link>
+                <Link href="/nearby">{t('discover.empty.placesGo')}</Link>
               </Button>
             }
           />
@@ -222,11 +228,11 @@ export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYou
         {data.circles.length === 0 ? (
           <EmptyState
             icon={<UsersRound />}
-            title="No circles yet"
-            description="Start a community around something you care about."
+            title={t('discover.empty.circlesTitle')}
+            description={t('discover.empty.circlesBody')}
             action={
               <Button asChild size="sm">
-                <Link href="/circles">Go to circles</Link>
+                <Link href="/circles">{t('discover.empty.circlesGo')}</Link>
               </Button>
             }
           />
@@ -243,11 +249,11 @@ export function DiscoverBoard({ data, feed }: { data: DiscoverData; feed: ForYou
         {data.people.length === 0 ? (
           <EmptyState
             icon={<Compass />}
-            title="No suggestions yet"
-            description="Suggestions come from mutual friends, shared interests and your city."
+            title={t('discover.empty.peopleTitle')}
+            description={t('discover.empty.peopleBody')}
             action={
               <Button asChild size="sm">
-                <Link href="/people">Go to people</Link>
+                <Link href="/people">{t('discover.empty.peopleGo')}</Link>
               </Button>
             }
           />

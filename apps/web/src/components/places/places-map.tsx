@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent, Marker } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import type { PlaceSummary } from '@/lib/places-client';
+import { useT } from '@/i18n/client';
 
 const KIGALI: [number, number] = [30.0619, -1.9441];
 const STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
@@ -73,6 +74,7 @@ export function PlacesMap({
   onPick: (point: Point) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
+  const t = useT();
   const mapRef = useRef<MapLibreMap | null>(null);
   const libRef = useRef<typeof import('maplibre-gl') | null>(null);
   const meMarker = useRef<Marker | null>(null);
@@ -319,7 +321,7 @@ export function PlacesMap({
   if (failed) {
     return (
       <div className="text-ink-muted flex h-full items-center justify-center px-6 text-center text-sm">
-        The map could not load. Check your connection and refresh.
+        {t('places.mapFailed')}
       </div>
     );
   }
@@ -340,7 +342,7 @@ export function PlacesMap({
       <div ref={container} className="h-full w-full" />
       {!ready ? (
         <div className="bg-surface text-ink-subtle absolute inset-0 flex items-center justify-center text-xs">
-          Loading map…
+          {t('places.mapLoading')}
         </div>
       ) : null}
     </>

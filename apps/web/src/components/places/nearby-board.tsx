@@ -21,22 +21,24 @@ import { CATEGORY_COLOR, placeImage } from '@/lib/photos';
 import { placesClient, type PlaceSummary } from '@/lib/places-client';
 import { PlacesMap } from './places-map';
 import { ImagePicker } from '@/components/app/image-picker';
+import { useErrorText, useT } from '@/i18n/client';
 
 const CATEGORIES = [
-  { value: '', label: 'All', icon: MapPin },
-  { value: 'CAFE', label: 'Cafés', icon: Coffee },
-  { value: 'RESTAURANT', label: 'Food', icon: UtensilsCrossed },
-  { value: 'WORKSPACE', label: 'Workspaces', icon: Landmark },
-  { value: 'VENUE', label: 'Venues', icon: Landmark },
-  { value: 'STORE', label: 'Stores', icon: Store },
-  { value: 'SPORT', label: 'Sport', icon: Dumbbell },
-  { value: 'SERVICE', label: 'Services', icon: Wrench },
+  { value: '', icon: MapPin },
+  { value: 'CAFE', icon: Coffee },
+  { value: 'RESTAURANT', icon: UtensilsCrossed },
+  { value: 'WORKSPACE', icon: Landmark },
+  { value: 'VENUE', icon: Landmark },
+  { value: 'STORE', icon: Store },
+  { value: 'SPORT', icon: Dumbbell },
+  { value: 'SERVICE', icon: Wrench },
 ] as const;
 
 const CATEGORY_TINT: Record<string, string> = CATEGORY_COLOR;
 
 export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: string | null }) {
   const router = useRouter();
+  const t = useT();
 
   const [items, setItems] = useState(places);
   const [category, setCategory] = useState<string>('');
@@ -80,7 +82,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
 
   async function useMyLocation() {
     if (!navigator.geolocation) {
-      setError('This browser cannot share a location.');
+      setError(t('places.noGeo'));
       return;
     }
 
@@ -105,7 +107,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
         }
       },
       () => {
-        setError('Location permission was refused, so distances stay hidden.');
+        setError(t('places.refused'));
         setLocating(false);
       },
       { timeout: 8000 },
@@ -166,13 +168,13 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
         <div className="min-w-[200px] flex-1 sm:max-w-sm">
           <Input
             value={query}
-            placeholder="Search places in Kigali"
+            placeholder={t('places.search')}
             className="h-10 rounded-xl"
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
         <Button variant="secondary" loading={locating} onClick={() => void useMyLocation()}>
-          <Navigation /> {located ? 'Distances on' : 'Use my location'}
+          <Navigation /> {located ? t('places.distancesOn') : t('places.useLocation')}
         </Button>
         <Button
           className="ml-auto"
@@ -183,7 +185,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
           }}
         >
           {composing ? <X /> : <Plus />}
-          {composing ? 'Cancel' : 'Add place'}
+          {composing ? t('common.cancel') : t('places.addPlace')}
         </Button>
       </div>
 
@@ -212,7 +214,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                   style={{ background: CATEGORY_COLOR[item.value] }}
                 />
               ) : null}
-              {item.label}
+              {t(`places.filters.${item.value || 'all'}`)}
               <span className={cn('num text-[11px]', active ? 'opacity-70' : 'text-ink-muted')}>
                 {count}
               </span>
@@ -235,7 +237,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
           />
           {composing ? (
             <div className="bg-surface-raised/95 border-line pointer-events-none absolute left-3 top-3 rounded-lg border px-3 py-2 text-xs backdrop-blur">
-              {picked ? 'Pinned. Tap again to move it.' : 'Tap the map to pin where it is.'}
+              {picked ? t('places.pinned') : t('places.tapToPin')}
             </div>
           ) : null}
         </div>
@@ -244,16 +246,16 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
           {composing ? (
             <Card className="mb-4 p-5">
               <div className="flex flex-col gap-4">
-                <ImagePicker folder="places" value={cover} onChange={setCover} label="Add a photo of the place" />
-                <Field label="What is it called?">
+                <ImagePicker folder="places" value={cover} onChange={setCover} label={t('social.picker.placePhoto')} />
+                <Field label={t('places.form.name')}>
                   <Input
                     autoFocus
                     value={name}
-                    placeholder="Question Coffee"
+                    placeholder={t('places.form.namePlaceholder')}
                     onChange={(event) => setName(event.target.value)}
                   />
                 </Field>
-                <Field label="Address" hint="Optional">
+                <Field label={t('places.form.address')} hint={t('common.optional')}>
                   <Input
                     value={address}
                     placeholder="KG 7 Ave"
@@ -261,7 +263,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                   />
                 </Field>
                 <div>
-                  <p className="text-ink mb-2 text-sm font-medium">Category</p>
+                  <p className="text-ink mb-2 text-sm font-medium">{t('places.form.category')}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {CATEGORIES.filter((item) => item.value).map((item) => (
                       <button
@@ -275,20 +277,20 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                             : 'border-line text-ink-muted hover:text-ink',
                         )}
                       >
-                        {item.label}
+                        {t(`enums.place.${item.value as Exclude<typeof item.value, ''>}`)}
                       </button>
                     ))}
                   </div>
                 </div>
-                <Field label="What is it like?" hint="Optional">
+                <Field label={t('places.form.like')} hint={t('common.optional')}>
                   <Textarea
                     value={description}
-                    placeholder="Quiet enough to work, open until 22:00"
+                    placeholder={t('places.form.likePlaceholder')}
                     onChange={(event) => setDescription(event.target.value)}
                   />
                 </Field>
                 <p className="text-ink-muted text-xs">
-                  {picked ? 'Location pinned on the map.' : 'Tap the map to pin its location.'}
+                  {picked ? t('places.form.pinnedOk') : t('places.form.pinHint')}
                 </p>
                 {error ? <p className="text-danger text-sm">{error}</p> : null}
                 <Button
@@ -297,7 +299,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                   disabled={!name.trim()}
                   className="self-start"
                 >
-                  Add place
+                  {t('places.addPlace')}
                 </Button>
               </div>
             </Card>
@@ -308,11 +310,11 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
           <Card className="overflow-hidden">
             <div className="border-line flex items-baseline justify-between border-b px-4 py-3.5">
               <div>
-                <div className="font-display text-xl font-bold tracking-tight">Nearby</div>
+                <div className="font-display text-xl font-bold tracking-tight">{t('places.listTitle')}</div>
                 <div className="text-ink-muted text-xs">
                   {located
-                    ? 'Sorted by distance from you'
-                    : `Popular around ${city ?? 'you'} right now`}
+                    ? t('places.sorted')
+                    : t('places.popular', { city: city ?? t('places.you') })}
                 </div>
               </div>
               <span className="num text-ink-muted text-xs">{visible.length} places</span>
@@ -321,11 +323,11 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
             {visible.length === 0 ? (
               <EmptyState
                 icon={<MapPin />}
-                title="No places here"
-                description="Add the cafés, venues and workspaces you actually use. Everyone in your city sees them."
+                title={t('places.emptyTitle')}
+                description={t('places.emptyBody')}
                 action={
                   <Button size="sm" onClick={() => setComposing(true)}>
-                    <Plus /> Add place
+                    <Plus /> {t('places.addPlace')}
                   </Button>
                 }
               />
@@ -376,16 +378,16 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                             <span className="text-ink-muted">({place.reviewCount})</span>
                           </span>
                         ) : (
-                          <span className="text-ink-subtle">No reviews yet</span>
+                          <span className="text-ink-subtle">{t('places.noReviews')}</span>
                         )}
                         {place.eventCount > 0 ? (
                           <span className="text-module-events font-medium">
-                            {place.eventCount} upcoming
+                            {t('places.upcoming', { n: place.eventCount })}
                           </span>
                         ) : null}
                         {place.verified ? (
                           <Badge variant="success" size="sm">
-                            Verified
+                            {t('common.verified')}
                           </Badge>
                         ) : null}
                       </div>

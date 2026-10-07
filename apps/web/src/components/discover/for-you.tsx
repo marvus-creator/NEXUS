@@ -15,6 +15,9 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import { circleImage, eventImage, listingImage, placeImage } from '@/lib/photos';
+import { useFormatDate, useT } from '@/i18n/client';
+import { translateReason } from '@/i18n/reasons';
+import type { messages } from '@/i18n/messages';
 
 export type Recommendation = {
   kind: 'EVENT' | 'PLACE' | 'CIRCLE' | 'PERSON' | 'LISTING';
@@ -75,21 +78,18 @@ function ordered(items: Recommendation[]) {
   return [items[lead]!, ...items.slice(0, lead), ...items.slice(lead + 1)];
 }
 
+type PlaceKey = keyof (typeof messages)['enums']['place'];
+
 function RecommendationCard({ item, featured }: { item: Recommendation; featured?: boolean }) {
+  const t = useT();
+  const format = useFormatDate();
   const kind = KIND[item.kind];
   const Icon = item.kind === 'EVENT' && item.meta.isOnline ? Video : kind.icon;
   const image = imageFor(item);
 
   const when =
     item.kind === 'EVENT' && typeof item.meta.startAt === 'string'
-      ? new Intl.DateTimeFormat('en-GB', {
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }).format(new Date(item.meta.startAt))
+      ? `${format(item.meta.startAt, 'dayMonthShort')} ${format(item.meta.startAt, 'time')}`
       : null;
 
   const price =
@@ -134,7 +134,7 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
 
       <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-semibold text-white backdrop-blur-md">
         <Icon className="size-3.5" style={{ color: kind.tint }} />
-        {kind.label}
+        {t(`discover.kind.${item.kind}`)}
       </span>
       {price ? (
         <span className="num absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-semibold text-black">
@@ -149,7 +149,7 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
             style={{ color: kind.tint }}
           >
             <Sparkles className="size-3.5 shrink-0" />
-            <span className="line-clamp-1 first-letter:uppercase">{item.reasons[0]}</span>
+            <span className="line-clamp-1 first-letter:uppercase">{translateReason(item.reasons[0], t)}</span>
           </div>
         ) : null}
         <h3
@@ -173,10 +173,10 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
             </span>
           ) : null}
           {item.kind === 'EVENT' && typeof item.meta.goingCount === 'number' ? (
-            <span className="num">{item.meta.goingCount} going</span>
+            <span className="num">{t('events.status.goingCount', { n: item.meta.goingCount })}</span>
           ) : null}
           {item.kind === 'CIRCLE' && typeof item.meta.members === 'number' ? (
-            <span className="num">{item.meta.members} members</span>
+            <span className="num">{t('circles.memberMany', { n: item.meta.members })}</span>
           ) : null}
           {item.reasons[1] ? (
             <span className="line-clamp-1 text-white/60">{item.reasons[1]}</span>
@@ -189,12 +189,13 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
 
 export function ForYou({ feed }: { feed: ForYouFeed }) {
   const [explaining, setExplaining] = useState(false);
+  const t = useT();
 
   if (feed.items.length === 0) {
     return (
       <Card className="p-6">
         <p className="text-ink-muted text-[0.875rem]">
-          Nothing to suggest yet. As places, events and circles appear around you, this fills in.
+          {t('discover.nothing')}
         </p>
       </Card>
     );
@@ -206,9 +207,9 @@ export function ForYou({ feed }: { feed: ForYouFeed }) {
         <p className="text-ink-subtle text-xs">
           {feed.personalized
             ? feed.signals > 0
-              ? `Ranked against ${feed.signals} things you have done`
-              : 'Ranked on what you said you are interested in'
-            : 'Personalisation is off'}
+              ? t('discover.rankedSignals', { n: feed.signals })
+              : t('discover.rankedInterests')
+            : t('discover.off')}
         </p>
 
         <button
@@ -217,7 +218,7 @@ export function ForYou({ feed }: { feed: ForYouFeed }) {
           className="text-ink-subtle hover:text-ink flex items-center gap-1.5 text-xs transition-colors"
         >
           <Info className="size-3.5" />
-          {explaining ? 'Hide' : 'Why these?'}
+          {explaining ? t('discover.hide') : t('discover.why')}
         </button>
       </div>
 
@@ -230,17 +231,17 @@ export function ForYou({ feed }: { feed: ForYouFeed }) {
 
           {feed.topCategories.length > 0 ? (
             <p className="text-ink-subtle mt-2 text-xs">
-              Strongest signals right now:{' '}
-              {feed.topCategories.map((entry) => entry.toLowerCase()).join(', ')}.
+              {t('discover.signals')}{' '}
+              {feed.topCategories.map((entry) => t(`enums.place.${entry as PlaceKey}`)).join(', ')}.
             </p>
           ) : null}
 
           <p className="text-ink-subtle mt-2 text-xs leading-relaxed">
-            Every card says why it is there. You can turn personalisation off in{' '}
+            {t('discover.explain1')}{' '}
             <Link href="/settings" className="text-accent hover:underline">
-              settings
+              {t('discover.settings')}
             </Link>{' '}
-            and this becomes a plain popular-and-nearby list.
+            {t('discover.explain2')}
           </p>
         </Card>
       ) : null}
