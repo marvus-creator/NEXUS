@@ -1,4 +1,5 @@
 import { apiErrors, auth } from './auth';
+import { circles } from './circles';
 import { common } from './common';
 import { enums } from './enums';
 import { events } from './events';
@@ -28,6 +29,7 @@ export const messages = {
   people,
   reasons,
   events,
+  circles,
 } as const;
 
 export { apiErrors };

@@ -8,11 +8,12 @@ import { useState } from 'react';
 import { communityClient, type CircleSummary } from '@/lib/community-client';
 import { circleImage } from '@/lib/photos';
 import { ImagePicker } from '@/components/app/image-picker';
+import { useErrorText, useT } from '@/i18n/client';
 
 const VISIBILITIES = [
-  { value: 'PUBLIC', label: 'Public', icon: Globe, blurb: 'Anyone can find and join' },
-  { value: 'PRIVATE', label: 'Private', icon: Lock, blurb: 'Requests need approval' },
-  { value: 'INVITE_ONLY', label: 'Invite only', icon: Users, blurb: 'Nobody can ask to join' },
+  { value: 'PUBLIC', icon: Globe },
+  { value: 'PRIVATE', icon: Lock },
+  { value: 'INVITE_ONLY', icon: Users },
 ] as const;
 
 const VISIBILITY_ICON = { PUBLIC: Globe, PRIVATE: Lock, INVITE_ONLY: Users } as const;
@@ -25,6 +26,8 @@ export function CirclesBoard({
   mine: CircleSummary[];
 }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [tab, setTab] = useState<'discover' | 'mine'>(mine.length > 0 ? 'mine' : 'discover');
   const [composing, setComposing] = useState(false);
@@ -92,7 +95,7 @@ export function CirclesBoard({
                 : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
             )}
           >
-            {value === 'mine' ? 'Your circles' : 'Discover'}
+            {t(`circles.tabs.${value}`)}
             {value === 'mine' && mine.length > 0 ? (
               <span
                 className={cn(
@@ -113,7 +116,7 @@ export function CirclesBoard({
           onClick={() => setComposing((value) => !value)}
         >
           {composing ? <X /> : <Plus />}
-          {composing ? 'Cancel' : 'New circle'}
+          {composing ? t('common.cancel') : t('circles.newCircle')}
         </Button>
       </div>
 
@@ -122,24 +125,24 @@ export function CirclesBoard({
           <div className="flex flex-col gap-4">
             <ImagePicker folder="circles" value={cover} onChange={setCover} />
 
-            <Field label="What is this circle called?">
+            <Field label={t('circles.form.name')}>
               <Input
                 autoFocus
                 value={name}
-                placeholder="Kigali Developers"
+                placeholder={t('circles.form.namePlaceholder')}
                 onChange={(event) => setName(event.target.value)}
               />
             </Field>
 
-            <Field label="What is it for?" hint="Optional">
+            <Field label={t('circles.form.purpose')} hint={t('common.optional')}>
               <Textarea
                 value={description}
-                placeholder="Who should join, and what happens here?"
+                placeholder={t('circles.form.purposePlaceholder')}
                 onChange={(event) => setDescription(event.target.value)}
               />
             </Field>
 
-            <Field label="City" hint="Optional">
+            <Field label={t('circles.form.city')} hint={t('common.optional')}>
               <Input
                 value={city}
                 placeholder="Kigali"
@@ -148,7 +151,7 @@ export function CirclesBoard({
             </Field>
 
             <div>
-              <p className="text-ink mb-2 text-sm font-medium">Who can join?</p>
+              <p className="text-ink mb-2 text-sm font-medium">{t('circles.form.who')}</p>
               <div className="grid gap-2 sm:grid-cols-3">
                 {VISIBILITIES.map((option) => {
                   const Icon = option.icon;
@@ -167,18 +170,18 @@ export function CirclesBoard({
                       )}
                     >
                       <Icon className={cn('size-4', active ? 'text-accent' : 'text-ink-subtle')} />
-                      <span className="text-sm font-medium">{option.label}</span>
-                      <span className="text-ink-muted text-xs">{option.blurb}</span>
+                      <span className="text-sm font-medium">{t(`circles.visibility.${option.value}`)}</span>
+                      <span className="text-ink-muted text-xs">{t(`circles.blurb.${option.value}`)}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {error ? <p className="text-danger text-sm">{error}</p> : null}
+            {error ? <p className="text-danger text-sm">{errorText(error)}</p> : null}
 
             <Button onClick={create} loading={busy} disabled={!name.trim()} className="self-start">
-              Create circle
+              {t('circles.form.create')}
             </Button>
           </div>
         </Card>
@@ -191,15 +194,15 @@ export function CirclesBoard({
           <div className="md:col-span-2">
             <EmptyState
               icon={<UsersRound />}
-              title={tab === 'mine' ? 'You are not in any circles' : 'No circles yet'}
+              title={tab === 'mine' ? t('circles.empty.mineTitle') : t('circles.empty.discoverTitle')}
               description={
                 tab === 'mine'
-                  ? 'Join one from Discover, or start your own.'
-                  : 'Be the first to start a community here.'
+                  ? t('circles.empty.mineBody')
+                  : t('circles.empty.discoverBody')
               }
               action={
                 <Button size="sm" onClick={() => setComposing(true)}>
-                  <Plus /> New circle
+                  <Plus /> {t('circles.newCircle')}
                 </Button>
               }
             />
@@ -223,12 +226,12 @@ export function CirclesBoard({
                   <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold capitalize text-white backdrop-blur-md">
                     <Icon className="size-3" />
                     {circle.visibility === 'INVITE_ONLY'
-                      ? 'Invite only'
-                      : circle.visibility.toLowerCase()}
+                      ? t('circles.visibility.INVITE_ONLY')
+                      : t(`circles.visibility.${circle.visibility as 'PUBLIC' | 'PRIVATE'}`)}
                   </span>
                   {circle.myRole ? (
                     <span className="bg-accent absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize text-white">
-                      {circle.myRole.toLowerCase()}
+                      {t(`enums.circleRole.${circle.myRole}`)}
                     </span>
                   ) : null}
                 </Link>
@@ -261,23 +264,23 @@ export function CirclesBoard({
 
                   <div className="border-line mt-4 flex items-center justify-between border-t pt-3.5">
                     <span className="text-ink-subtle text-xs">
-                      {circle.members} {circle.members === 1 ? 'member' : 'members'} ·{' '}
-                      {circle.posts} {circle.posts === 1 ? 'post' : 'posts'}
+                      {t(circle.members === 1 ? 'circles.memberOne' : 'circles.memberMany', { n: circle.members })} ·{' '}
+                      {t(circle.posts === 1 ? 'circles.postOne' : 'circles.postMany', { n: circle.posts })}
                     </span>
 
                     {circle.myRole ? (
                       <Button asChild size="sm" variant="secondary">
-                        <Link href={`/circles/${circle.slug}`}>Open</Link>
+                        <Link href={`/circles/${circle.slug}`}>{t('circles.open')}</Link>
                       </Button>
                     ) : circle.visibility === 'INVITE_ONLY' ? (
-                      <Badge size="sm">Invite only</Badge>
+                      <Badge size="sm">{t('circles.visibility.INVITE_ONLY')}</Badge>
                     ) : (
                       <Button
                         size="sm"
                         loading={pending[circle.slug]}
                         onClick={() => void join(circle)}
                       >
-                        {circle.visibility === 'PRIVATE' ? 'Ask to join' : 'Join'}
+                        {circle.visibility === 'PRIVATE' ? t('circles.askToJoin') : t('circles.join')}
                       </Button>
                     )}
                   </div>

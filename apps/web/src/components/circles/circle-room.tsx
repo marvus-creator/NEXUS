@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { communityClient, type CircleDetail } from '@/lib/community-client';
 import type { FeedPost } from '@/lib/social-client';
 import { PostCard } from '@/components/social/post-card';
+import { useErrorText, useT } from '@/i18n/client';
 
 const ROLE_ICON = {
   OWNER: Crown,
@@ -28,6 +29,8 @@ export function CircleRoom({
   requests: { id: string; message: string | null; profile: CircleDetail['members'][number] }[];
 }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [items, setItems] = useState(posts);
   const [pendingRequests, setPendingRequests] = useState(requests);
@@ -135,10 +138,10 @@ export function CircleRoom({
             <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80">
               <span className="inline-flex items-center gap-1.5">
                 <VisibilityIcon className="size-3.5" />
-                {circle.visibility === 'INVITE_ONLY' ? 'Invite only' : circle.visibility.toLowerCase()}
+                {t(`circles.visibility.${circle.visibility}`)}
               </span>
               <span>
-                {circle.memberCount} {circle.memberCount === 1 ? 'member' : 'members'}
+                {t(circle.memberCount === 1 ? 'circles.memberOne' : 'circles.memberMany', { n: circle.memberCount })}
               </span>
               {circle.city ? <span>{circle.city}</span> : null}
             </p>
@@ -149,20 +152,20 @@ export function CircleRoom({
               <>
                 <Button asChild variant="secondary" size="sm">
                   <Link href="/messages">
-                    <MessageSquare /> Circle chat
+                    <MessageSquare /> {t('circles.chat')}
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" loading={busy} onClick={() => void leave()}>
-                  Leave
+                  {t('circles.leave')}
                 </Button>
               </>
             ) : circle.joinRequestStatus === 'PENDING' ? (
-              <Badge variant="accent">Request pending</Badge>
+              <Badge variant="accent">{t('circles.pending')}</Badge>
             ) : circle.visibility === 'INVITE_ONLY' ? (
-              <Badge>Invite only</Badge>
+              <Badge>{t('circles.visibility.INVITE_ONLY')}</Badge>
             ) : (
               <Button size="sm" loading={busy} onClick={() => void join()}>
-                {circle.visibility === 'PRIVATE' ? 'Ask to join' : 'Join circle'}
+                {circle.visibility === 'PRIVATE' ? t('circles.askToJoin') : t('circles.joinCircle')}
               </Button>
             )}
           </div>
@@ -173,7 +176,7 @@ export function CircleRoom({
         ) : null}
       </div>
 
-      {error ? <p className="text-danger mt-4 text-sm">{error}</p> : null}
+      {error ? <p className="text-danger mt-4 text-sm">{errorText(error)}</p> : null}
 
       <div className="mt-8 flex flex-wrap gap-2">
         {(['posts', 'members', ...(isModerator ? (['requests'] as const) : [])] as const).map(
@@ -183,13 +186,13 @@ export function CircleRoom({
               type="button"
               onClick={() => setTab(value)}
               className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium capitalize transition-colors',
+                'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
                 tab === value
                   ? 'border-accent bg-accent text-accent-ink'
                   : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
               )}
             >
-              {value}
+              {t(`circles.tabs.${value}`)}
               {value === 'requests' && pendingRequests.length > 0 ? (
                 <span
                   className={cn(
@@ -211,7 +214,7 @@ export function CircleRoom({
             <Card className="p-5">
               <Textarea
                 value={body}
-                placeholder={`Post to ${circle.name}`}
+                placeholder={t('circles.postTo', { name: circle.name })}
                 className="min-h-20 border-0 bg-transparent px-0 py-1 focus:ring-0"
                 onChange={(event) => setBody(event.target.value)}
               />
@@ -228,7 +231,7 @@ export function CircleRoom({
                     )}
                   >
                     <Megaphone className="size-3" />
-                    Announcement
+                    {t('circles.announcement')}
                   </button>
                 ) : null}
 
@@ -239,21 +242,21 @@ export function CircleRoom({
                   disabled={!body.trim()}
                   onClick={() => void post()}
                 >
-                  Post
+                  {t('common.post')}
                 </Button>
               </div>
             </Card>
           ) : (
             <Card className="p-5">
-              <p className="text-ink-muted text-sm">Join this circle to post in it.</p>
+              <p className="text-ink-muted text-sm">{t('circles.joinToPost')}</p>
             </Card>
           )}
 
           {items.length === 0 ? (
             <EmptyState
               icon={<MessageSquare />}
-              title="Nothing posted yet"
-              description="Be the first to start a conversation here."
+              title={t('circles.empty.postsTitle')}
+              description={t('circles.empty.postsBody')}
             />
           ) : (
             items.map((item) => (
@@ -292,7 +295,7 @@ export function CircleRoom({
                 </div>
 
                 <Badge variant={member.role === 'MEMBER' ? 'neutral' : 'accent'} size="sm">
-                  <Icon /> {member.role.toLowerCase()}
+                  <Icon /> {t(`enums.circleRole.${member.role}`)}
                 </Badge>
 
                 {isModerator && member.role === 'MEMBER' ? (
@@ -303,13 +306,13 @@ export function CircleRoom({
                         variant="ghost"
                         onClick={() => void promote(member.username, 'MODERATOR')}
                       >
-                        Promote
+                        {t('circles.promote')}
                       </Button>
                     ) : null}
                     <Button
                       size="icon-sm"
                       variant="ghost"
-                      aria-label={`Remove ${member.displayName}`}
+                      aria-label={t('circles.removeMember', { name: member.displayName })}
                       onClick={() => void removeMember(member.username)}
                     >
                       <Trash2 />
@@ -327,8 +330,8 @@ export function CircleRoom({
           {pendingRequests.length === 0 ? (
             <EmptyState
               icon={<Users />}
-              title="No pending requests"
-              description="People asking to join this circle appear here."
+              title={t('circles.empty.requestsTitle')}
+              description={t('circles.empty.requestsBody')}
             />
           ) : (
             pendingRequests.map((request) => (
@@ -347,10 +350,10 @@ export function CircleRoom({
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => void decide(request.id, true)}>
-                    <Check /> Approve
+                    <Check /> {t('circles.approve')}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => void decide(request.id, false)}>
-                    <X /> Decline
+                    <X /> {t('common.decline')}
                   </Button>
                 </div>
               </Card>
