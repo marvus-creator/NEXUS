@@ -5,6 +5,9 @@ import { CalendarClock, Check, ListTodo, Plus, Repeat, Target, Trash2, X } from 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { plannerClient, type Goal, type Task } from '@/lib/planner-client';
+import { useErrorText, useFormatDate, useT } from '@/i18n/client';
+import type { Translate } from '@/i18n/types';
+import type { DateStyle } from '@/i18n/config';
 
 const PRIORITY_TINT: Record<Task['priority'], string> = {
   LOW: 'var(--ink-subtle)',
@@ -17,32 +20,38 @@ const PRIORITIES: Task['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 const RECURRENCES: Task['recurrence'][] = ['NONE', 'DAILY', 'WEEKDAYS', 'WEEKLY', 'MONTHLY'];
 
 const FILTERS = [
-  { value: 'open', label: 'Open' },
-  { value: 'today', label: 'Due soon' },
-  { value: 'overdue', label: 'Overdue' },
-  { value: 'done', label: 'Done' },
+  { value: 'open', },
+  { value: 'today', },
+  { value: 'overdue', },
+  { value: 'done', },
 ] as const;
 
-function dueLabel(dueAt: string | null) {
+function dueLabel(
+  dueAt: string | null,
+  t: Translate,
+  format: (value: Date | string | number, style: DateStyle) => string,
+) {
   if (!dueAt) return null;
 
   const due = new Date(dueAt);
   const now = new Date();
   const days = Math.round((due.getTime() - now.getTime()) / 86400000);
 
-  if (days < 0) return { text: `${Math.abs(days)}d overdue`, overdue: true };
-  if (days === 0) return { text: 'Today', overdue: false };
-  if (days === 1) return { text: 'Tomorrow', overdue: false };
-  if (days < 7) return { text: `In ${days} days`, overdue: false };
+  if (days < 0) return { text: t('tasks.due.overdue', { n: Math.abs(days) }), overdue: true };
+  if (days === 0) return { text: t('tasks.due.today'), overdue: false };
+  if (days === 1) return { text: t('tasks.due.tomorrow'), overdue: false };
+  if (days < 7) return { text: t('tasks.due.inDays', { n: days }), overdue: false };
 
   return {
-    text: due.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+    text: format(due, 'dayShort'),
     overdue: false,
   };
 }
 
 export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals: Goal[] }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
 
   const [tasks, setTasks] = useState(initialTasks);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['value']>('open');
@@ -152,7 +161,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                 : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
             )}
           >
-            {item.label}
+            {t(`tasks.filters.${item.value}`)}
           </button>
         ))}
 
@@ -163,18 +172,18 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
           variant={composing ? 'secondary' : 'primary'}
         >
           {composing ? <X /> : <Plus />}
-          {composing ? 'Cancel' : 'New task'}
+          {composing ? t('common.cancel') : t('tasks.newTask')}
         </Button>
       </div>
 
       {composing ? (
         <Card className="mt-4 p-5">
           <div className="flex flex-col gap-4">
-            <Field label="What needs doing?">
+            <Field label={t('tasks.form.what')}>
               <Input
                 autoFocus
                 value={title}
-                placeholder="Finish Java assignment"
+                placeholder={t('tasks.form.whatPlaceholder')}
                 onChange={(event) => setTitle(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') void addTask();
@@ -183,7 +192,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Due">
+              <Field label={t('tasks.form.due')}>
                 <Input
                   type="datetime-local"
                   value={dueAt}
@@ -191,13 +200,13 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                 />
               </Field>
 
-              <Field label="Goal" hint="Optional — links progress">
+              <Field label={t('tasks.form.goal')} hint={t('tasks.form.goalHint')}>
                 <select
                   value={goalId}
                   onChange={(event) => setGoalId(event.target.value)}
                   className="border-line bg-surface-raised text-ink hover:border-line-strong focus:border-accent-line h-11 w-full rounded-md border px-3.5 text-sm transition-all outline-none focus:ring-4 focus:ring-[var(--accent-soft)]"
                 >
-                  <option value="">No goal</option>
+                  <option value="">{t('tasks.form.noGoal')}</option>
                   {goals
                     .filter((goal) => goal.status === 'ACTIVE')
                     .map((goal) => (
@@ -211,7 +220,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-ink mb-2 text-sm font-medium">Priority</p>
+                <p className="text-ink mb-2 text-sm font-medium">{t('tasks.form.priority')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {PRIORITIES.map((value) => (
                     <button
@@ -219,21 +228,21 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                       type="button"
                       onClick={() => setPriority(value)}
                       className={cn(
-                        'rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors',
+                        'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                         priority === value
                           ? 'border-transparent text-white'
                           : 'border-line text-ink-muted hover:text-ink',
                       )}
                       style={priority === value ? { backgroundColor: PRIORITY_TINT[value] } : undefined}
                     >
-                      {value.toLowerCase()}
+                      {t(`enums.priority.${value}`)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <p className="text-ink mb-2 text-sm font-medium">Repeats</p>
+                <p className="text-ink mb-2 text-sm font-medium">{t('tasks.form.repeats')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {RECURRENCES.map((value) => (
                     <button
@@ -241,13 +250,13 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                       type="button"
                       onClick={() => setRecurrence(value)}
                       className={cn(
-                        'rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors',
+                        'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                         recurrence === value
                           ? 'border-accent bg-accent text-accent-ink'
                           : 'border-line text-ink-muted hover:text-ink',
                       )}
                     >
-                      {value === 'NONE' ? 'Never' : value.toLowerCase()}
+                      {value === 'NONE' ? t('tasks.form.never') : t(`tasks.recurrence.${value}`)}
                     </button>
                   ))}
                 </div>
@@ -257,7 +266,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
             {error ? <p className="text-danger text-sm">{error}</p> : null}
 
             <Button onClick={addTask} loading={busy} disabled={!title.trim()} className="self-start">
-              Add task
+              {t('tasks.form.add')}
             </Button>
           </div>
         </Card>
@@ -267,23 +276,23 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
         {visible.length === 0 ? (
           <EmptyState
             icon={<ListTodo />}
-            title={filter === 'done' ? 'Nothing finished yet' : 'Nothing here'}
+            title={filter === 'done' ? t('tasks.empty.doneTitle') : t('tasks.empty.title')}
             description={
               filter === 'done'
-                ? 'Completed tasks will collect here.'
-                : 'Add a task and it shows up on your home page and calendar too.'
+                ? t('tasks.empty.doneBody')
+                : t('tasks.empty.body')
             }
             action={
               filter !== 'done' ? (
                 <Button size="sm" onClick={() => setComposing(true)}>
-                  <Plus /> New task
+                  <Plus /> {t('tasks.newTask')}
                 </Button>
               ) : undefined
             }
           />
         ) : (
           visible.map((task) => {
-            const due = dueLabel(task.dueAt);
+            const due = dueLabel(task.dueAt, t, format);
             const done = task.status === 'DONE';
 
             return (
@@ -292,7 +301,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                   <button
                     type="button"
                     onClick={() => void toggle(task)}
-                    aria-label={done ? `Reopen ${task.title}` : `Complete ${task.title}`}
+                    aria-label={done ? t('tasks.reopen', { title: task.title }) : t('tasks.complete', { title: task.title })}
                     className={cn(
                       'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
                       done
@@ -315,7 +324,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                           className="size-1.5 rounded-full"
                           style={{ backgroundColor: PRIORITY_TINT[task.priority] }}
                         />
-                        {task.priority.toLowerCase()}
+                        {t(`enums.priority.${task.priority}`)}
                       </span>
 
                       {due ? (
@@ -326,7 +335,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
 
                       {task.recurrence !== 'NONE' ? (
                         <Badge size="sm">
-                          <Repeat /> {task.recurrence.toLowerCase()}
+                          <Repeat /> {t(`tasks.recurrence.${task.recurrence as 'DAILY' | 'WEEKDAYS' | 'WEEKLY' | 'MONTHLY'}`)}
                         </Badge>
                       ) : null}
 
@@ -341,7 +350,7 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                   <button
                     type="button"
                     onClick={() => void remove(task)}
-                    aria-label={`Delete ${task.title}`}
+                    aria-label={t('tasks.delete', { title: task.title })}
                     className="text-ink-subtle hover:text-danger mt-0.5 transition-colors"
                   >
                     <Trash2 className="size-3.5" />

@@ -5,6 +5,7 @@ import { Check, Flag, Plus, Target, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { plannerClient, type Goal } from '@/lib/planner-client';
+import { useT } from '@/i18n/client';
 
 const AREAS = [
   'CAREER',
@@ -30,6 +31,7 @@ const AREA_TINT: Record<string, string> = {
 
 export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
   const router = useRouter();
+  const t = useT();
 
   const [goals, setGoals] = useState(initialGoals);
   const [composing, setComposing] = useState(false);
@@ -147,46 +149,46 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
     <div>
       <div className="flex items-center justify-between gap-4">
         <p className="text-ink-muted text-sm">
-          {goals.filter((goal) => goal.status === 'ACTIVE').length} active ·{' '}
-          {goals.filter((goal) => goal.status === 'ACHIEVED').length} achieved
+          {t('goals.summary', { active: goals.filter((goal) => goal.status === 'ACTIVE').length, achieved: goals.filter((goal) => goal.status === 'ACHIEVED').length })}
+          
         </p>
         <Button size="sm" onClick={() => setComposing((value) => !value)} variant={composing ? 'secondary' : 'primary'}>
           {composing ? <X /> : <Plus />}
-          {composing ? 'Cancel' : 'New goal'}
+          {composing ? t('common.cancel') : t('goals.newGoal')}
         </Button>
       </div>
 
       {composing ? (
         <Card className="mt-4 p-5">
           <div className="flex flex-col gap-4">
-            <Field label="What are you working toward?">
+            <Field label={t('goals.form.what')}>
               <Input
                 autoFocus
                 value={title}
-                placeholder="Become a better developer"
+                placeholder={t('goals.form.whatPlaceholder')}
                 onChange={(event) => setTitle(event.target.value)}
               />
             </Field>
 
-            <Field label="Why does it matter?" hint="Optional">
+            <Field label={t('goals.form.why')} hint={t('common.optional')}>
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="What changes when this is done?"
+                placeholder={t('goals.form.whyPlaceholder')}
               />
             </Field>
 
-            <Field label="Milestones" hint="One per line. Progress is measured from these.">
+            <Field label={t('goals.form.milestones')} hint={t('goals.form.milestonesHint')}>
               <Textarea
                 value={milestones}
                 onChange={(event) => setMilestones(event.target.value)}
-                placeholder={'Learn Java\nBuild 3 projects\nPractice algorithms'}
+                placeholder={t('goals.form.milestonesPlaceholder')}
               />
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-ink mb-2 text-sm font-medium">Area</p>
+                <p className="text-ink mb-2 text-sm font-medium">{t('goals.form.area')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {AREAS.map((value) => (
                     <button
@@ -194,21 +196,21 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                       type="button"
                       onClick={() => setArea(value)}
                       className={cn(
-                        'rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors',
+                        'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                         area === value
                           ? 'border-transparent text-white'
                           : 'border-line text-ink-muted hover:text-ink',
                       )}
                       style={area === value ? { backgroundColor: AREA_TINT[value] } : undefined}
                     >
-                      {value.toLowerCase()}
+                      {t(`enums.goalArea.${value}`)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <p className="text-ink mb-2 text-sm font-medium">Horizon</p>
+                <p className="text-ink mb-2 text-sm font-medium">{t('goals.form.horizon')}</p>
                 <div className="flex gap-1.5">
                   {(['SHORT', 'LONG'] as const).map((value) => (
                     <button
@@ -222,7 +224,7 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                           : 'border-line text-ink-muted hover:text-ink',
                       )}
                     >
-                      {value === 'SHORT' ? 'Short term' : 'Long term'}
+                      {value === 'SHORT' ? t('goals.form.short') : t('goals.form.long')}
                     </button>
                   ))}
                 </div>
@@ -232,7 +234,7 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
             {error ? <p className="text-danger text-sm">{error}</p> : null}
 
             <Button onClick={createGoal} loading={busy} disabled={!title.trim()} className="self-start">
-              Create goal
+              {t('goals.form.create')}
             </Button>
           </div>
         </Card>
@@ -243,11 +245,11 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
           <div className="lg:col-span-2">
             <EmptyState
               icon={<Target />}
-              title="No goals yet"
-              description="A goal with milestones gives your tasks somewhere to point. Progress updates as you tick them off."
+              title={t('goals.emptyTitle')}
+              description={t('goals.emptyBody')}
               action={
                 <Button size="sm" onClick={() => setComposing(true)}>
-                  <Plus /> New goal
+                  <Plus /> {t('goals.newGoal')}
                 </Button>
               }
             />
@@ -269,12 +271,12 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                       <h3 className="text-[0.9375rem] font-semibold">{goal.title}</h3>
                       {achieved ? (
                         <Badge variant="success" size="sm">
-                          Achieved
+                          {t('goals.achieved')}
                         </Badge>
                       ) : null}
                     </div>
                     <p className="text-ink-muted mt-1 text-xs capitalize">
-                      {goal.area.toLowerCase()} · {goal.horizon === 'LONG' ? 'long term' : 'short term'}
+                      {goal.area in AREA_TINT ? t(`enums.goalArea.${goal.area as (typeof AREAS)[number]}`) : goal.area} · {goal.horizon === 'LONG' ? t('goals.longTerm') : t('goals.shortTerm')}
                     </p>
                     {goal.description ? (
                       <p className="text-ink-muted mt-2.5 text-sm leading-relaxed">{goal.description}</p>
@@ -284,7 +286,7 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                   <button
                     type="button"
                     onClick={() => void removeGoal(goal)}
-                    aria-label={`Delete ${goal.title}`}
+                    aria-label={t('goals.delete', { title: goal.title })}
                     className="text-ink-subtle hover:text-danger transition-colors"
                   >
                     <Trash2 className="size-3.5" />
@@ -325,7 +327,7 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                 <div className="mt-4 flex gap-2">
                   <Input
                     value={newMilestone[goal.id] ?? ''}
-                    placeholder="Add a milestone"
+                    placeholder={t('goals.addMilestone')}
                     className="h-9 text-xs"
                     onChange={(event) =>
                       setNewMilestone((current) => ({ ...current, [goal.id]: event.target.value }))
@@ -342,7 +344,7 @@ export function GoalBoard({ initialGoals }: { initialGoals: Goal[] }) {
                 {goal.tasks.length > 0 ? (
                   <div className="border-line mt-5 border-t pt-4">
                     <p className="text-micro text-ink-subtle mb-2.5 font-semibold uppercase">
-                      Linked tasks
+                      {t('goals.linkedTasks')}
                     </p>
                     <div className="flex flex-col gap-1.5">
                       {goal.tasks.slice(0, 4).map((task) => (
