@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { API_BASE } from '@/lib/api';
 import { profileClient } from '@/lib/profile-client';
 import type { SessionUser } from '@/lib/session';
+import { useErrorText, useFormatDate, useT } from '@/i18n/client';
 
 export type ActiveSession = {
   id: string;
@@ -19,29 +20,31 @@ export type ActiveSession = {
 };
 
 const VISIBILITY = [
-  { value: 'PUBLIC', label: 'Public', blurb: 'Anyone on Nexus can see your profile' },
-  { value: 'FRIENDS', label: 'Friends', blurb: 'Only people you are friends with' },
-  { value: 'PRIVATE', label: 'Private', blurb: 'Only you' },
-];
+  { value: 'PUBLIC', },
+  { value: 'FRIENDS', },
+  { value: 'PRIVATE', },
+] as const;
 
 const MESSAGING = [
-  { value: 'EVERYONE', label: 'Everyone' },
-  { value: 'FRIENDS', label: 'Friends only' },
-  { value: 'NOBODY', label: 'Nobody' },
-];
+  { value: 'EVERYONE', },
+  { value: 'FRIENDS', },
+  { value: 'NOBODY', },
+] as const;
 
 function browserFrom(agent: string | null) {
-  if (!agent) return 'Unknown device';
+  if (!agent) return null;
   if (agent.includes('Edg/')) return 'Edge';
   if (agent.includes('Chrome/')) return 'Chrome';
   if (agent.includes('Firefox/')) return 'Firefox';
   if (agent.includes('Safari/')) return 'Safari';
-  return 'Unknown browser';
+  return null;
 }
 
 export function PrivacyPanel({ user }: { user: SessionUser }) {
   const privacy = (user.profile?.privacy ?? {}) as Record<string, unknown>;
 
+  const t = useT();
+  const errorText = useErrorText();
   const [visibility, setVisibility] = useState(String(privacy.profileVisibility ?? 'PUBLIC'));
   const [messagePolicy, setMessagePolicy] = useState(String(privacy.messagePolicy ?? 'EVERYONE'));
   const [allowFriendRequests, setAllowFriendRequests] = useState(
@@ -83,26 +86,26 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
 
   const toggles = [
     {
-      label: 'Allow friend requests',
-      blurb: 'People can ask to connect with you',
+      label: t('privacy.toggles.friendRequests'),
+      blurb: t('privacy.toggles.friendRequestsBlurb'),
       value: allowFriendRequests,
       set: setAllowFriendRequests,
     },
     {
-      label: 'Show my activity',
-      blurb: 'Your activity tab is visible to people who can see your profile',
+      label: t('privacy.toggles.activity'),
+      blurb: t('privacy.toggles.activityBlurb'),
       value: showActivity,
       set: setShowActivity,
     },
     {
-      label: 'Suggest me to others',
-      blurb: 'Appear in People You May Know for mutual friends and shared circles',
+      label: t('privacy.toggles.suggest'),
+      blurb: t('privacy.toggles.suggestBlurb'),
       value: showInPeopleYouKnow,
       set: setShowInPeopleYouKnow,
     },
     {
-      label: 'Personalized recommendations',
-      blurb: 'Use your interests, circles and activity to shape what Nexus shows you',
+      label: t('privacy.toggles.personalized'),
+      blurb: t('privacy.toggles.personalizedBlurb'),
       value: personalizationOptIn,
       set: setPersonalizationOptIn,
     },
@@ -111,7 +114,7 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6">
-        <h2 className="text-[0.9375rem] font-semibold">Who can see your profile</h2>
+        <h2 className="text-[0.9375rem] font-semibold">{t('privacy.whoSees')}</h2>
         <div className="mt-4 flex flex-col gap-2">
           {VISIBILITY.map((option) => (
             <button
@@ -136,8 +139,8 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
                 ) : null}
               </span>
               <span>
-                <span className="block text-sm font-medium">{option.label}</span>
-                <span className="text-ink-muted mt-0.5 block text-xs">{option.blurb}</span>
+                <span className="block text-sm font-medium">{t(`privacy.visibility.${option.value}`)}</span>
+                <span className="text-ink-muted mt-0.5 block text-xs">{t(`privacy.visibilityBlurb.${option.value}`)}</span>
               </span>
             </button>
           ))}
@@ -145,7 +148,7 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-[0.9375rem] font-semibold">Who can message you</h2>
+        <h2 className="text-[0.9375rem] font-semibold">{t('privacy.whoMessages')}</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {MESSAGING.map((option) => (
             <button
@@ -159,7 +162,7 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
                   : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
               )}
             >
-              {option.label}
+              {t(`privacy.messaging.${option.value}`)}
             </button>
           ))}
         </div>
@@ -177,13 +180,13 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
         ))}
       </Card>
 
-      {error ? <p className="text-danger text-sm">{error}</p> : null}
+      {error ? <p className="text-danger text-sm">{errorText(error)}</p> : null}
 
       <div className="flex items-center gap-3">
         <Button onClick={save} loading={saving}>
-          Save privacy settings
+          {t('privacy.save')}
         </Button>
-        {saved ? <span className="text-success text-sm">Saved.</span> : null}
+        {saved ? <span className="text-success text-sm">{t('privacy.saved')}</span> : null}
       </div>
     </div>
   );
@@ -191,6 +194,9 @@ export function PrivacyPanel({ user }: { user: SessionUser }) {
 
 export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
+  const errorText = useErrorText();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -216,7 +222,7 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
 
       if (!response.ok) {
         const message = Array.isArray(payload?.message) ? payload.message[0] : payload?.message;
-        throw new Error(message ?? 'Could not change your password.');
+        throw new Error(message ?? t('security.passwordFailed'));
       }
 
       setChanged(true);
@@ -245,14 +251,14 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6">
-        <h2 className="text-[0.9375rem] font-semibold">Active sessions</h2>
+        <h2 className="text-[0.9375rem] font-semibold">{t('security.sessions')}</h2>
         <p className="text-ink-muted mt-1 text-sm">
-          Devices currently signed in to your account.
+          {t('security.sessionsBody')}
         </p>
 
         <div className="mt-5 flex flex-col gap-2.5">
           {sessions.length === 0 ? (
-            <p className="text-ink-subtle text-sm">No active sessions found.</p>
+            <p className="text-ink-subtle text-sm">{t('security.none')}</p>
           ) : (
             sessions.map((session) => (
               <div
@@ -264,19 +270,16 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-medium">{browserFrom(session.userAgent)}</p>
+                    <p className="text-sm font-medium">{browserFrom(session.userAgent) ?? (session.userAgent ? t('security.unknownBrowser') : t('security.unknownDevice'))}</p>
                     {session.current ? (
                       <Badge variant="success" size="sm">
-                        This device
+                        {t('security.thisDevice')}
                       </Badge>
                     ) : null}
                   </div>
                   <p className="text-ink-muted mt-0.5 font-mono text-xs">
-                    {session.ipAddress ?? 'unknown ip'} · last used{' '}
-                    {new Date(session.lastUsedAt).toLocaleString('en-GB', {
-                      dateStyle: 'short',
-                      timeStyle: 'short',
-                    })}
+                    {session.ipAddress ?? t('security.unknownIp')} ·{' '}
+                    {t('security.lastUsed', { when: `${format(session.lastUsedAt, 'dayShort')} ${format(session.lastUsedAt, 'time')}` })}
                   </p>
                 </div>
               </div>
@@ -291,18 +294,18 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
           className="mt-5"
         >
           {signingOut ? <Loader2 className="animate-spin" /> : <LogOut />}
-          Sign out everywhere
+          {t('security.everywhere')}
         </Button>
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-[0.9375rem] font-semibold">Change password</h2>
+        <h2 className="text-[0.9375rem] font-semibold">{t('security.changeTitle')}</h2>
         <p className="text-ink-muted mt-1 text-sm">
-          Changing your password signs out every device, including this one.
+          {t('security.changeBody')}
         </p>
 
         <div className="mt-5 flex max-w-sm flex-col gap-5">
-          <Field label="Current password">
+          <Field label={t('security.current')}>
             <Input
               type="password"
               autoComplete="current-password"
@@ -310,7 +313,7 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
               onChange={(event) => setCurrentPassword(event.target.value)}
             />
           </Field>
-          <Field label="New password" hint="At least 10 characters">
+          <Field label={t('security.new')} hint={t('security.atLeast10')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -319,9 +322,9 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
             />
           </Field>
 
-          {error ? <p className="text-danger text-sm">{error}</p> : null}
+          {error ? <p className="text-danger text-sm">{errorText(error)}</p> : null}
           {changed ? (
-            <p className="text-success text-sm">Password changed. Signing you out…</p>
+            <p className="text-success text-sm">{t('security.changed')}</p>
           ) : null}
 
           <Button
@@ -329,7 +332,7 @@ export function SecurityPanel({ sessions }: { sessions: ActiveSession[] }) {
             loading={changing}
             disabled={newPassword.length < 10 || currentPassword.length === 0}
           >
-            Change password
+            {t('security.changeTitle')}
           </Button>
         </div>
       </Card>

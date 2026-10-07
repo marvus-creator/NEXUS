@@ -17,6 +17,18 @@ import type { InterestGroup } from '@/lib/interests';
 import { profileClient } from '@/lib/profile-client';
 import { CoverButton } from '@/components/app/cover-button';
 import type { SessionUser } from '@/lib/session';
+import { useFormatDate, useT } from '@/i18n/client';
+import { LOCALE_NAMES, isLocale } from '@/i18n/config';
+
+const USER_TYPE_KEYS = {
+  STUDENT: true,
+  PROFESSIONAL: true,
+  CREATOR: true,
+  BUSINESS_OWNER: true,
+  ENTREPRENEUR: true,
+  ATHLETE: true,
+  OTHER: true,
+} as const;
 
 export function ProfileEditor({
   user,
@@ -26,6 +38,8 @@ export function ProfileEditor({
   interestGroups: InterestGroup[];
 }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
   const profile = user.profile!;
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -127,7 +141,7 @@ export function ProfileEditor({
               type="button"
               onClick={() => fileInput.current?.click()}
               disabled={uploading}
-              aria-label="Change profile photo"
+              aria-label={t('profile.changePhoto')}
               className="border-line bg-surface text-ink hover:bg-surface-hover absolute right-0 bottom-1 flex size-9 items-center justify-center rounded-full border transition-colors"
             >
               {uploading ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
@@ -148,11 +162,11 @@ export function ProfileEditor({
               </h1>
               {user.emailVerified ? (
                 <Badge variant="success" size="sm">
-                  Verified
+                  {t('profile.verified')}
                 </Badge>
               ) : (
                 <Badge variant="warning" size="sm">
-                  Unverified
+                  {t('profile.unverified')}
                 </Badge>
               )}
             </div>
@@ -167,15 +181,15 @@ export function ProfileEditor({
             {editing ? (
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={() => setEditing(false)} disabled={saving}>
-                  <X /> Cancel
+                  <X /> {t('common.cancel')}
                 </Button>
                 <Button onClick={save} loading={saving}>
-                  <Check /> Save
+                  <Check /> {t('common.save')}
                 </Button>
               </div>
             ) : (
               <Button variant="secondary" onClick={() => setEditing(true)}>
-                <Pencil /> Edit profile
+                <Pencil /> {t('profile.editProfile')}
               </Button>
             )}
           </div>
@@ -190,44 +204,44 @@ export function ProfileEditor({
 
       {saved && !editing ? (
         <div className="mt-6 rounded-md border border-[color-mix(in_oklab,var(--success)_35%,transparent)] bg-[color-mix(in_oklab,var(--success)_10%,transparent)] px-3.5 py-3">
-          <p className="text-sm">Profile updated.</p>
+          <p className="text-sm">{t('profile.updated')}</p>
         </div>
       ) : null}
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card className="p-6">
-            <h2 className="text-[0.9375rem] font-semibold">About</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('profile.about')}</h2>
 
             {editing ? (
               <div className="mt-5 flex flex-col gap-5">
-                <Field label="Display name">
+                <Field label={t('profile.displayName')}>
                   <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
                 </Field>
-                <Field label="Bio" hint={`${bio.length}/280`}>
+                <Field label={t('profile.bio')} hint={`${bio.length}/280`}>
                   <Textarea
                     value={bio}
                     maxLength={280}
-                    placeholder="What are you working on?"
+                    placeholder={t('profile.bioPlaceholder')}
                     onChange={(event) => setBio(event.target.value)}
                   />
                 </Field>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Occupation">
+                  <Field label={t('profile.occupation')}>
                     <Input value={occupation} onChange={(event) => setOccupation(event.target.value)} />
                   </Field>
-                  <Field label="City">
+                  <Field label={t('profile.city')}>
                     <Input value={city} onChange={(event) => setCity(event.target.value)} />
                   </Field>
                 </div>
-                <Field label="Skills" hint="Separate with commas">
+                <Field label={t('profile.skills')} hint={t('profile.skillsHint')}>
                   <Input value={skills} onChange={(event) => setSkills(event.target.value)} />
                 </Field>
               </div>
             ) : (
               <div className="mt-4">
                 <p className="text-ink-muted text-sm leading-relaxed">
-                  {bio || 'No bio yet. Tell people what you are working on.'}
+                  {bio || t('profile.noBio')}
                 </p>
                 {profile.skills.length > 0 ? (
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -244,7 +258,7 @@ export function ProfileEditor({
 
           <Card className="p-6">
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-[0.9375rem] font-semibold">Interests</h2>
+              <h2 className="text-[0.9375rem] font-semibold">{t('profile.interests')}</h2>
               <span className="text-ink-subtle text-xs">{interests.length} selected</span>
             </div>
 
@@ -285,7 +299,7 @@ export function ProfileEditor({
               </div>
             ) : (
               <p className="text-ink-muted mt-4 text-sm">
-                No interests yet. They shape what Discover shows you.
+                {t('profile.noInterests')}
               </p>
             )}
           </Card>
@@ -293,21 +307,20 @@ export function ProfileEditor({
 
         <div className="flex flex-col gap-6">
           <Card className="p-6">
-            <h2 className="text-[0.9375rem] font-semibold">Details</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('profile.details')}</h2>
             <dl className="mt-4 flex flex-col gap-3.5 text-sm">
               {[
-                ['Username', `@${profile.username}`],
+                [t('profile.username'), `@${profile.username}`],
                 [
-                  'Type',
-                  profile.userType
-                    .replace('_', ' ')
-                    .toLowerCase()
-                    .replace(/^./, (character) => character.toUpperCase()),
+                  t('profile.type'),
+                  profile.userType in USER_TYPE_KEYS
+                    ? t(`enums.userType.${profile.userType as keyof typeof USER_TYPE_KEYS}`)
+                    : profile.userType,
                 ],
-                ['Region', `${profile.countryCode} · ${profile.timezone}`],
-                ['Currency', profile.currency],
-                ['Language', profile.locale],
-                ['Joined', new Date(user.createdAt).toLocaleDateString('en-GB', { dateStyle: 'medium' })],
+                [t('profile.region'), `${profile.countryCode} · ${profile.timezone}`],
+                [t('profile.currency'), profile.currency],
+                [t('profile.language'), LOCALE_NAMES[isLocale(profile.locale) ? profile.locale : 'en'].native],
+                [t('profile.joined'), format(user.createdAt, 'dayMonth') + ' ' + new Date(user.createdAt).getFullYear()],
               ].map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between gap-4">
                   <dt className="text-ink-muted">{label}</dt>
@@ -318,16 +331,16 @@ export function ProfileEditor({
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-[0.9375rem] font-semibold">Your week</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('profile.yourWeek')}</h2>
             {profile.scheduleBlocks.length > 0 ? (
               <p className="text-ink-muted mt-3 text-sm leading-relaxed">
-                {profile.scheduleBlocks.length} fixed blocks are on your calendar. Nexus plans around
-                them.
+                {t('profile.blocks', { n: profile.scheduleBlocks.length })}
+                
               </p>
             ) : (
               <p className="text-ink-muted mt-3 text-sm leading-relaxed">
-                Nothing fixed yet. Adding your classes or work hours is what lets Nexus schedule
-                around your real life.
+                {t('profile.noBlocks')}
+                
               </p>
             )}
           </Card>
