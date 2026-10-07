@@ -3,11 +3,13 @@
 import { LogoMark } from '@nexus/ui';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useT } from '@/i18n/client';
 
 const SESSION_KEY = 'nexus-preloaded';
 
 export function Preloader() {
   const [visible, setVisible] = useState(true);
+  const t = useT();
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export function Preloader() {
               transition={{ delay: 0.9 }}
               className="mt-2 font-mono text-[11px] tracking-[0.2em] text-[#8A93A3] uppercase"
             >
-              Connecting your world · Kigali
+              {t('landing.preloader')}
             </motion.div>
             <div className="mt-6 h-[3px] w-40 overflow-hidden rounded-full bg-[#1A1E25]">
               <motion.div

@@ -5,23 +5,26 @@ import { BadgeCheck, CalendarDays, Layers, MapPin, Newspaper, Search, ShoppingBa
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { control, type ContentRow, type ContentType } from '@/lib/control-client';
+import { useFormatDate, useT } from '@/i18n/client';
 
-const TYPES: { value: ContentType; label: string; icon: typeof Layers; href?: (row: ContentRow) => string }[] = [
-  { value: 'posts', label: 'Posts', icon: Newspaper },
-  { value: 'events', label: 'Events', icon: CalendarDays, href: (row) => `/events/${row.slug}` },
-  { value: 'circles', label: 'Circles', icon: UsersRound, href: (row) => `/circles/${row.slug}` },
-  { value: 'places', label: 'Places', icon: MapPin, href: () => '/nearby' },
-  { value: 'listings', label: 'Listings', icon: ShoppingBag, href: () => '/market' },
-  { value: 'businesses', label: 'Businesses', icon: Store },
+const TYPES: { value: ContentType; icon: typeof Layers; href?: (row: ContentRow) => string }[] = [
+  { value: 'posts', icon: Newspaper },
+  { value: 'events', icon: CalendarDays, href: (row) => `/events/${row.slug}` },
+  { value: 'circles', icon: UsersRound, href: (row) => `/circles/${row.slug}` },
+  { value: 'places', icon: MapPin, href: () => '/nearby' },
+  { value: 'listings', icon: ShoppingBag, href: () => '/market' },
+  { value: 'businesses', icon: Store },
 ];
 
 const STATES = [
-  { value: 'live', label: 'Live' },
-  { value: 'removed', label: 'Removed' },
-  { value: 'all', label: 'Everything' },
+  { value: 'live', },
+  { value: 'removed', },
+  { value: 'all', },
 ] as const;
 
 export function ContentManager() {
+  const t = useT();
+  const format = useFormatDate();
   const [type, setType] = useState<ContentType>('posts');
   const [state, setState] = useState<'live' | 'removed' | 'all'>('live');
   const [query, setQuery] = useState('');
@@ -90,7 +93,7 @@ export function ContentManager() {
             )}
           >
             <entry.icon className="size-3.5" />
-            {entry.label}
+            {t(`admin.content.types.${entry.value}`)}
           </button>
         ))}
       </div>
@@ -101,7 +104,7 @@ export function ContentManager() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={`Search ${current.label.toLowerCase()}`}
+            placeholder={t('admin.content.search', { type: t(`admin.content.types.${current.value}`).toLowerCase() })}
             className="placeholder:text-ink-subtle h-full w-full bg-transparent text-sm outline-none"
           />
         </label>
@@ -116,7 +119,7 @@ export function ContentManager() {
                 state === entry.value ? 'bg-surface-raised text-ink' : 'text-ink-muted hover:text-ink',
               )}
             >
-              {entry.label}
+              {t(`admin.content.states.${entry.value}`)}
             </button>
           ))}
         </div>
@@ -132,7 +135,7 @@ export function ContentManager() {
             ))}
           </div>
         ) : rows.length === 0 ? (
-          <EmptyState icon={<Layers />} title={`No ${current.label.toLowerCase()} here`} description="Try another filter or search." />
+          <EmptyState icon={<Layers />} title={t('admin.content.none', { type: t(`admin.content.types.${current.value}`).toLowerCase() })} description={t('admin.content.tryAnother')} />
         ) : (
           <div className="divide-line divide-y">
             {rows.map((row) => (
@@ -148,21 +151,21 @@ export function ContentManager() {
                     )}
                     {row.verified ? (
                       <Badge size="sm" variant="success">
-                        <BadgeCheck /> verified
+                        <BadgeCheck /> {t('admin.content.verified')}
                       </Badge>
                     ) : null}
-                    {row.removed ? <Badge size="sm" variant="danger">removed</Badge> : null}
+                    {row.removed ? <Badge size="sm" variant="danger">{t('admin.content.removed')}</Badge> : null}
                   </div>
                   <p className="text-ink-muted mt-0.5 truncate text-xs">
                     {row.subtitle}
                     {row.author ? ` · by ${row.author.displayName} (@${row.author.username})` : ''} ·{' '}
-                    {new Date(row.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    {format(row.createdAt, 'dayShort')}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {row.verified !== null && !row.removed ? (
                     <Button size="sm" variant="secondary" loading={busy === `v-${row.id}`} onClick={() => void toggleVerified(row)}>
-                      <BadgeCheck /> {row.verified ? 'Unverify' : 'Verify'}
+                      <BadgeCheck /> {row.verified ? t('admin.content.unverify') : t('admin.content.verify')}
                     </Button>
                   ) : null}
                   <Button
@@ -171,7 +174,7 @@ export function ContentManager() {
                     loading={busy === row.id}
                     onClick={() => void toggleRemoved(row)}
                   >
-                    {row.removed ? 'Restore' : 'Remove'}
+                    {row.removed ? t('admin.content.restore') : t('admin.content.remove')}
                   </Button>
                 </div>
               </div>

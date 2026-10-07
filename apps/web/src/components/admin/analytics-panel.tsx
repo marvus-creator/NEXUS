@@ -3,6 +3,7 @@
 import { Card } from '@nexus/ui';
 import { CalendarDays, MessageSquare, ShoppingBag, UserCheck, Users } from 'lucide-react';
 import type { Analytics } from '@/lib/admin-client';
+import { useT } from '@/i18n/client';
 
 function Sparkline({ series, tint }: { series: { date: string; count: number }[]; tint: string }) {
   const max = Math.max(1, ...series.map((point) => point.count));
@@ -29,33 +30,34 @@ function Sparkline({ series, tint }: { series: { date: string; count: number }[]
 
 export function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
   const { people, content, commerce } = analytics;
+  const t = useT();
 
   const tiles = [
     {
-      label: 'People',
+      label: t('admin.analytics.people'),
       value: people.total.toLocaleString(),
-      caption: `${people.active} active · ${people.verified} verified · ${people.suspended} suspended`,
+      caption: t('admin.analytics.peopleCaption', { active: people.active, verified: people.verified, suspended: people.suspended }),
       icon: Users,
       tint: 'var(--accent)',
     },
     {
-      label: `Joined in ${analytics.windowDays} days`,
+      label: t('admin.analytics.joined', { n: analytics.windowDays }),
       value: people.newInWindow.toLocaleString(),
-      caption: `${people.signedInInWindow} signed in during the window`,
+      caption: t('admin.analytics.joinedCaption', { n: people.signedInInWindow }),
       icon: UserCheck,
       tint: 'var(--module-people)',
     },
     {
-      label: 'Things happening',
+      label: t('admin.analytics.happening'),
       value: (content.events + content.circles).toLocaleString(),
-      caption: `${content.events} events · ${content.circles} circles · ${content.places} places`,
+      caption: t('admin.analytics.happeningCaption', { events: content.events, circles: content.circles, places: content.places }),
       icon: CalendarDays,
       tint: 'var(--module-events)',
     },
     {
-      label: 'Conversation',
+      label: t('admin.analytics.conversation'),
       value: (content.posts + content.messages).toLocaleString(),
-      caption: `${content.posts} posts · ${content.messages} messages`,
+      caption: t('admin.analytics.conversationCaption', { posts: content.posts, messages: content.messages }),
       icon: MessageSquare,
       tint: 'var(--module-discover)',
     },
@@ -78,20 +80,20 @@ export function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <Card className="p-4">
-          <p className="text-[0.8125rem] font-semibold">Signups</p>
-          <p className="text-ink-subtle text-xs">last {analytics.windowDays} days</p>
+          <p className="text-[0.8125rem] font-semibold">{t('admin.analytics.signups')}</p>
+          <p className="text-ink-subtle text-xs">{t('admin.analytics.lastDays', { n: analytics.windowDays })}</p>
           <Sparkline series={analytics.series.signups} tint="var(--accent)" />
         </Card>
 
         <Card className="p-4">
-          <p className="text-[0.8125rem] font-semibold">Posts</p>
-          <p className="text-ink-subtle text-xs">last {analytics.windowDays} days</p>
+          <p className="text-[0.8125rem] font-semibold">{t('admin.analytics.posts')}</p>
+          <p className="text-ink-subtle text-xs">{t('admin.analytics.lastDays', { n: analytics.windowDays })}</p>
           <Sparkline series={analytics.series.posts} tint="var(--module-discover)" />
         </Card>
 
         <Card className="p-4">
-          <p className="text-[0.8125rem] font-semibold">Most recent sign-in</p>
-          <p className="text-ink-subtle text-xs">one mark per account, on the day they last signed in</p>
+          <p className="text-[0.8125rem] font-semibold">{t('admin.analytics.lastSignIn')}</p>
+          <p className="text-ink-subtle text-xs">{t('admin.analytics.lastSignInBody')}</p>
           <Sparkline series={analytics.series.logins} tint="var(--module-people)" />
         </Card>
       </div>
@@ -99,20 +101,20 @@ export function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
       <Card className="mt-5 p-5">
         <div className="flex items-center gap-2">
           <ShoppingBag className="size-4" style={{ color: 'var(--module-nearby)' }} />
-          <p className="text-[0.8125rem] font-semibold">Marketplace</p>
+          <p className="text-[0.8125rem] font-semibold">{t('admin.analytics.marketplace')}</p>
         </div>
 
         <div className="mt-3 grid gap-4 sm:grid-cols-3">
           <div>
             <p className="text-2xl font-semibold tabular-nums">{commerce.activeListings}</p>
-            <p className="text-ink-subtle text-xs">listings on sale</p>
+            <p className="text-ink-subtle text-xs">{t('admin.analytics.listings')}</p>
           </div>
           <div>
             <p className="text-2xl font-semibold tabular-nums">
               {commerce.paidOrders}
-              <span className="text-ink-subtle text-sm font-normal"> of {commerce.orders}</span>
+              <span className="text-ink-subtle text-sm font-normal">{t('admin.analytics.of', { n: commerce.orders })}</span>
             </p>
-            <p className="text-ink-subtle text-xs">orders paid</p>
+            <p className="text-ink-subtle text-xs">{t('admin.analytics.ordersPaid')}</p>
           </div>
           <div>
             <p className="text-2xl font-semibold tabular-nums">
@@ -120,13 +122,13 @@ export function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
                 ? commerce.settled.map((entry) => entry.display).join(' · ')
                 : '—'}
             </p>
-            <p className="text-ink-subtle text-xs">settled through the wallet</p>
+            <p className="text-ink-subtle text-xs">{t('admin.analytics.settled')}</p>
           </div>
         </div>
 
         <p className="text-ink-subtle mt-3.5 text-xs leading-relaxed">
-          Settled means money that moved between Nexus wallets. No payment provider is connected, so
-          none of it has entered or left the platform.
+          {t('admin.analytics.settledNote')}
+          
         </p>
       </Card>
     </div>

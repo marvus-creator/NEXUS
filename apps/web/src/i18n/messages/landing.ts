@@ -1,4 +1,5 @@
 export const landing = {
+  preloader: ['Connecting your world · Kigali', 'Turimo guhuza isi yawe · Kigali', 'Connexion de votre monde · Kigali'],
   nav: {
     people: ['People', 'Abantu', 'Personnes'],
     places: ['Places', 'Ahantu', 'Lieux'],

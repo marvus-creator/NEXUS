@@ -5,17 +5,27 @@ import { Flag, Gauge, History, Layers, Megaphone, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useT } from '@/i18n/client';
 
-const TABS = [
-  { href: '/admin', label: 'Overview', icon: Gauge, exact: true },
-  { href: '/admin/people', label: 'People', icon: Users },
-  { href: '/admin/content', label: 'Content', icon: Layers },
-  { href: '/admin/reports', label: 'Reports', icon: Flag },
-  { href: '/admin/platform', label: 'Platform', icon: Megaphone, adminOnly: true },
-  { href: '/admin/audit', label: 'Audit log', icon: History },
+type Tab = {
+  href: string;
+  key: 'overview' | 'people' | 'content' | 'reports' | 'platform' | 'audit';
+  icon: typeof Gauge;
+  exact?: boolean;
+  adminOnly?: boolean;
+};
+
+const TABS: Tab[] = [
+  { href: '/admin', key: 'overview', icon: Gauge, exact: true },
+  { href: '/admin/people', key: 'people', icon: Users },
+  { href: '/admin/content', key: 'content', icon: Layers },
+  { href: '/admin/reports', key: 'reports', icon: Flag },
+  { href: '/admin/platform', key: 'platform', icon: Megaphone, adminOnly: true },
+  { href: '/admin/audit', key: 'audit', icon: History },
 ];
 
 export function ControlNav({ isAdmin, openReports }: { isAdmin: boolean; openReports: number }) {
+  const t = useT();
   const pathname = usePathname();
 
   return (
@@ -34,7 +44,7 @@ export function ControlNav({ isAdmin, openReports }: { isAdmin: boolean; openRep
             )}
           >
             <Icon className="size-4" style={active ? { color: 'var(--accent)' } : undefined} />
-            {tab.label}
+            {t(`admin.nav.${tab.key}`)}
             {tab.href === '/admin/reports' && openReports > 0 ? (
               <span className="bg-danger num grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white">
                 {openReports}
