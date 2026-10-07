@@ -11,6 +11,7 @@ import {
   type DayPlan,
   type PlanProposal,
 } from '@/lib/learning-client';
+import { useFormatDate, useT } from '@/i18n/client';
 
 function timeIn(iso: string, timezone: string) {
   return new Intl.DateTimeFormat('en-GB', {
@@ -33,20 +34,17 @@ function lengthOf(proposal: PlanProposal) {
   return rest === 0 ? `${Math.floor(minutes / 60)}h` : `${Math.floor(minutes / 60)}h ${rest}m`;
 }
 
-function dayLabel(planFor: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-
-  if (planFor === today) return 'today';
-  if (planFor === tomorrow) return 'tomorrow';
-
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(
-    new Date(`${planFor}T12:00:00Z`),
-  );
-}
-
 export function PlanBoard({ plan }: { plan: DayPlan }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
+  const dayLabel = (planFor: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    if (planFor === today) return t('plan.today');
+    if (planFor === tomorrow) return t('plan.tomorrow');
+    return `${format(`${planFor}T12:00:00Z`, 'weekday')} ${format(`${planFor}T12:00:00Z`, 'dayMonth')}`;
+  };
 
   const [day, setDay] = useState(plan);
   const [busy, setBusy] = useState<string | null>(null);
@@ -63,7 +61,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
       setDay(await generatePlan(day.planFor));
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not build a plan.');
+      setError(cause instanceof Error ? cause.message : t('plan.failed'));
     } finally {
       setBusy(null);
     }
@@ -85,7 +83,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
 
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not update that block.');
+      setError(cause instanceof Error ? cause.message : t('plan.updateFailed'));
     } finally {
       setBusy(null);
     }
@@ -97,15 +95,15 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-ink-muted text-[0.8125rem]">
             {pending.length > 0
-              ? `${pending.length} ${pending.length === 1 ? 'block' : 'blocks'} suggested for ${dayLabel(day.planFor)}.`
+              ? t(pending.length === 1 ? 'plan.suggestedOne' : 'plan.suggestedMany', { n: pending.length, day: dayLabel(day.planFor) })
               : accepted.length > 0
-                ? `Everything suggested for ${dayLabel(day.planFor)} is on your calendar.`
-                : `Nothing suggested for ${dayLabel(day.planFor)} yet.`}
+                ? t('plan.allIn', { day: dayLabel(day.planFor) })
+                : t('plan.nothing', { day: dayLabel(day.planFor) })}
           </p>
 
           <Button size="sm" onClick={() => void regenerate()} disabled={busy === 'generate'}>
             <Wand2 className="size-4" />
-            {busy === 'generate' ? 'Planning…' : pending.length + accepted.length > 0 ? 'Re-plan' : 'Plan my day'}
+            {busy === 'generate' ? t('plan.planning') : pending.length + accepted.length > 0 ? t('plan.replan') : t('nav.items.ai')}
           </Button>
         </div>
 
@@ -115,8 +113,8 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
           <EmptyState
             className="mt-8"
             icon={<Sparkles className="size-6" />}
-            title="No plan yet"
-            description="Nexus reads your fixed commitments, open tasks and learning paths, finds the real gaps, and suggests what to put in them. Nothing reaches your calendar until you say yes."
+            title={t('plan.emptyTitle')}
+            description={t('plan.emptyBody')}
           />
         ) : (
           <div className="mt-5 space-y-3">
@@ -136,9 +134,9 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-[0.9375rem] font-semibold">{proposal.title}</h3>
                       {proposal.path ? (
-                        <Badge style={{ color: 'var(--module-learn)' }}>Learning</Badge>
+                        <Badge style={{ color: 'var(--module-learn)' }}>{t('plan.learning')}</Badge>
                       ) : null}
-                      {proposal.task ? <Badge>Task</Badge> : null}
+                      {proposal.task ? <Badge>{t('plan.task')}</Badge> : null}
                     </div>
 
                     <p className="text-ink-muted mt-1.5 text-[0.8125rem] leading-relaxed">
@@ -147,7 +145,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
 
                     <div className="mt-3 flex items-center gap-2">
                       <Button size="sm" onClick={() => void decide(proposal, true)} disabled={busy === proposal.id}>
-                        <Check className="size-4" /> Add to calendar
+                        <Check className="size-4" /> {t('plan.add')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -155,7 +153,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
                         onClick={() => void decide(proposal, false)}
                         disabled={busy === proposal.id}
                       >
-                        <X className="size-4" /> Not this
+                        <X className="size-4" /> {t('plan.notThis')}
                       </Button>
                     </div>
                   </div>
@@ -175,7 +173,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[0.9375rem] font-medium">{proposal.title}</p>
                     <p className="text-nearby mt-0.5 flex items-center gap-1.5 text-xs">
-                      <Check className="size-3.5" /> On your calendar
+                      <Check className="size-3.5" /> {t('plan.onCalendar')}
                     </p>
                   </div>
                 </div>
@@ -189,12 +187,12 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
         <Card className="p-4">
           <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
             <Lock className="size-3.5" style={{ color: 'var(--module-ai)' }} />
-            Already committed
+            {t('plan.committed')}
           </h2>
 
           {day.commitments.length === 0 ? (
             <p className="text-ink-subtle mt-2 text-[0.8125rem]">
-              Nothing fixed {dayLabel(day.planFor)}. The whole day is open.
+              {t('plan.nothingFixed', { day: dayLabel(day.planFor) })}
             </p>
           ) : (
             <ul className="mt-3 space-y-2">
@@ -211,7 +209,7 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
 
           <p className="text-ink-subtle mt-3.5 flex items-start gap-2 text-xs leading-relaxed">
             <Clock className="mt-0.5 size-3.5 shrink-0" />
-            Suggestions only ever land in the gaps between these.
+            {t('plan.gapsOnly')}
           </p>
         </Card>
 
@@ -221,11 +219,11 @@ export function PlanBoard({ plan }: { plan: DayPlan }) {
         >
           <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
             <Sparkles className="size-3.5" style={{ color: 'var(--module-ai)' }} />
-            How this was planned
+            {t('plan.how')}
           </h2>
           <p className="text-ink-muted mt-2 text-[0.8125rem] leading-relaxed">{day.engineNote}</p>
           <p className="text-ink-subtle mt-2.5 text-xs leading-relaxed">
-            Nothing here moves without you pressing a button.
+            {t('plan.button')}
           </p>
         </Card>
       </aside>

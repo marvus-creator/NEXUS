@@ -1,6 +1,7 @@
 import { apiErrors, auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
+import { calendar, plan } from './calendar';
 import { goals, tasks } from './planner';
 import { discover, places } from './places';
 import { market, orders, wallet } from './market';
@@ -43,6 +44,8 @@ export const messages = {
   discover,
   tasks,
   goals,
+  calendar,
+  plan,
 } as const;
 
 export { apiErrors };

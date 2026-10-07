@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { plannerClient, type CalendarDay } from '@/lib/planner-client';
+import { useErrorText, useFormatDate, useT } from '@/i18n/client';
 
 const DAY_START = 7 * 60;
 const DAY_END = 22 * 60;
 const SPAN = DAY_END - DAY_START;
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const KIND_TINT: Record<string, string> = {
   CLASS: 'var(--module-learn)',
@@ -53,6 +53,9 @@ export function WeekView({
   todayKey: string;
 }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
+  const errorText = useErrorText();
 
   const [composing, setComposing] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -85,7 +88,7 @@ export function WeekView({
       });
 
       if (result.clashesWith) {
-        setClash(`Added, but it overlaps "${result.clashesWith.title}".`);
+        setClash(t('calendar.clash', { title: result.clashesWith.title }));
       }
 
       setTitle('');
@@ -113,14 +116,14 @@ export function WeekView({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="icon-sm" onClick={() => shiftWeek(-1)} aria-label="Previous week">
+          <Button variant="secondary" size="icon-sm" onClick={() => shiftWeek(-1)} aria-label={t('calendar.previous')}>
             <ChevronLeft />
           </Button>
-          <Button variant="secondary" size="icon-sm" onClick={() => shiftWeek(1)} aria-label="Next week">
+          <Button variant="secondary" size="icon-sm" onClick={() => shiftWeek(1)} aria-label={t('calendar.next')}>
             <ChevronRight />
           </Button>
           <Button variant="ghost" size="sm" onClick={() => router.push('/calendar')}>
-            This week
+            {t('calendar.thisWeek')}
           </Button>
         </div>
 
@@ -144,7 +147,7 @@ export function WeekView({
         </div>
       ) : null}
 
-      {error ? <p className="text-danger mt-4 text-sm">{error}</p> : null}
+      {error ? <p className="text-danger mt-4 text-sm">{errorText(error)}</p> : null}
 
       <Card className="mt-5 overflow-hidden">
         <div className="overflow-x-auto">
@@ -171,7 +174,7 @@ export function WeekView({
                       )}
                     >
                       <span className="text-micro text-ink-subtle font-semibold uppercase">
-                        {DAY_NAMES[day.dayOfWeek]}
+                        {format(`${day.dateKey}T12:00:00Z`, 'weekdayShort', 'UTC')}
                       </span>
                       <span className={cn('text-xs font-medium', isToday && 'text-accent')}>
                         {dayNumber}
@@ -221,7 +224,7 @@ export function WeekView({
                           key={event.id}
                           type="button"
                           onClick={() => void removeEvent(event.id)}
-                          title={`${event.title} — click to remove`}
+                          title={t('calendar.clickRemove', { title: event.title })}
                           className="absolute inset-x-1 overflow-hidden rounded-md px-1.5 py-1 text-left"
                           style={{
                             ...position(event.startMinute, event.endMinute),
@@ -257,7 +260,7 @@ export function WeekView({
                           <Input
                             autoFocus
                             value={title}
-                            placeholder="Event"
+                            placeholder={t('calendar.eventPlaceholder')}
                             className="h-7 px-2 text-[0.625rem]"
                             onChange={(event) => setTitle(event.target.value)}
                             onKeyDown={(event) => {
@@ -286,7 +289,7 @@ export function WeekView({
                               loading={busy}
                               onClick={() => void addEvent(day.dateKey)}
                             >
-                              Add
+                              {t('calendar.add')}
                             </Button>
                             <Button
                               size="icon-sm"
@@ -304,7 +307,7 @@ export function WeekView({
                           onClick={() => setComposing(day.dateKey)}
                           className="text-ink-subtle hover:text-ink hover:bg-surface-hover flex w-full items-center justify-center gap-1 rounded py-1.5 text-[0.625rem] transition-colors"
                         >
-                          <Plus className="size-3" /> Event
+                          <Plus className="size-3" /> {t('calendar.event')}
                         </button>
                       )}
                     </div>
@@ -321,20 +324,20 @@ export function WeekView({
           .filter((day) => day.dateKey === todayKey)
           .map((day) => (
             <Card key={day.dateKey} className="flex-1 p-5">
-              <p className="text-[0.9375rem] font-semibold">Today at a glance</p>
+              <p className="text-[0.9375rem] font-semibold">{t('calendar.glance')}</p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Badge size="sm">{day.fixed.length} fixed</Badge>
+                <Badge size="sm">{t('calendar.fixed', { n: day.fixed.length })}</Badge>
                 <Badge variant="accent" size="sm">
-                  {day.events.length} events
+                  {t('calendar.events', { n: day.events.length })}
                 </Badge>
                 <Badge variant="success" size="sm">
                   {day.gaps.reduce((total, gap) => total + gap.minutes, 0) >= 60
-                    ? `${duration(day.gaps.reduce((total, gap) => total + gap.minutes, 0))} free`
-                    : 'Little free time'}
+                    ? t('calendar.free', { duration: duration(day.gaps.reduce((total, gap) => total + gap.minutes, 0)) })
+                    : t('calendar.littleFree')}
                 </Badge>
                 {day.tasks.length > 0 ? (
                   <Badge variant="warning" size="sm">
-                    {day.tasks.length} due
+                    {t('calendar.due', { n: day.tasks.length })}
                   </Badge>
                 ) : null}
               </div>
