@@ -15,28 +15,25 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { devGrant, transfer, type WalletEntry, type WalletOverview } from '@/lib/market-client';
+import { useErrorText, useT } from '@/i18n/client';
+import type { Translate } from '@/i18n/types';
 
-const KIND_LABEL: Record<WalletEntry['transaction']['kind'], string> = {
-  TRANSFER: 'Transfer',
-  ORDER_PAYMENT: 'Order',
-  ORDER_REFUND: 'Refund',
-  ADJUSTMENT: 'Adjustment',
-};
-
-function entryTitle(entry: WalletEntry) {
+function entryTitle(entry: WalletEntry, t: Translate) {
   const who = entry.counterparty?.profile?.displayName ?? entry.counterparty?.label ?? 'Nexus';
 
   if (entry.transaction.kind === 'ORDER_PAYMENT') {
-    return entry.direction === 'DEBIT' ? `Paid ${who}` : `Payment from ${who}`;
+    return entry.direction === 'DEBIT' ? t('wallet.paid', { who }) : t('wallet.paymentFrom', { who });
   }
 
-  if (entry.transaction.kind === 'ADJUSTMENT') return 'Development grant';
+  if (entry.transaction.kind === 'ADJUSTMENT') return t('wallet.grant');
 
-  return entry.direction === 'DEBIT' ? `Sent to ${who}` : `Received from ${who}`;
+  return entry.direction === 'DEBIT' ? t('wallet.sentTo', { who }) : t('wallet.receivedFrom', { who });
 }
 
 export function WalletBoard({ overview }: { overview: WalletOverview }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [state, setState] = useState(overview);
   const [sending, setSending] = useState(false);
@@ -53,12 +50,12 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
     const value = Number(amount);
 
     if (username.trim().length < 2) {
-      setError('Who are you sending to?');
+      setError(t('wallet.who'));
       return;
     }
 
     if (!Number.isFinite(value) || value <= 0) {
-      setError('Enter an amount above zero.');
+      setError(t('wallet.aboveZero'));
       return;
     }
 
@@ -79,7 +76,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
       setSending(false);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not send that.');
+      setError(cause instanceof Error ? cause.message : t('wallet.sendFailed'));
     } finally {
       setBusy(false);
     }
@@ -94,7 +91,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
       setNotice('20,000 added from the development treasury. Not real money.');
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not add test funds.');
+      setError(cause instanceof Error ? cause.message : t('wallet.fundsFailed'));
     } finally {
       setBusy(false);
     }
@@ -109,7 +106,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
         >
           <div className="flex items-center gap-2">
             <WalletIcon className="text-accent size-4" />
-            <p className="text-ink-muted text-xs font-medium">Balance</p>
+            <p className="text-ink-muted text-xs font-medium">{t('wallet.balance')}</p>
           </div>
 
           <p className="mt-2.5 text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
@@ -119,12 +116,12 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Button size="sm" onClick={() => setSending((value) => !value)}>
               {sending ? <X className="size-4" /> : <Send className="size-4" />}
-              {sending ? 'Cancel' : 'Send'}
+              {sending ? t('common.cancel') : t('wallet.send')}
             </Button>
 
             {!state.rails.connected ? (
               <Button variant="ghost" size="sm" onClick={() => void grant()} disabled={busy}>
-                <Sparkles className="size-4" /> Add test funds
+                <Sparkles className="size-4" /> {t('wallet.testFunds')}
               </Button>
             ) : null}
           </div>
@@ -136,7 +133,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
           <Card className="mt-4 p-5">
             <form onSubmit={submit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="To" hint="Their Nexus username">
+                <Field label={t('wallet.to')} hint={t('wallet.toHint')}>
                   <Input
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
@@ -144,7 +141,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
                     autoFocus
                   />
                 </Field>
-                <Field label={`Amount in ${state.wallet.currency}`}>
+                <Field label={t('wallet.amount', { currency: state.wallet.currency })}>
                   <Input
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
@@ -154,18 +151,18 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
                 </Field>
               </div>
 
-              <Field label="What is it for?" hint="Optional">
+              <Field label={t('wallet.memo')} hint={t('common.optional')}>
                 <Input
                   value={memo}
                   onChange={(event) => setMemo(event.target.value)}
-                  placeholder="Lunch"
+                  placeholder={t('wallet.memoPlaceholder')}
                 />
               </Field>
 
-              {error ? <p className="text-danger text-xs">{error}</p> : null}
+              {error ? <p className="text-danger text-xs">{errorText(error)}</p> : null}
 
               <Button type="submit" disabled={busy}>
-                {busy ? 'Sending…' : 'Send'}
+                {busy ? t('wallet.sending') : t('wallet.send')}
               </Button>
             </form>
           </Card>
@@ -173,12 +170,12 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
 
         {error && !sending ? <p className="text-danger mt-3 text-xs">{error}</p> : null}
 
-        <h2 className="mt-8 text-[0.9375rem] font-semibold">Activity</h2>
+        <h2 className="mt-8 text-[0.9375rem] font-semibold">{t('wallet.activity')}</h2>
 
         {state.history.length === 0 ? (
           <Card className="mt-3 p-6">
             <p className="text-ink-muted text-[0.875rem]">
-              Nothing has moved yet. Transfers and marketplace payments show up here.
+              {t('wallet.nothingMoved')}
             </p>
           </Card>
         ) : (
@@ -207,15 +204,15 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-[0.875rem] font-medium">{entryTitle(entry)}</p>
+                      <p className="truncate text-[0.875rem] font-medium">{entryTitle(entry, t)}</p>
                       {entry.transaction.status === 'REVERSED' ? (
                         <Badge className="shrink-0">
-                          <RotateCcw className="size-3" /> reversed
+                          <RotateCcw className="size-3" /> {t('wallet.reversed')}
                         </Badge>
                       ) : null}
                     </div>
                     <p className="text-ink-subtle truncate text-xs">
-                      {KIND_LABEL[entry.transaction.kind]}
+                      {t(`wallet.kind.${entry.transaction.kind}`)}
                       {entry.transaction.memo ? ` · ${entry.transaction.memo}` : ''}
                     </p>
                   </div>
@@ -241,36 +238,36 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
           <Card className="p-5">
             <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
               <Info className="size-3.5" style={{ color: 'var(--module-events)' }} />
-              No money in or out, yet
+              {t('wallet.noRails')}
             </h2>
             <p className="text-ink-muted mt-2 text-[0.8125rem] leading-relaxed">
               {state.rails.note}
             </p>
             <p className="text-ink-subtle mt-2.5 text-xs leading-relaxed">
-              Connecting mobile money or a card provider is what turns this on. Until then there is
-              deliberately no Top up button that would do nothing.
+              {t('wallet.railsNote')}
+              
             </p>
           </Card>
         ) : null}
 
         <Card className="p-5">
-          <h2 className="text-[0.8125rem] font-semibold">How the balance is worked out</h2>
+          <h2 className="text-[0.8125rem] font-semibold">{t('wallet.howTitle')}</h2>
           <p className="text-ink-muted mt-2 text-[0.8125rem] leading-relaxed">
-            Every movement writes two matching entries, one out of somewhere and one into somewhere
-            else. Your balance is the sum of your own entries, never a number stored on the side
-            that could drift away from the record.
+            {t('wallet.howBody')}
+            
+            
           </p>
         </Card>
 
         {state.pendingOrders > 0 ? (
           <Card className="p-5">
-            <h2 className="text-[0.8125rem] font-semibold">Waiting on sellers</h2>
+            <h2 className="text-[0.8125rem] font-semibold">{t('wallet.waiting')}</h2>
             <p className="text-ink-muted mt-2 text-[0.8125rem]">
-              {state.pendingOrders} {state.pendingOrders === 1 ? 'order has' : 'orders have'} not
-              been answered yet.
+              {t(state.pendingOrders === 1 ? 'wallet.waitingOne' : 'wallet.waitingMany', { n: state.pendingOrders })}
+              
             </p>
             <Button asChild variant="ghost" size="sm" className="mt-2 -ml-2">
-              <a href="/market/orders">See orders</a>
+              <a href="/market/orders">{t('wallet.seeOrders')}</a>
             </Button>
           </Card>
         ) : null}

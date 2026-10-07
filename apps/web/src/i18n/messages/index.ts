@@ -1,6 +1,8 @@
 import { apiErrors, auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
+import { market, orders, wallet } from './market';
+import { chat, notifications } from './inbox';
 import { enums } from './enums';
 import { events } from './events';
 import { home } from './home';
@@ -30,6 +32,11 @@ export const messages = {
   reasons,
   events,
   circles,
+  chat,
+  notifications,
+  market,
+  orders,
+  wallet,
 } as const;
 
 export { apiErrors };

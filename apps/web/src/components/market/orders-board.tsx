@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { decideOrder, payOrder, refundOrder, type Order } from '@/lib/market-client';
+import { useErrorText, useT } from '@/i18n/client';
 
 const STATUS_TINT: Record<Order['status'], string> = {
   PENDING: 'var(--module-events)',
@@ -13,14 +14,6 @@ const STATUS_TINT: Record<Order['status'], string> = {
   FULFILLED: 'var(--module-nearby)',
   DECLINED: 'var(--ink-subtle)',
   CANCELLED: 'var(--ink-subtle)',
-};
-
-const STATUS_WORD: Record<Order['status'], string> = {
-  PENDING: 'Waiting on the seller',
-  ACCEPTED: 'Accepted — not paid',
-  FULFILLED: 'Paid',
-  DECLINED: 'Declined',
-  CANCELLED: 'Cancelled',
 };
 
 function OrderCard({
@@ -33,6 +26,8 @@ function OrderCard({
   onChange: (next: Order) => void;
 }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +40,7 @@ function OrderCard({
       onChange(await action());
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'That did not work.');
+      setError(cause instanceof Error ? cause.message : t('orders.failed'));
     } finally {
       setBusy(false);
     }
@@ -70,9 +65,9 @@ function OrderCard({
                 {order.listing.title}
               </Link>
             ) : (
-              <span className="text-[0.9375rem] font-semibold">Listing removed</span>
+              <span className="text-[0.9375rem] font-semibold">{t('orders.removed')}</span>
             )}
-            <Badge style={{ color: STATUS_TINT[order.status] }}>{STATUS_WORD[order.status]}</Badge>
+            <Badge style={{ color: STATUS_TINT[order.status] }}>{t(`orders.status.${order.status}`)}</Badge>
           </div>
 
           <p className="text-ink-muted mt-1 text-[0.8125rem]">
@@ -81,7 +76,7 @@ function OrderCard({
             {other ? (
               <>
                 {' '}
-                · {scope === 'buying' ? 'from' : 'for'}{' '}
+                · {scope === 'buying' ? t('orders.from') : t('orders.for')}{' '}
                 <Link href={`/u/${other.username}`} className="hover:text-ink transition-colors">
                   {other.displayName}
                 </Link>
@@ -95,7 +90,7 @@ function OrderCard({
 
           <p className="text-ink-subtle mt-1.5 font-mono text-[0.6875rem]">{order.code}</p>
 
-          {error ? <p className="text-danger mt-2 text-xs">{error}</p> : null}
+          {error ? <p className="text-danger mt-2 text-xs">{errorText(error)}</p> : null}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {scope === 'selling' && order.status === 'PENDING' ? (
@@ -105,7 +100,7 @@ function OrderCard({
                   onClick={() => void run(() => decideOrder(order.code, 'accept'))}
                   disabled={busy}
                 >
-                  <Check className="size-4" /> Accept
+                  <Check className="size-4" /> {t('orders.accept')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -113,7 +108,7 @@ function OrderCard({
                   onClick={() => void run(() => decideOrder(order.code, 'decline'))}
                   disabled={busy}
                 >
-                  <X className="size-4" /> Decline
+                  <X className="size-4" /> {t('orders.decline')}
                 </Button>
               </>
             ) : null}
@@ -125,13 +120,13 @@ function OrderCard({
                 onClick={() => void run(() => decideOrder(order.code, 'cancel'))}
                 disabled={busy}
               >
-                <X className="size-4" /> Cancel
+                <X className="size-4" /> {t('orders.cancel')}
               </Button>
             ) : null}
 
             {scope === 'buying' && order.status === 'ACCEPTED' ? (
               <Button size="sm" onClick={() => void run(() => payOrder(order.code))} disabled={busy}>
-                <Wallet className="size-4" /> Pay {order.total.display}
+                <Wallet className="size-4" /> {t('orders.pay', { amount: order.total.display })}
               </Button>
             ) : null}
 
@@ -142,7 +137,7 @@ function OrderCard({
                 onClick={() => void run(() => refundOrder(order.code))}
                 disabled={busy}
               >
-                <RotateCcw className="size-4" /> Refund
+                <RotateCcw className="size-4" /> {t('orders.refund')}
               </Button>
             ) : null}
           </div>
@@ -153,6 +148,7 @@ function OrderCard({
 }
 
 export function OrdersBoard({ buying, selling }: { buying: Order[]; selling: Order[] }) {
+  const t = useT();
   const [scope, setScope] = useState<'buying' | 'selling'>('buying');
   const [buyList, setBuyList] = useState(buying);
   const [sellList, setSellList] = useState(selling);
@@ -177,7 +173,7 @@ export function OrdersBoard({ buying, selling }: { buying: Order[]; selling: Ord
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
-            {value === 'buying' ? 'What I ordered' : 'What people want'}
+            {value === 'buying' ? t('orders.buying') : t('orders.selling')}
             {value === 'selling' && pendingSales > 0 ? (
               <span
                 className={cn(
@@ -196,11 +192,11 @@ export function OrdersBoard({ buying, selling }: { buying: Order[]; selling: Ord
         <EmptyState
           className="mt-8"
           icon={<Receipt className="size-6" />}
-          title={scope === 'buying' ? 'You have not ordered anything' : 'No one has ordered yet'}
+          title={scope === 'buying' ? t('orders.emptyBuying') : t('orders.emptySelling')}
           description={
             scope === 'buying'
-              ? 'Requests you send from the market show up here until the seller answers.'
-              : 'When someone requests one of your listings, you accept or decline it here.'
+              ? t('orders.emptyBuyingBody')
+              : t('orders.emptySellingBody')
           }
         />
       ) : (

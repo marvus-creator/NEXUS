@@ -24,6 +24,7 @@ import {
   type Listing,
 } from '@/lib/market-client';
 import { ImagePicker } from '@/components/app/image-picker';
+import { useErrorText, useT } from '@/i18n/client';
 
 const CATEGORIES: { value: BusinessCategory | ''; label: string }[] = [
   { value: '', label: 'Everything' },
@@ -58,6 +59,8 @@ function ListingCard({
   onChange: (next: Listing) => void;
 }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +89,7 @@ function ListingCard({
       setOrdered(true);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not place that order.');
+      setError(cause instanceof Error ? cause.message : t('market.orderFailed'));
     } finally {
       setBusy(false);
     }
@@ -107,20 +110,20 @@ function ListingCard({
           ) : (
             <Package className="size-3" />
           )}
-          <span className="capitalize">{listing.category.toLowerCase()}</span>
+          <span>{t(`enums.business.${listing.category}`)}</span>
         </span>
         <button
           type="button"
           onClick={() => void toggleSave()}
           disabled={busy}
-          aria-label={listing.saved ? 'Remove from saved' : 'Save listing'}
+          aria-label={listing.saved ? t('market.remove') : t('market.saveListing')}
           className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/70 disabled:opacity-50"
         >
           <Bookmark className={cn('size-4', listing.saved && 'fill-current text-[#60A5FA]')} />
         </button>
         {soldOut ? (
           <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-black">
-            Sold out
+            {t('market.soldOut')}
           </span>
         ) : null}
       </div>
@@ -168,20 +171,20 @@ function ListingCard({
           </div>
         </div>
 
-        {error ? <p className="text-danger mt-2.5 text-xs">{error}</p> : null}
+        {error ? <p className="text-danger mt-2.5 text-xs">{errorText(error)}</p> : null}
 
         <div className="mt-3.5 flex items-center gap-2">
           {listing.isMine ? (
-            <Badge>Your listing</Badge>
+            <Badge>{t('market.yours')}</Badge>
           ) : soldOut ? (
-            <Badge>Sold</Badge>
+            <Badge>{t('market.sold')}</Badge>
           ) : ordered ? (
             <p className="text-module-nearby flex items-center gap-1.5 text-xs">
-              <Check className="size-3.5" /> Order sent, waiting on the seller
+              <Check className="size-3.5" /> {t('market.orderSent')}
             </p>
           ) : (
             <Button size="sm" className="w-full" onClick={() => void order()} disabled={busy}>
-              <ShoppingBag className="size-4" /> Request to buy
+              <ShoppingBag className="size-4" /> {t('market.requestToBuy')}
             </Button>
           )}
         </div>
@@ -192,6 +195,8 @@ function ListingCard({
 
 export function MarketBoard({ listings, city }: { listings: Listing[]; city: string | null }) {
   const router = useRouter();
+  const t = useT();
+  const errorText = useErrorText();
 
   const [items, setItems] = useState(listings);
   const [category, setCategory] = useState<BusinessCategory | ''>('');
@@ -228,12 +233,12 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
     const value = Number(price);
 
     if (title.trim().length < 2) {
-      setError('Give it a name people would search for.');
+      setError(t('market.nameIt'));
       return;
     }
 
     if (!Number.isFinite(value) || value < 0) {
-      setError('Enter a price.');
+      setError(t('market.enterPrice'));
       return;
     }
 
@@ -259,7 +264,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
       setComposing(false);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not create that listing.');
+      setError(cause instanceof Error ? cause.message : t('market.createFailed'));
     } finally {
       setBusy(false);
     }
@@ -273,14 +278,14 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={city ? `Search the market in ${city}` : 'Search the market'}
+            placeholder={city ? t('market.searchIn', { city }) : t('market.search')}
             className="pl-9"
           />
         </div>
 
         <Button size="sm" onClick={() => setComposing((value) => !value)}>
           {composing ? <X className="size-4" /> : <Plus className="size-4" />}
-          {composing ? 'Cancel' : 'Sell something'}
+          {composing ? t('common.cancel') : t('market.sell')}
         </Button>
       </div>
 
@@ -297,7 +302,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
-            {entry.label}
+            {entry.value ? t(`enums.business.${entry.value}`) : t('market.everything')}
           </button>
         ))}
 
@@ -312,24 +317,24 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
           )}
         >
           <Bookmark className={cn('size-3.5', savedOnly && 'fill-current')} />
-          Saved
+          {t('market.saved')}
         </button>
       </div>
 
       {composing ? (
         <Card className="mt-5 p-5">
           <form onSubmit={submit} className="space-y-4">
-            <ImagePicker folder="listings" value={cover} onChange={setCover} label="Add a photo of what you are selling" />
+            <ImagePicker folder="listings" value={cover} onChange={setCover} label={t('social.picker.listingPhoto')} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="What are you selling?">
+              <Field label={t('market.form.what')}>
                 <Input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Second-hand study desk"
+                  placeholder={t('market.form.whatPlaceholder')}
                   autoFocus
                 />
               </Field>
-              <Field label="Price" hint="In your own currency">
+              <Field label={t('market.form.price')} hint={t('market.form.priceHint')}>
                 <Input
                   value={price}
                   onChange={(event) => setPrice(event.target.value)}
@@ -339,25 +344,25 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
               </Field>
             </div>
 
-            <Field label="Description" hint="Optional">
+            <Field label={t('market.form.description')} hint={t('common.optional')}>
               <textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 rows={3}
-                placeholder="Condition, collection point, anything a buyer would ask."
+                placeholder={t('market.form.descriptionPlaceholder')}
                 className="border-border bg-surface placeholder:text-ink-subtle focus-visible:ring-accent/40 w-full rounded-lg border px-3 py-2 text-[0.875rem] outline-none focus-visible:ring-2"
               />
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="How many">
+              <Field label={t('market.form.howMany')}>
                 <Input
                   value={quantity}
                   onChange={(event) => setQuantity(event.target.value)}
                   inputMode="numeric"
                 />
               </Field>
-              <Field label="Category">
+              <Field label={t('market.form.category')}>
                 <select
                   value={newCategory}
                   onChange={(event) => setNewCategory(event.target.value as BusinessCategory)}
@@ -365,17 +370,17 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
                 >
                   {CATEGORIES.filter((entry) => entry.value).map((entry) => (
                     <option key={entry.value} value={entry.value}>
-                      {entry.label}
+                      {t(`enums.business.${entry.value as BusinessCategory}`)}
                     </option>
                   ))}
                 </select>
               </Field>
             </div>
 
-            {error ? <p className="text-danger text-xs">{error}</p> : null}
+            {error ? <p className="text-danger text-xs">{errorText(error)}</p> : null}
 
             <Button type="submit" disabled={busy}>
-              {busy ? 'Listing…' : 'Put it up'}
+              {busy ? t('market.form.listing') : t('market.form.putUp')}
             </Button>
           </form>
         </Card>
@@ -385,11 +390,11 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
         <EmptyState
           className="mt-8"
           icon={<ShoppingBag className="size-6" />}
-          title={items.length === 0 ? 'Nothing for sale yet' : 'Nothing matches that'}
+          title={items.length === 0 ? t('market.empty.noneTitle') : t('market.empty.noMatchTitle')}
           description={
             items.length === 0
-              ? 'The market fills up when people list things. Put something up and it appears here.'
-              : 'Try a different category or clear the search.'
+              ? t('market.empty.noneBody')
+              : t('market.empty.noMatchBody')
           }
         />
       ) : (

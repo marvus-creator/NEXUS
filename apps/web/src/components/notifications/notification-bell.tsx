@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/lib/api';
 import { plannerClient, type NotificationItem } from '@/lib/planner-client';
+import { useT } from '@/i18n/client';
 
 const CATEGORY_TINT: Record<string, string> = {
   IMPORTANT: 'var(--accent)',
@@ -24,21 +25,17 @@ const CATEGORY_TINT: Record<string, string> = {
   SYSTEM: 'var(--ink-subtle)',
 };
 
-function relative(iso: string) {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
-}
-
 export function NotificationBell({ initialUnread }: { initialUnread: number }) {
   const router = useRouter();
+  const t = useT();
+  const relative = (iso: string) => {
+    const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (minutes < 1) return t('time.justNow');
+    if (minutes < 60) return t('notifications.ago.minutes', { n: minutes });
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return t('notifications.ago.hours', { n: hours });
+    return t('notifications.ago.days', { n: Math.round(hours / 24) });
+  };
   const [unread, setUnread] = useState(initialUnread);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [open, setOpen] = useState(false);
@@ -101,7 +98,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+          aria-label={unread > 0 ? t('notifications.unreadLabel', { n: unread }) : t('notifications.title')}
           className="text-ink-muted hover:bg-surface-hover hover:text-ink relative flex size-10 items-center justify-center rounded-md transition-colors"
         >
           <Bell className="size-4" />
@@ -115,23 +112,23 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
 
       <DropdownMenuContent className="w-80 p-0">
         <div className="border-line flex items-center justify-between border-b px-4 py-3">
-          <p className="text-sm font-semibold">Notifications</p>
+          <p className="text-sm font-semibold">{t('notifications.title')}</p>
           {unread > 0 ? (
             <button
               type="button"
               onClick={() => void markAll()}
               className="text-accent inline-flex items-center gap-1.5 text-xs hover:underline"
             >
-              <CheckCheck className="size-3.5" /> Mark all read
+              <CheckCheck className="size-3.5" /> {t('notifications.markAll')}
             </button>
           ) : null}
         </div>
 
         <div className="max-h-96 overflow-y-auto">
           {loading && items.length === 0 ? (
-            <p className="text-ink-subtle px-4 py-8 text-center text-sm">Loading…</p>
+            <p className="text-ink-subtle px-4 py-8 text-center text-sm">{t('common.loading')}</p>
           ) : items.length === 0 ? (
-            <p className="text-ink-subtle px-4 py-8 text-center text-sm">Nothing yet.</p>
+            <p className="text-ink-subtle px-4 py-8 text-center text-sm">{t('notifications.nothing')}</p>
           ) : (
             items.map((item) => (
               <button
@@ -166,7 +163,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
         <div className="border-line border-t p-2">
           <Button asChild variant="ghost" size="sm" className="w-full">
             <Link href="/notifications" onClick={() => setOpen(false)}>
-              See all
+              {t('notifications.seeAll')}
             </Link>
           </Button>
         </div>

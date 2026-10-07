@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { plannerClient, type NotificationItem } from '@/lib/planner-client';
+import { useFormatDate, useT } from '@/i18n/client';
+import type { MessageKey } from '@/i18n/types';
 
 const CATEGORY_ORDER = [
   'IMPORTANT',
@@ -55,6 +57,10 @@ export function NotificationCenter({
   preferences: Record<string, boolean | string>;
 }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
+  const categoryLabel = (category: string) =>
+    category in CATEGORY_LABEL ? t(`notifications.categories.${category}` as MessageKey) : category;
 
   const [items, setItems] = useState(initial.notifications);
   const [unread, setUnread] = useState(initial.unread);
@@ -108,11 +114,11 @@ export function NotificationCenter({
       <div className="min-w-0">
         <div className="mb-4 flex items-center justify-between gap-4">
           <p className="text-ink-muted text-sm">
-            {unread > 0 ? `${unread} unread` : 'All caught up'}
+            {unread > 0 ? t('notifications.unread', { n: unread }) : t('notifications.caughtUp')}
           </p>
           {unread > 0 ? (
             <Button variant="secondary" size="sm" onClick={() => void markAll()}>
-              <CheckCheck /> Mark all read
+              <CheckCheck /> {t('notifications.markAll')}
             </Button>
           ) : null}
         </div>
@@ -120,8 +126,8 @@ export function NotificationCenter({
         {grouped.length === 0 ? (
           <EmptyState
             icon={<BellOff />}
-            title="Nothing here yet"
-            description="Nexus notifies you when a goal closes, a task repeats or something needs your attention."
+            title={t('notifications.emptyTitle')}
+            description={t('notifications.emptyBody')}
           />
         ) : (
           <div className="flex flex-col gap-8">
@@ -133,7 +139,7 @@ export function NotificationCenter({
                     style={{ backgroundColor: CATEGORY_TINT[group.category] }}
                   />
                   <h2 className="text-micro text-ink-subtle font-semibold uppercase">
-                    {CATEGORY_LABEL[group.category]}
+                    {categoryLabel(group.category)}
                   </h2>
                   <Badge size="sm">{group.items.length}</Badge>
                 </div>
@@ -152,14 +158,11 @@ export function NotificationCenter({
                           ) : null}
                           <div className="mt-2 flex items-center gap-3">
                             <span className="text-ink-subtle text-xs">
-                              {new Date(item.createdAt).toLocaleString('en-GB', {
-                                dateStyle: 'medium',
-                                timeStyle: 'short',
-                              })}
+                              {`${format(item.createdAt, 'dayShort')} · ${format(item.createdAt, 'time')}`}
                             </span>
                             {item.href ? (
                               <Link href={item.href} className="text-accent text-xs hover:underline">
-                                Open
+                                {t('notifications.open')}
                               </Link>
                             ) : null}
                           </div>
@@ -168,7 +171,7 @@ export function NotificationCenter({
                         <button
                           type="button"
                           onClick={() => void remove(item.id)}
-                          aria-label="Delete notification"
+                          aria-label={t('notifications.delete')}
                           className="text-ink-subtle hover:text-danger transition-colors"
                         >
                           <Trash2 className="size-3.5" />
@@ -184,7 +187,7 @@ export function NotificationCenter({
       </div>
 
       <div className="min-w-0">
-        <h2 className="mb-4 text-lg font-semibold tracking-tight">What reaches you</h2>
+        <h2 className="mb-4 text-lg font-semibold tracking-tight">{t('notifications.whatReaches')}</h2>
         <Card className="divide-y divide-[var(--border)]">
           {CATEGORY_ORDER.map((category) => {
             const field = PREFERENCE_FIELD[category]!;
@@ -197,7 +200,7 @@ export function NotificationCenter({
                     className="size-2 shrink-0 rounded-full"
                     style={{ backgroundColor: CATEGORY_TINT[category] }}
                   />
-                  <span className="text-sm font-medium">{CATEGORY_LABEL[category]}</span>
+                  <span className="text-sm font-medium">{categoryLabel(category)}</span>
                 </div>
                 <Switch
                   checked={enabled}
@@ -209,8 +212,8 @@ export function NotificationCenter({
           })}
         </Card>
         <p className="text-ink-subtle mt-4 text-xs leading-relaxed">
-          Muting a category stops Nexus creating those notifications at all, rather than hiding them
-          after the fact.
+          {t('notifications.mutedNote')}
+          
         </p>
       </div>
     </div>

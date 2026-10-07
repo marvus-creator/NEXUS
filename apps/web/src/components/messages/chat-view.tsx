@@ -20,6 +20,7 @@ import { io, type Socket } from 'socket.io-client';
 import { API_URL } from '@/lib/api';
 import { communityClient, type ChatMessage, type ConversationSummary } from '@/lib/community-client';
 import { circleImage } from '@/lib/photos';
+import { useErrorText, useFormatDate, useT } from '@/i18n/client';
 
 const QUICK_REACTIONS = ['👍', '🎉', '🔥', '❤️'];
 
@@ -36,25 +37,6 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-function shortTime(iso: string) {
-  const date = new Date(iso);
-  const now = new Date();
-  if (date.toDateString() === now.toDateString()) return timeLabel(iso);
-  const days = Math.round((now.getTime() - date.getTime()) / 86400000);
-  if (days < 7) return date.toLocaleDateString('en-GB', { weekday: 'short' });
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
-function dayLabel(iso: string) {
-  const date = new Date(iso);
-  const today = new Date();
-  const isToday = date.toDateString() === today.toDateString();
-
-  if (isToday) return 'Today';
-
-  return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-}
-
 export function ChatView({
   conversations,
   initialConversationId,
@@ -63,6 +45,18 @@ export function ChatView({
   initialConversationId: string | null;
 }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormatDate();
+  const shortTime = (iso: string) => {
+    const date = new Date(iso);
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) return timeLabel(iso);
+    const days = Math.round((now.getTime() - date.getTime()) / 86400000);
+    if (days < 7) return format(date, 'weekdayShort');
+    return format(date, 'dayShort');
+  };
+  const dayLabel = (iso: string) =>
+    new Date(iso).toDateString() === new Date().toDateString() ? t('chat.today') : format(iso, 'dayMonthShort');
   const params = useSearchParams();
 
   const [threads, setThreads] = useState(conversations);
@@ -253,11 +247,11 @@ export function ChatView({
       <div className="px-4 py-10">
         <EmptyState
           icon={<MessageSquare />}
-          title="No conversations yet"
-          description="Open someone's profile and start a conversation, or join a circle to get its chat."
+          title={t('chat.emptyTitle')}
+          description={t('chat.emptyBody')}
           action={
             <Button asChild size="sm">
-              <a href="/people">Find people</a>
+              <a href="/people">{t('chat.findPeople')}</a>
             </Button>
           }
         />
@@ -272,7 +266,7 @@ export function ChatView({
       <aside className={cn('border-line flex min-h-0 min-w-0 flex-col lg:border-r', mobileOpen && 'hidden lg:flex')}>
         <div className="px-4 pt-5 pb-3">
           <div className="flex items-center justify-between">
-            <h1 className="font-display text-2xl font-bold tracking-tight">Messages</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight">{t('chat.title')}</h1>
             <span
               className={cn(
                 'flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold',
@@ -280,7 +274,7 @@ export function ChatView({
               )}
             >
               {connected ? <Wifi className="size-3" /> : <WifiOff className="size-3" />}
-              {connected ? 'Live' : 'Offline'}
+              {connected ? t('chat.live') : t('chat.offline')}
             </span>
           </div>
           <label className="border-line bg-surface-raised mt-4 flex h-10 items-center gap-2 rounded-xl border px-3">
@@ -288,7 +282,7 @@ export function ChatView({
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search conversations"
+              placeholder={t('chat.search')}
               className="placeholder:text-ink-subtle h-full w-full bg-transparent text-sm outline-none"
             />
           </label>
@@ -347,7 +341,7 @@ export function ChatView({
                     <p className={cn('truncate text-[13px]', thread.unread > 0 ? 'text-ink' : 'text-ink-muted')}>
                       {thread.lastMessage
                         ? `${thread.kind === 'CIRCLE' ? `${thread.lastMessage.author.split(' ')[0]}: ` : ''}${thread.lastMessage.body}`
-                        : 'Say hello'}
+                        : t('chat.sayHello')}
                     </p>
                     {thread.unread > 0 ? (
                       <span className="bg-accent num grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white">
@@ -368,7 +362,7 @@ export function ChatView({
             type="button"
             onClick={() => setMobileOpen(false)}
             className="text-ink-muted hover:bg-surface-raised -ml-1 grid size-9 place-items-center rounded-full lg:hidden"
-            aria-label="Back to conversations"
+            aria-label={t('chat.back')}
           >
             <ArrowLeft className="size-5" />
           </button>
@@ -392,10 +386,10 @@ export function ChatView({
             <p className="text-ink-muted truncate text-xs">
               {typingNames.length > 0 ? (
                 <span className="text-accent font-medium">
-                  {typingNames.join(', ')} {typingNames.length === 1 ? 'is' : 'are'} typing…
+                  {t(typingNames.length === 1 ? 'chat.typingOne' : 'chat.typingMany', { names: typingNames.join(', ') })}
                 </span>
               ) : active?.kind === 'CIRCLE' ? (
-                `Circle chat · ${active.participants.length + 1} members`
+                t('chat.circleChat', { n: active.participants.length + 1 })
               ) : (
                 active?.participants.map((person) => `@${person.username}`).join(', ')
               )}
@@ -424,8 +418,8 @@ export function ChatView({
                 <div className="bg-accent/12 text-accent mx-auto grid size-14 place-items-center rounded-full">
                   <Hand className="size-6" />
                 </div>
-                <p className="mt-3 font-semibold">Start the conversation</p>
-                <p className="text-ink-muted text-sm">Messages arrive live for everyone here.</p>
+                <p className="mt-3 font-semibold">{t('chat.startTitle')}</p>
+                <p className="text-ink-muted text-sm">{t('chat.startBody')}</p>
               </div>
             </div>
           ) : (
@@ -531,7 +525,7 @@ export function ChatView({
                         <button
                           type="button"
                           onClick={() => void remove(message.id)}
-                          aria-label="Delete message"
+                          aria-label={t('chat.deleteMessage')}
                           className="text-ink-subtle hover:text-danger px-1"
                         >
                           <Trash2 className="size-3.5" />
@@ -564,8 +558,8 @@ export function ChatView({
             <Smile className="text-ink-subtle size-5 shrink-0" />
             <input
               value={draft}
-              placeholder="Message"
-              aria-label="Write a message"
+              placeholder={t('chat.placeholder')}
+              aria-label={t('chat.write')}
               className="placeholder:text-ink-subtle h-12 w-full bg-transparent text-[15px] outline-none"
               onChange={(event) => {
                 setDraft(event.target.value);
@@ -583,7 +577,7 @@ export function ChatView({
             type="button"
             onClick={() => void send()}
             disabled={!draft.trim()}
-            aria-label="Send message"
+            aria-label={t('chat.send')}
             className="bg-accent grid size-12 shrink-0 place-items-center rounded-full text-white shadow-[0_6px_20px_-6px_rgba(59,130,246,.8)] transition hover:brightness-110 disabled:opacity-40 disabled:shadow-none"
           >
             <Send className="size-5" />
