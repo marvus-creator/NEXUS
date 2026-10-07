@@ -4,16 +4,17 @@ import { Badge, Button, Field, Input, cn } from '@nexus/ui';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ScheduleBlockInput } from '@/lib/profile-client';
+import { useT } from '@/i18n/client';
 
 const DAYS = [
-  { index: 1, short: 'Mon' },
-  { index: 2, short: 'Tue' },
-  { index: 3, short: 'Wed' },
-  { index: 4, short: 'Thu' },
-  { index: 5, short: 'Fri' },
-  { index: 6, short: 'Sat' },
-  { index: 0, short: 'Sun' },
-];
+  { index: 1, key: 'd0' },
+  { index: 2, key: 'd1' },
+  { index: 3, key: 'd2' },
+  { index: 4, key: 'd3' },
+  { index: 5, key: 'd4' },
+  { index: 6, key: 'd5' },
+  { index: 0, key: 'd6' },
+] as const;
 
 const KINDS: { value: ScheduleBlockInput['kind']; label: string }[] = [
   { value: 'CLASS', label: 'Classes' },
@@ -42,6 +43,7 @@ export function ScheduleBuilder({
   onChange: (blocks: ScheduleBlockInput[]) => void;
 }) {
   const [label, setLabel] = useState('Classes');
+  const t = useT();
   const [kind, setKind] = useState<ScheduleBlockInput['kind']>('CLASS');
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [start, setStart] = useState('07:30');
@@ -61,17 +63,17 @@ export function ScheduleBuilder({
     setError(null);
 
     if (!label.trim()) {
-      setError('Give this block a name.');
+      setError(t('onboarding.schedule.nameIt'));
       return;
     }
 
     if (days.length === 0) {
-      setError('Pick at least one day.');
+      setError(t('onboarding.schedule.pickDay'));
       return;
     }
 
     if (endMinute <= startMinute) {
-      setError('The end time has to come after the start time.');
+      setError(t('onboarding.schedule.endAfter'));
       return;
     }
 
@@ -101,7 +103,7 @@ export function ScheduleBuilder({
     );
 
     if (merged.length === blocks.length) {
-      setError('That overlaps something already on your week.');
+      setError(t('onboarding.schedule.overlaps'));
       return;
     }
 
@@ -121,11 +123,11 @@ export function ScheduleBuilder({
     <div className="flex flex-col gap-6">
       <div className="border-line bg-surface rounded-lg border p-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="What is it?">
+          <Field label={t('onboarding.schedule.what')}>
             <Input value={label} onChange={(event) => setLabel(event.target.value)} />
           </Field>
 
-          <Field label="Type">
+          <Field label={t('onboarding.schedule.type')}>
             <div className="flex flex-wrap gap-1.5">
               {KINDS.map((option) => (
                 <button
@@ -139,7 +141,7 @@ export function ScheduleBuilder({
                       : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
                   )}
                 >
-                  {option.label}
+                  {t(`onboarding.schedule.kinds.${option.value}`)}
                 </button>
               ))}
             </div>
@@ -147,7 +149,7 @@ export function ScheduleBuilder({
         </div>
 
         <div className="mt-4">
-          <p className="text-ink mb-2 text-sm font-medium">Which days?</p>
+          <p className="text-ink mb-2 text-sm font-medium">{t('onboarding.schedule.whichDays')}</p>
           <div className="flex flex-wrap gap-1.5">
             {DAYS.map((day) => (
               <button
@@ -162,17 +164,17 @@ export function ScheduleBuilder({
                     : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
                 )}
               >
-                {day.short}
+                {t(`onboarding.schedule.days.${day.key}`)}
               </button>
             ))}
           </div>
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Starts">
+          <Field label={t('onboarding.schedule.starts')}>
             <Input type="time" value={start} onChange={(event) => setStart(event.target.value)} />
           </Field>
-          <Field label="Ends">
+          <Field label={t('onboarding.schedule.ends')}>
             <Input type="time" value={end} onChange={(event) => setEnd(event.target.value)} />
           </Field>
         </div>
@@ -180,7 +182,7 @@ export function ScheduleBuilder({
         {error ? <p className="text-danger mt-3 text-xs">{error}</p> : null}
 
         <Button type="button" variant="secondary" onClick={add} className="mt-4 w-full">
-          <Plus /> Add to my week
+          <Plus /> {t('onboarding.schedule.add')}
         </Button>
       </div>
 
@@ -189,7 +191,7 @@ export function ScheduleBuilder({
           {grouped.map((day) => (
             <div key={day.index} className="flex items-start gap-4">
               <span className="text-ink-subtle w-10 shrink-0 pt-2 font-mono text-xs">
-                {day.short}
+                {t(`onboarding.schedule.days.${day.key}`)}
               </span>
               <div className="flex flex-1 flex-col gap-2">
                 {day.entries.map((entry, index) => (
@@ -204,7 +206,7 @@ export function ScheduleBuilder({
                     <button
                       type="button"
                       onClick={() => remove(entry)}
-                      aria-label={`Remove ${entry.label} on ${day.short}`}
+                      aria-label={t('onboarding.schedule.remove', { label: entry.label, day: t(`onboarding.schedule.days.${day.key}`) })}
                       className="text-ink-subtle hover:text-danger transition-colors"
                     >
                       <Trash2 className="size-3.5" />
@@ -220,8 +222,8 @@ export function ScheduleBuilder({
         </div>
       ) : (
         <p className="text-ink-subtle text-sm">
-          Nothing on your week yet. Add your classes or work hours above — Nexus plans around them
-          rather than over them.
+          {t('onboarding.schedule.empty')}
+          
         </p>
       )}
     </div>

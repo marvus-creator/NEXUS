@@ -19,6 +19,8 @@ import { useState } from 'react';
 import type { InterestGroup } from '@/lib/interests';
 import { profileClient, type ScheduleBlockInput } from '@/lib/profile-client';
 import { ScheduleBuilder } from './schedule-builder';
+import { useErrorText, useT } from '@/i18n/client';
+import { interestCategory, interestLabel } from '@/i18n/interests';
 
 const USER_TYPES = [
   { value: 'STUDENT', label: 'Student', icon: GraduationCap, blurb: 'Classes, exams, revision' },
@@ -33,7 +35,7 @@ const USER_TYPES = [
   { value: 'ENTREPRENEUR', label: 'Entrepreneur', icon: Rocket, blurb: 'Building something new' },
   { value: 'ATHLETE', label: 'Athlete', icon: Dumbbell, blurb: 'Training, fixtures, form' },
   { value: 'OTHER', label: 'Something else', icon: User, blurb: 'Tell Nexus in your own words' },
-];
+] as const;
 
 const GOALS = [
   { value: 'CAREER', label: 'Career' },
@@ -44,7 +46,7 @@ const GOALS = [
   { value: 'MONEY', label: 'Money' },
   { value: 'CREATIVE', label: 'Creative projects' },
   { value: 'PERSONAL', label: 'Personal goals' },
-];
+] as const;
 
 const HELP = [
   { value: 'LEARNING', label: 'Learning' },
@@ -56,20 +58,9 @@ const HELP = [
   { value: 'MONEY', label: 'Money' },
   { value: 'COMMUNITIES', label: 'Communities' },
   { value: 'OPPORTUNITIES', label: 'Opportunities' },
-];
+] as const;
 
 const STEP_IMAGES = [IMG.hero, IMG.designNight, IMG.kigaliSunset, IMG.cowork2, IMG.techMeetup];
-
-const STEPS = [
-  { title: 'Who are you?', caption: 'So Nexus knows which world to build.' },
-  { title: 'What are you into?', caption: 'Pick at least three. You can change these any time.' },
-  { title: 'What are you working toward?', caption: 'Goals connect to your tasks and calendar.' },
-  {
-    title: 'What does your week look like?',
-    caption: 'Fixed things stay fixed. Nexus plans around them.',
-  },
-  { title: 'What should Nexus help with?', caption: 'This shapes what your home page leads with.' },
-];
 
 function Chip({
   active,
@@ -168,7 +159,8 @@ export function OnboardingWizard({
     }
   }
 
-  const current = STEPS[step - 1]!;
+  const t = useT();
+  const errorText = useErrorText();
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,0.85fr)]">
@@ -185,7 +177,7 @@ export function OnboardingWizard({
           aria-valuemin={1}
           aria-valuemax={5}
         >
-          {STEPS.map((_, index) => (
+          {[1, 2, 3, 4, 5].map((_, index) => (
             <span
               key={index}
               className={cn(
@@ -197,12 +189,12 @@ export function OnboardingWizard({
         </div>
 
         <div className="flex flex-1 flex-col py-10">
-          <Eyebrow tint="var(--accent)">Build your NEXUS</Eyebrow>
+          <Eyebrow tint="var(--accent)">{t('onboarding.build')}</Eyebrow>
           <h1 className="t-h1 mt-3">
-            {step === 1 ? `Welcome, ${displayName.split(' ')[0]}.` : current.title}
+            {step === 1 ? t('onboarding.welcome', { name: displayName.split(' ')[0] ?? '' }) : t(`onboarding.steps.s${step as 1 | 2 | 3 | 4 | 5}.title`)}
           </h1>
           <p className="text-ink-muted mt-2.5 text-[0.9375rem]">
-            {step === 1 ? current.title : current.caption}
+            {step === 1 ? t('onboarding.steps.s1.title') : t(`onboarding.steps.s${step as 1 | 2 | 3 | 4 | 5}.caption`)}
           </p>
 
           <div className="mt-8 flex-1">
@@ -236,8 +228,8 @@ export function OnboardingWizard({
                           <Icon className="size-4" />
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-sm font-medium">{type.label}</span>
-                          <span className="text-ink-muted mt-0.5 block text-xs">{type.blurb}</span>
+                          <span className="block text-sm font-medium">{t(`onboarding.types.${type.value}`)}</span>
+                          <span className="text-ink-muted mt-0.5 block text-xs">{t(`onboarding.blurbs.${type.value}`)}</span>
                         </span>
                       </button>
                     );
@@ -245,14 +237,14 @@ export function OnboardingWizard({
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="What do you do?" hint="Optional">
+                  <Field label={t('onboarding.whatDo')} hint={t('common.optional')}>
                     <Input
-                      placeholder="Software engineering student"
+                      placeholder={t('onboarding.whatDoPlaceholder')}
                       value={occupation}
                       onChange={(event) => setOccupation(event.target.value)}
                     />
                   </Field>
-                  <Field label="Where are you?" hint="Optional">
+                  <Field label={t('onboarding.where')} hint={t('common.optional')}>
                     <Input
                       placeholder="Kigali"
                       value={city}
@@ -268,7 +260,7 @@ export function OnboardingWizard({
                 {interestGroups.map((group) => (
                   <div key={group.category}>
                     <p className="text-micro text-ink-subtle mb-3 font-semibold uppercase">
-                      {group.category}
+                      {interestCategory(t, group.category)}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {group.interests.map((interest) => (
@@ -277,14 +269,14 @@ export function OnboardingWizard({
                           active={interests.includes(interest.slug)}
                           onClick={() => toggle(interests, interest.slug, setInterests)}
                         >
-                          {interest.label}
+                          {interestLabel(t, interest.slug, interest.label)}
                         </Chip>
                       ))}
                     </div>
                   </div>
                 ))}
                 <p className="text-ink-subtle text-xs">
-                  {interests.length} selected{interests.length < 3 ? ' · pick at least three' : ''}
+                  {t('onboarding.selected', { n: interests.length })}{interests.length < 3 ? t('onboarding.pickThree') : ''}
                 </p>
               </div>
             ) : null}
@@ -297,7 +289,7 @@ export function OnboardingWizard({
                     active={goals.includes(goal.value)}
                     onClick={() => toggle(goals, goal.value, setGoals)}
                   >
-                    {goal.label}
+                    {t(`onboarding.goals.${goal.value}`)}
                   </Chip>
                 ))}
               </div>
@@ -313,7 +305,7 @@ export function OnboardingWizard({
                     active={help.includes(item.value)}
                     onClick={() => toggle(help, item.value, setHelp)}
                   >
-                    {item.label}
+                    {t(`onboarding.help.${item.value}`)}
                   </Chip>
                 ))}
               </div>
@@ -322,14 +314,14 @@ export function OnboardingWizard({
 
           {error ? (
             <div className="border-danger/35 mb-4 rounded-md border bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-3.5 py-3">
-              <p className="text-sm">{error}</p>
+              <p className="text-sm">{errorText(error)}</p>
             </div>
           ) : null}
 
           <div className="flex items-center gap-3">
             {step > 1 ? (
               <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={pending}>
-                <ArrowLeft /> Back
+                <ArrowLeft /> {t('common.back')}
               </Button>
             ) : null}
 
@@ -340,7 +332,7 @@ export function OnboardingWizard({
               size="lg"
               className="ml-auto"
             >
-              {step === 5 ? 'Finish' : 'Continue'}
+              {step === 5 ? t('onboarding.finish') : t('onboarding.continue')}
               {step === 5 ? <Lightbulb /> : <ArrowRight />}
             </Button>
           </div>
@@ -361,7 +353,7 @@ export function OnboardingWizard({
         ))}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.25),rgba(11,13,16,.55)_50%,rgba(11,13,16,.92))]" />
         <div className="relative flex h-full flex-col justify-end p-10">
-          <p className="t-eyebrow text-white/70">Your world, taking shape</p>
+          <p className="t-eyebrow text-white/70">{t('onboarding.shaping')}</p>
           <div className="mt-4 rounded-3xl border border-white/15 bg-black/35 p-6 text-white backdrop-blur-xl">
             <div className="flex items-center gap-3">
               <span className="bg-accent grid size-12 place-items-center rounded-full text-lg font-bold">
@@ -370,21 +362,21 @@ export function OnboardingWizard({
               <div className="min-w-0">
                 <div className="truncate text-lg font-semibold">{displayName}</div>
                 <div className="truncate text-sm text-white/70">
-                  {[occupation || USER_TYPES.find((type) => type.value === userType)?.label, city]
+                  {[occupation || (USER_TYPES.some((type) => type.value === userType) ? t(`onboarding.types.${userType as (typeof USER_TYPES)[number]['value']}`) : ''), city]
                     .filter(Boolean)
-                    .join(' · ') || 'Tell NEXUS about you'}
+                    .join(' · ') || t('onboarding.tellUs')}
                 </div>
               </div>
             </div>
 
             <div className="mt-5">
               <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
-                Interests
+                {t('onboarding.interests')}
               </div>
               <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
                 {interests.length === 0 ? (
                   <span className="text-sm text-white/50">
-                    Pick a few and your Discover feed fills in
+                    {t('onboarding.pickFew')}
                   </span>
                 ) : (
                   interestGroups
@@ -396,7 +388,7 @@ export function OnboardingWizard({
                         key={interest.slug}
                         className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium"
                       >
-                        {interest.label}
+                        {interestLabel(t, interest.slug, interest.label)}
                       </span>
                     ))
                 )}
@@ -405,18 +397,18 @@ export function OnboardingWizard({
 
             <div className="mt-4">
               <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
-                Goals
+                {t('onboarding.goalsTitle')}
               </div>
               <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
                 {goals.length === 0 ? (
-                  <span className="text-sm text-white/50">What you want this year</span>
+                  <span className="text-sm text-white/50">{t('onboarding.thisYear')}</span>
                 ) : (
                   GOALS.filter((goal) => goals.includes(goal.value)).map((goal) => (
                     <span
                       key={goal.value}
                       className="bg-accent/80 rounded-full px-2.5 py-1 text-xs font-medium"
                     >
-                      {goal.label}
+                      {t(`onboarding.goals.${goal.value}`)}
                     </span>
                   ))
                 )}
@@ -425,9 +417,9 @@ export function OnboardingWizard({
 
             <div className="mt-5 grid grid-cols-3 gap-2 text-center">
               {[
-                [interests.length, 'interests'],
-                [goals.length, 'goals'],
-                [blocks.length, 'fixed blocks'],
+                [interests.length, t('onboarding.countInterests')],
+                [goals.length, t('onboarding.countGoals')],
+                [blocks.length, t('onboarding.countBlocks')],
               ].map(([value, label]) => (
                 <div key={label as string} className="rounded-2xl bg-white/10 px-2 py-3">
                   <div className="num text-xl font-bold">{value}</div>

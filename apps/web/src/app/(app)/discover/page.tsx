@@ -1,4 +1,5 @@
 import { PageHero } from '@/components/app/page-hero';
+import { interestCategory, interestLabel } from '@/i18n/interests';
 import { IMG } from '@/lib/photos';
 import { redirect } from 'next/navigation';
 import { DiscoverBoard } from '@/components/discover/discover-board';
@@ -24,7 +25,7 @@ export default async function DiscoverPage() {
     getForYou(),
   ]);
 
-  const labels = user.profile?.interests.map((interest) => interest.label) ?? [];
+  const labels = user.profile?.interests.map((interest) => interestLabel(t, interest.slug, interest.label)) ?? [];
   const city = user.profile?.city;
   const total = places.length + events.length + circles.length + people.length;
 

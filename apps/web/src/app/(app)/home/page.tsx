@@ -1,4 +1,5 @@
 import { Badge, Button, Card, Progress, Ring, cn } from '@nexus/ui';
+import { interestCategory, interestLabel } from '@/i18n/interests';
 import {
   AlertTriangle,
   ArrowRight,
@@ -143,7 +144,7 @@ export default async function HomePage() {
   const nextTasks = [...overdue.slice(0, 2), ...dueSoon].slice(0, 5);
 
   const bestGap = [...(today?.gaps ?? [])].sort((a, b) => b.minutes - a.minutes)[0];
-  const interestLabels = profile?.interests.map((interest) => interest.label) ?? [];
+  const interestLabels = profile?.interests.map((interest) => interestLabel(t, interest.slug, interest.label)) ?? [];
 
   const myEvents = events.filter((event) => event.myStatus === 'GOING' || event.isHost);
   const nextEvent = myEvents[0] ?? events[0] ?? null;

@@ -1,7 +1,8 @@
 import { apiErrors, auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
-import { privacy, profile, security } from './account';
+import { interests, onboarding } from './onboarding';
+import { privacy, profile, publicProfile, security } from './account';
 import { learn } from './learn';
 import { calendar, plan } from './calendar';
 import { goals, tasks } from './planner';
@@ -52,6 +53,9 @@ export const messages = {
   profile,
   privacy,
   security,
+  publicProfile,
+  onboarding,
+  interests,
 } as const;
 
 export { apiErrors };

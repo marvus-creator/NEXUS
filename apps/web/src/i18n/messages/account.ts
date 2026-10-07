@@ -1,3 +1,13 @@
+export const publicProfile = {
+  privateTitle: ['This profile is private', 'Uyu mwirondoro ni ibanga', 'Ce profil est privé'],
+  privateBody: ['@{username} has chosen not to share their profile publicly.', '@{username} yahisemo kudasangiza umwirondoro we ku mugaragaro.', '@{username} a choisi de ne pas partager son profil publiquement.'],
+  back: ['Back to Nexus', 'Subira kuri Nexus', 'Retour à Nexus'],
+  edit: ['Edit your profile', 'Hindura umwirondoro wawe', 'Modifier votre profil'],
+  noBio: ['This person has not written a bio yet.', 'Uyu muntu ntarandika umwirondoro mugufi.', 'Cette personne n’a pas encore écrit de bio.'],
+  posts: ['Posts', 'Inyandiko', 'Publications'],
+  noPosts: ['Nothing here you can see. Posts respect their visibility setting.', 'Nta kintu ushobora kubona hano. Inyandiko zubahiriza uko zashyizweho.', 'Rien de visible ici. Les publications respectent leur visibilité.'],
+} as const;
+
 export const profile = {
   changePhoto: ['Change profile photo', 'Hindura ifoto y’umwirondoro', 'Changer la photo de profil'],
   verified: ['Verified', 'Byemejwe', 'Vérifié'],

@@ -1,4 +1,5 @@
 import { Avatar, Badge, Button, Card, Logo } from '@nexus/ui';
+import { interestCategory, interestLabel } from '@/i18n/interests';
 import { IMG } from '@/lib/photos';
 import { MapPin } from 'lucide-react';
 import { cookies } from 'next/headers';
@@ -11,6 +12,7 @@ import { getBadgesFor } from '@/lib/learning-server';
 import { API_BASE } from '@/lib/api';
 import { getSession } from '@/lib/session';
 import { getPostsBy, getRelationship } from '@/lib/social-server';
+import { getT } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +39,7 @@ export default async function PublicProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
+  const t = await getT();
   const store = await cookies();
 
   const response = await fetch(`${API_BASE}/profiles/${username.toLowerCase()}`, {
@@ -50,12 +53,12 @@ export default async function PublicProfilePage({
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
         <Logo className="mb-8" />
-        <h1 className="text-2xl font-semibold tracking-tight">This profile is private</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('publicProfile.privateTitle')}</h1>
         <p className="text-ink-muted mt-2.5 max-w-sm text-sm leading-relaxed">
-          @{username} has chosen not to share their profile publicly.
+          {t('publicProfile.privateBody', { username })}
         </p>
         <Button asChild variant="secondary" className="mt-7">
-          <Link href="/">Back to Nexus</Link>
+          <Link href="/">{t('publicProfile.back')}</Link>
         </Button>
       </div>
     );
@@ -74,7 +77,7 @@ export default async function PublicProfilePage({
   return (
     <div className="min-h-dvh">
       <header className="border-line bg-ground/80 sticky top-0 z-30 border-b px-5 py-3.5 backdrop-blur-xl sm:px-8">
-        <Link href="/" aria-label="Nexus home">
+        <Link href="/" aria-label={t('nav.home')}>
           <Logo />
         </Link>
       </header>
@@ -99,7 +102,7 @@ export default async function PublicProfilePage({
               </h1>
               {profile.verified ? (
                 <Badge variant="success" size="sm">
-                  Verified
+                  {t('common.verified')}
                 </Badge>
               ) : null}
             </div>
@@ -110,7 +113,7 @@ export default async function PublicProfilePage({
           </div>
           {profile.isOwner ? (
             <Button asChild variant="secondary" className="shrink-0">
-              <Link href="/profile">Edit your profile</Link>
+              <Link href="/profile">{t('publicProfile.edit')}</Link>
             </Button>
           ) : relationship && !relationship.isSelf ? (
             <div className="shrink-0">
@@ -121,9 +124,9 @@ export default async function PublicProfilePage({
 
         <div className="mt-10 flex flex-col gap-6">
           <Card className="p-6">
-            <h2 className="text-[0.9375rem] font-semibold">About</h2>
+            <h2 className="text-[0.9375rem] font-semibold">{t('profile.about')}</h2>
             <p className="text-ink-muted mt-3 text-sm leading-relaxed">
-              {profile.bio || 'This person has not written a bio yet.'}
+              {profile.bio || t('publicProfile.noBio')}
             </p>
             {profile.city ? (
               <p className="text-ink-muted mt-4 inline-flex items-center gap-2 text-sm">
@@ -137,11 +140,11 @@ export default async function PublicProfilePage({
 
           {profile.interests.length > 0 ? (
             <Card className="p-6">
-              <h2 className="text-[0.9375rem] font-semibold">Interests</h2>
+              <h2 className="text-[0.9375rem] font-semibold">{t('profile.interests')}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {profile.interests.map((interest) => (
                   <Badge key={interest.slug} variant="accent" size="sm">
-                    {interest.label}
+                    {interestLabel(t, interest.slug, interest.label)}
                   </Badge>
                 ))}
               </div>
@@ -150,7 +153,7 @@ export default async function PublicProfilePage({
 
           {profile.skills.length > 0 ? (
             <Card className="p-6">
-              <h2 className="text-[0.9375rem] font-semibold">Skills</h2>
+              <h2 className="text-[0.9375rem] font-semibold">{t('profile.skills')}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {profile.skills.map((skill) => (
                   <Badge key={skill} size="sm">
@@ -163,11 +166,11 @@ export default async function PublicProfilePage({
 
           {viewer ? (
             <section>
-              <h2 className="mb-4 text-lg font-semibold tracking-tight">Posts</h2>
+              <h2 className="mb-4 text-lg font-semibold tracking-tight">{t('publicProfile.posts')}</h2>
               {posts.length === 0 ? (
                 <Card className="p-6">
                   <p className="text-ink-muted text-sm">
-                    Nothing here you can see. Posts respect their visibility setting.
+                    {t('publicProfile.noPosts')}
                   </p>
                 </Card>
               ) : (

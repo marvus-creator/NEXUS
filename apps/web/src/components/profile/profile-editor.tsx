@@ -11,6 +11,7 @@ import {
   cn,
 } from '@nexus/ui';
 import { Camera, Check, Loader2, Pencil, X } from 'lucide-react';
+import { interestCategory, interestLabel } from '@/i18n/interests';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import type { InterestGroup } from '@/lib/interests';
@@ -267,7 +268,7 @@ export function ProfileEditor({
                 {interestGroups.map((group) => (
                   <div key={group.category}>
                     <p className="text-micro text-ink-subtle mb-2.5 font-semibold uppercase">
-                      {group.category}
+                      {interestCategory(t, group.category)}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {group.interests.map((interest) => (
@@ -282,7 +283,7 @@ export function ProfileEditor({
                               : 'border-line text-ink-muted hover:border-line-strong hover:text-ink',
                           )}
                         >
-                          {interest.label}
+                          {interestLabel(t, interest.slug, interest.label)}
                         </button>
                       ))}
                     </div>
@@ -293,7 +294,7 @@ export function ProfileEditor({
               <div className="mt-4 flex flex-wrap gap-2">
                 {profile.interests.map((interest) => (
                   <Badge key={interest.slug} variant="accent" size="sm">
-                    {interest.label}
+                    {interestLabel(t, interest.slug, interest.label)}
                   </Badge>
                 ))}
               </div>
