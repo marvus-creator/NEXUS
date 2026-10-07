@@ -1,14 +1,15 @@
 import { Card, cn } from '@nexus/ui';
 import Link from 'next/link';
 import { getFullAudit } from '@/lib/control-server';
+import { getI18n } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
 const FILTERS = [
-  { value: '', label: 'Everything' },
-  { value: 'auth.', label: 'Sign-ins & accounts' },
-  { value: 'admin.', label: 'Admin actions' },
-  { value: 'moderation.', label: 'Moderation' },
+  { value: '', key: 'all' as const },
+  { value: 'auth.', key: 'auth' as const },
+  { value: 'admin.', key: 'admin' as const },
+  { value: 'moderation.', key: 'moderation' as const },
 ];
 
 function tone(action: string) {
@@ -20,6 +21,7 @@ function tone(action: string) {
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<{ action?: string }> }) {
   const { action = '' } = await searchParams;
+  const { t, date: format } = await getI18n();
   const entries = await getFullAudit(action || undefined);
 
   return (
@@ -34,7 +36,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
               action === filter.value ? 'bg-ink text-ground border-transparent' : 'border-line bg-surface text-ink hover:border-line-strong',
             )}
           >
-            {filter.label}
+            {t(`admin.audit.filters.${filter.key}`)}
           </Link>
         ))}
       </div>
@@ -44,18 +46,18 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
           <table className="w-full text-left text-sm">
             <thead className="text-ink-muted border-line border-b text-xs">
               <tr>
-                <th className="px-4 py-3 font-medium">When</th>
-                <th className="px-4 py-3 font-medium">What</th>
-                <th className="px-4 py-3 font-medium">Who</th>
-                <th className="px-4 py-3 font-medium">On</th>
-                <th className="px-4 py-3 font-medium">IP</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.when')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.what')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.who')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.on')}</th>
+                <th className="px-4 py-3 font-medium">{t('admin.audit.ip')}</th>
               </tr>
             </thead>
             <tbody className="divide-line divide-y">
               {entries.map((entry) => (
                 <tr key={entry.id} className="hover:bg-surface-raised/60">
                   <td className="num text-ink-muted px-4 py-2.5 text-xs whitespace-nowrap">
-                    {new Date(entry.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {`${format(entry.createdAt, 'dayShort')} ${format(entry.createdAt, 'time')}`}
                   </td>
                   <td className="px-4 py-2.5">
                     <span className="inline-flex items-center gap-2 font-mono text-[12.5px]">
@@ -69,7 +71,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
                         {entry.actor.profile?.displayName ?? entry.actor.email}
                       </Link>
                     ) : (
-                      <span className="text-ink-subtle">system</span>
+                      <span className="text-ink-subtle">{t('admin.overview.system')}</span>
                     )}
                   </td>
                   <td className="text-ink-muted px-4 py-2.5 text-xs whitespace-nowrap">

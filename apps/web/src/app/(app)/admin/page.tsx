@@ -5,20 +5,23 @@ import { AnalyticsPanel } from '@/components/admin/analytics-panel';
 import { getAnalytics, getReportQueue } from '@/lib/admin-server';
 import { getDirectory, getFullAudit, getPlatformSettings } from '@/lib/control-server';
 import { getSession } from '@/lib/session';
+import { getI18n } from '@/i18n/server';
+import type { Translate } from '@/i18n/types';
 
 export const dynamic = 'force-dynamic';
 
-function ago(iso: string) {
+function ago(iso: string, t: Translate) {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t('time.justNow');
+  if (minutes < 60) return t('notifications.ago.minutes', { n: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
+  if (hours < 24) return t('notifications.ago.hours', { n: hours });
+  return t('notifications.ago.days', { n: Math.round(hours / 24) });
 }
 
 export default async function ControlOverview() {
   const user = await getSession();
+  const { t } = await getI18n();
   const isAdmin = user?.role === 'ADMIN';
 
   const [directory, queue, audit, settings, analytics] = await Promise.all([
@@ -30,11 +33,11 @@ export default async function ControlOverview() {
   ]);
 
   const tiles = [
-    { label: 'People on NEXUS', value: directory.total, icon: Users, tint: 'var(--accent)', href: '/admin/people' },
-    { label: 'Active', value: directory.byStatus.ACTIVE ?? 0, icon: UserCheck, tint: 'var(--module-nearby)', href: '/admin/people?status=ACTIVE' },
-    { label: 'Waiting to verify', value: directory.byStatus.PENDING ?? 0, icon: MailCheck, tint: 'var(--module-events)', href: '/admin/people?status=PENDING' },
-    { label: 'Suspended', value: directory.byStatus.SUSPENDED ?? 0, icon: Ban, tint: 'var(--danger)', href: '/admin/people?status=SUSPENDED' },
-    { label: 'Open reports', value: queue.reports.length, icon: Flag, tint: 'var(--module-people)', href: '/admin/reports' },
+    { label: t('admin.overview.total'), value: directory.total, icon: Users, tint: 'var(--accent)', href: '/admin/people' },
+    { label: t('admin.overview.active'), value: directory.byStatus.ACTIVE ?? 0, icon: UserCheck, tint: 'var(--module-nearby)', href: '/admin/people?status=ACTIVE' },
+    { label: t('admin.overview.waiting'), value: directory.byStatus.PENDING ?? 0, icon: MailCheck, tint: 'var(--module-events)', href: '/admin/people?status=PENDING' },
+    { label: t('admin.overview.suspended'), value: directory.byStatus.SUSPENDED ?? 0, icon: Ban, tint: 'var(--danger)', href: '/admin/people?status=SUSPENDED' },
+    { label: t('admin.overview.reports'), value: queue.reports.length, icon: Flag, tint: 'var(--module-people)', href: '/admin/reports' },
   ];
 
   return (
@@ -62,13 +65,13 @@ export default async function ControlOverview() {
         <Card className="flex flex-wrap items-center gap-3 p-4" tint="#F5A524">
           <Megaphone className="text-module-events size-5" />
           <div className="min-w-0 flex-1 text-sm">
-            {!settings.registrationOpen ? <p className="font-semibold">New sign-ups are paused.</p> : null}
+            {!settings.registrationOpen ? <p className="font-semibold">{t('admin.overview.paused')}</p> : null}
             {settings.announcement?.active ? (
-              <p className="text-ink-muted">Banner live: “{settings.announcement.message}”</p>
+              <p className="text-ink-muted">{t('admin.overview.bannerLive', { message: settings.announcement.message })}</p>
             ) : null}
           </div>
           <Link href="/admin/platform" className="text-accent text-sm font-medium hover:underline">
-            Platform settings
+            {t('admin.overview.settings')}
           </Link>
         </Card>
       ) : null}
@@ -76,9 +79,9 @@ export default async function ControlOverview() {
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Card className="p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Newest people</h2>
+            <h2 className="text-lg font-semibold">{t('admin.overview.newest')}</h2>
             <Link href="/admin/people" className="text-accent flex items-center gap-1 text-[13px] font-medium hover:underline">
-              Everyone <ArrowRight className="size-3.5" />
+              {t('admin.overview.everyone')} <ArrowRight className="size-3.5" />
             </Link>
           </div>
           <div className="divide-line divide-y">
@@ -102,7 +105,7 @@ export default async function ControlOverview() {
                     {person.profile?.city ? ` · ${person.profile.city}` : ''}
                   </div>
                 </div>
-                <span className="text-ink-subtle num shrink-0 text-xs">{ago(person.createdAt)}</span>
+                <span className="text-ink-subtle num shrink-0 text-xs">{ago(person.createdAt, t)}</span>
               </Link>
             ))}
           </div>
@@ -110,9 +113,9 @@ export default async function ControlOverview() {
 
         <Card className="p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Latest activity</h2>
+            <h2 className="text-lg font-semibold">{t('admin.overview.latest')}</h2>
             <Link href="/admin/audit" className="text-accent flex items-center gap-1 text-[13px] font-medium hover:underline">
-              Audit log <ArrowRight className="size-3.5" />
+              {t('admin.overview.audit')} <ArrowRight className="size-3.5" />
             </Link>
           </div>
           <div className="space-y-2.5">
@@ -123,10 +126,10 @@ export default async function ControlOverview() {
                   <span className="font-medium">{entry.action}</span>
                   <span className="text-ink-muted">
                     {' '}
-                    · {entry.actor?.profile?.displayName ?? entry.actor?.email ?? 'system'}
+                    · {entry.actor?.profile?.displayName ?? entry.actor?.email ?? t('admin.overview.system')}
                   </span>
                 </div>
-                <span className="text-ink-subtle num shrink-0 text-xs">{ago(entry.createdAt)}</span>
+                <span className="text-ink-subtle num shrink-0 text-xs">{ago(entry.createdAt, t)}</span>
               </div>
             ))}
           </div>

@@ -17,9 +17,9 @@ const TYPES: { value: ContentType; icon: typeof Layers; href?: (row: ContentRow)
 ];
 
 const STATES = [
-  { value: 'live', },
-  { value: 'removed', },
-  { value: 'all', },
+  { value: 'live' },
+  { value: 'removed' },
+  { value: 'all' },
 ] as const;
 
 export function ContentManager() {

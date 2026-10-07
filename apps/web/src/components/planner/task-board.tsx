@@ -20,10 +20,10 @@ const PRIORITIES: Task['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 const RECURRENCES: Task['recurrence'][] = ['NONE', 'DAILY', 'WEEKDAYS', 'WEEKLY', 'MONTHLY'];
 
 const FILTERS = [
-  { value: 'open', },
-  { value: 'today', },
-  { value: 'overdue', },
-  { value: 'done', },
+  { value: 'open' },
+  { value: 'today' },
+  { value: 'overdue' },
+  { value: 'done' },
 ] as const;
 
 function dueLabel(

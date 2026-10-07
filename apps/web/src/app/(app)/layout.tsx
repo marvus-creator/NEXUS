@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/app/sidebar';
 import { TopBar } from '@/components/app/top-bar';
 import { getNotifications } from '@/lib/planner-server';
 import { getSession } from '@/lib/session';
+import { LocaleSync } from '@/components/app/locale-sync';
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await getSession();
@@ -34,6 +35,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         <MobileNav />
+        <LocaleSync profileLocale={user.profile?.locale} />
       </div>
     </TooltipProvider>
   );

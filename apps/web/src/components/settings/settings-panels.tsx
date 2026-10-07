@@ -20,15 +20,15 @@ export type ActiveSession = {
 };
 
 const VISIBILITY = [
-  { value: 'PUBLIC', },
-  { value: 'FRIENDS', },
-  { value: 'PRIVATE', },
+  { value: 'PUBLIC' },
+  { value: 'FRIENDS' },
+  { value: 'PRIVATE' },
 ] as const;
 
 const MESSAGING = [
-  { value: 'EVERYONE', },
-  { value: 'FRIENDS', },
-  { value: 'NOBODY', },
+  { value: 'EVERYONE' },
+  { value: 'FRIENDS' },
+  { value: 'NOBODY' },
 ] as const;
 
 function browserFrom(agent: string | null) {

@@ -36,8 +36,8 @@ export default async function AiPage() {
         ) : (
           <EmptyState
             icon={<Sparkles className="size-6" />}
-            title="Planning is unavailable right now"
-            description="We could not reach the planner. Reload in a moment."
+            title={t('pages.unavailable.planTitle')}
+            description={t('pages.unavailable.planBody')}
           />
         )}
       </div>

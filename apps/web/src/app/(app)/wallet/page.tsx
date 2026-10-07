@@ -36,8 +36,8 @@ export default async function WalletPage() {
         ) : (
           <EmptyState
             icon={<Wallet className="size-6" />}
-            title="Wallet unavailable"
-            description="We could not reach your wallet. Reload in a moment."
+            title={t('pages.unavailable.walletTitle')}
+            description={t('pages.unavailable.walletBody')}
           />
         )}
       </div>

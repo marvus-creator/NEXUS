@@ -1,4 +1,10 @@
 export const pages = {
+  unavailable: {
+    planTitle: ['Planning is unavailable right now', 'Gutegura ntibishoboka ubu', 'La planification est indisponible pour le moment'],
+    planBody: ['We could not reach the planner. Reload in a moment.', 'Ntitwabashije kugera ku mutegura. Ongera ufungure mu kanya.', 'Impossible de joindre le planificateur. Rechargez dans un instant.'],
+    walletTitle: ['Wallet unavailable', 'Ikofi ntiboneka', 'Portefeuille indisponible'],
+    walletBody: ['We could not reach your wallet. Reload in a moment.', 'Ntitwabashije kugera ku ikofi yawe. Ongera ufungure mu kanya.', 'Impossible de joindre votre portefeuille. Rechargez dans un instant.'],
+  },
   ai: {
     eyebrow: ['Nexus AI', 'Nexus AI', 'Nexus IA'],
     title: ['Plan my day', 'Tegura umunsi wanjye', 'Planifier ma journée'],

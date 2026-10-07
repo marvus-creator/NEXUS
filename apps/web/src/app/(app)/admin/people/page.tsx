@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { API_BASE } from '@/lib/api';
 import { getDirectory } from '@/lib/control-server';
 import { getSession } from '@/lib/session';
+import { getI18n } from '@/i18n/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,11 +17,6 @@ const STATUS_VARIANT = {
 
 const ROLE_VARIANT = { ADMIN: 'ai', MODERATOR: 'accent', BUSINESS: 'events', USER: 'neutral' } as const;
 
-function date(iso: string | null) {
-  if (!iso) return 'Never';
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
 const select =
   'border-line bg-surface text-ink h-10 rounded-xl border px-3 text-sm outline-none focus:border-[var(--accent)]';
 
@@ -31,6 +27,8 @@ export default async function PeoplePage({
 }) {
   const params = await searchParams;
   const viewer = await getSession();
+  const { t, date: format } = await getI18n();
+  const date = (iso: string | null) => (iso ? `${format(iso, 'dayMonth')} ${new Date(iso).getFullYear()}` : t('admin.directory.never'));
   const directory = await getDirectory({
     q: params.q ?? '',
     role: params.role ?? '',
@@ -48,51 +46,51 @@ export default async function PeoplePage({
           <input
             name="q"
             defaultValue={params.q}
-            placeholder="Search name, username, email, job or bio"
+            placeholder={t('admin.directory.search')}
             className="placeholder:text-ink-subtle h-full w-full bg-transparent text-sm outline-none"
           />
         </label>
-        <select name="role" defaultValue={params.role ?? ''} className={select} aria-label="Role">
-          <option value="">Any role</option>
-          <option value="USER">Users</option>
-          <option value="BUSINESS">Business</option>
-          <option value="MODERATOR">Moderators</option>
-          <option value="ADMIN">Admins</option>
+        <select name="role" defaultValue={params.role ?? ''} className={select} aria-label={t('admin.directory.role')}>
+          <option value="">{t('admin.directory.anyRole')}</option>
+          <option value="USER">{t('admin.directory.users')}</option>
+          <option value="BUSINESS">{t('admin.directory.business')}</option>
+          <option value="MODERATOR">{t('admin.directory.moderators')}</option>
+          <option value="ADMIN">{t('admin.directory.admins')}</option>
         </select>
-        <select name="status" defaultValue={params.status ?? ''} className={select} aria-label="Status">
-          <option value="">Any status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="PENDING">Not verified</option>
-          <option value="SUSPENDED">Suspended</option>
-          <option value="DELETED">Deleted</option>
+        <select name="status" defaultValue={params.status ?? ''} className={select} aria-label={t('admin.directory.status')}>
+          <option value="">{t('admin.directory.anyStatus')}</option>
+          <option value="ACTIVE">{t('admin.directory.active')}</option>
+          <option value="PENDING">{t('admin.directory.notVerified')}</option>
+          <option value="SUSPENDED">{t('admin.directory.suspended')}</option>
+          <option value="DELETED">{t('admin.directory.deleted')}</option>
         </select>
-        <select name="sort" defaultValue={params.sort ?? 'newest'} className={select} aria-label="Sort">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="active">Recently active</option>
-          <option value="name">Name A–Z</option>
+        <select name="sort" defaultValue={params.sort ?? 'newest'} className={select} aria-label={t('admin.directory.sort')}>
+          <option value="newest">{t('admin.directory.newest')}</option>
+          <option value="oldest">{t('admin.directory.oldest')}</option>
+          <option value="active">{t('admin.directory.recent')}</option>
+          <option value="name">{t('admin.directory.name')}</option>
         </select>
         <input
           name="city"
           defaultValue={params.city}
-          placeholder="City"
+          placeholder={t('admin.directory.city')}
           className={`${select} w-28`}
         />
-        <button className="bg-accent h-10 rounded-xl px-4 text-sm font-semibold text-white">Apply</button>
+        <button className="bg-accent h-10 rounded-xl px-4 text-sm font-semibold text-white">{t('admin.directory.apply')}</button>
         {viewer?.role === 'ADMIN' ? (
           <a
             href={`${API_BASE}/admin/control/people.csv`}
             className="border-line bg-surface hover:border-line-strong flex h-10 items-center gap-2 rounded-xl border px-3.5 text-sm font-medium"
           >
-            <Download className="size-4" /> Export CSV
+            <Download className="size-4" /> {t('admin.directory.export')}
           </a>
         ) : null}
       </form>
 
       <p className="text-ink-muted mt-4 text-sm">
         <span className="num text-ink font-semibold">{directory.total}</span>{' '}
-        {directory.total === 1 ? 'person' : 'people'}
-        {directory.users.length < directory.total ? `, showing the first ${directory.users.length}` : ''}
+        {directory.total === 1 ? t('admin.directory.person') : t('admin.directory.people')}
+        {directory.users.length < directory.total ? t('admin.directory.showing', { n: directory.users.length }) : ''}
       </p>
 
       <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -112,27 +110,27 @@ export default async function PeoplePage({
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-semibold">{profile?.displayName ?? 'No profile'}</div>
+                    <div className="truncate font-semibold">{profile?.displayName ?? t('admin.directory.noProfile')}</div>
                     <div className="text-ink-muted truncate text-xs">
                       {profile ? `@${profile.username} · ` : ''}
                       {person.email}
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <Badge size="sm" variant={ROLE_VARIANT[person.role]}>
-                        {person.role.toLowerCase()}
+                        {t(`admin.roles.${person.role}`)}
                       </Badge>
                       <Badge
                         size="sm"
                         variant={status === 'DELETED' ? 'neutral' : STATUS_VARIANT[person.status]}
                       >
-                        {status === 'PENDING' ? 'not verified' : status.toLowerCase()}
+                        {t(`admin.directory.statusNames.${status}`)}
                       </Badge>
                     </div>
                   </div>
                 </div>
 
                 <p className="text-ink-muted mt-3 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed">
-                  {profile?.bio ?? profile?.occupation ?? 'No description yet.'}
+                  {profile?.bio ?? profile?.occupation ?? t('admin.directory.noDescription')}
                 </p>
 
                 {profile && profile.interests.length > 0 ? (
@@ -147,10 +145,10 @@ export default async function PeoplePage({
 
                 <div className="border-line text-ink-subtle mt-3 grid grid-cols-4 gap-2 border-t pt-3 text-center text-[11px]">
                   {[
-                    ['posts', profile?._count.posts ?? 0],
-                    ['circles', profile?._count.circleMemberships ?? 0],
-                    ['events', profile?._count.eventsHosted ?? 0],
-                    ['listings', profile?._count.listings ?? 0],
+                    [t('admin.directory.counts.posts'), profile?._count.posts ?? 0],
+                    [t('admin.directory.counts.circles'), profile?._count.circleMemberships ?? 0],
+                    [t('admin.directory.counts.events'), profile?._count.eventsHosted ?? 0],
+                    [t('admin.directory.counts.listings'), profile?._count.listings ?? 0],
                   ].map(([label, value]) => (
                     <div key={label as string}>
                       <div className="num text-ink text-sm font-semibold">{value}</div>
@@ -160,8 +158,8 @@ export default async function PeoplePage({
                 </div>
 
                 <div className="text-ink-subtle mt-3 flex justify-between text-[11px]">
-                  <span>Joined {date(person.createdAt)}</span>
-                  <span>Last seen {date(person.lastLoginAt)}</span>
+                  <span>{t('admin.directory.joined', { date: date(person.createdAt) })}</span>
+                  <span>{t('admin.directory.lastSeen', { date: date(person.lastLoginAt) })}</span>
                 </div>
               </Card>
             </Link>

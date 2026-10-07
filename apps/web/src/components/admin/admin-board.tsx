@@ -24,6 +24,8 @@ import {
   type ModerationReport,
   type ReportQueue,
 } from '@/lib/admin-client';
+import { useT } from '@/i18n/client';
+import type { Translate } from '@/i18n/types';
 
 const TARGET_ICON = {
   PROFILE: UserIcon,
@@ -31,18 +33,19 @@ const TARGET_ICON = {
   COMMENT: MessageSquare,
 } as const;
 
-function when(iso: string) {
+function when(iso: string, t: Translate) {
   const diff = Date.now() - new Date(iso).getTime();
   const hours = Math.floor(diff / 3_600_000);
 
-  if (hours < 1) return `${Math.max(1, Math.floor(diff / 60_000))}m ago`;
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 1) return t('notifications.ago.minutes', { n: Math.max(1, Math.floor(diff / 60_000)) });
+  if (hours < 24) return t('notifications.ago.hours', { n: hours });
 
-  return `${Math.floor(hours / 24)}d ago`;
+  return t('notifications.ago.days', { n: Math.floor(hours / 24) });
 }
 
 function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id: string) => void }) {
   const router = useRouter();
+  const t = useT();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +63,7 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id:
       onDone(report.id);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'That did not work.');
+      setError(cause instanceof Error ? cause.message : t('admin.moderation.failed'));
     } finally {
       setBusy(false);
     }
@@ -79,20 +82,20 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id:
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[0.9375rem] font-semibold">{report.reason}</span>
-            <Badge>{report.target.type.toLowerCase()}</Badge>
-            {report.target.removed ? <Badge>already removed</Badge> : null}
+            <Badge>{t(`admin.moderation.target.${report.target.type}`)}</Badge>
+            {report.target.removed ? <Badge>{t('admin.moderation.alreadyRemoved')}</Badge> : null}
           </div>
 
           <p className="text-ink-subtle mt-1 text-xs">
-            reported by{' '}
+            {t('admin.moderation.reportedBy')}{' '}
             <Link href={`/u/${report.reporter.username}`} className="hover:text-ink transition-colors">
               {report.reporter.displayName}
             </Link>{' '}
-            · {when(report.createdAt)}
+            · {when(report.createdAt, t)}
             {author ? (
               <>
                 {' '}
-                · about{' '}
+                · {t('admin.moderation.about')}{' '}
                 <Link href={`/u/${author.username}`} className="hover:text-ink transition-colors">
                   @{author.username}
                 </Link>
@@ -110,14 +113,14 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id:
             </blockquote>
           ) : (
             <p className="text-ink-subtle mt-2.5 text-[0.8125rem] italic">
-              The reported content no longer exists.
+              {t('admin.moderation.gone')}
             </p>
           )}
 
           <Input
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Note for the record (optional)"
+            placeholder={t('admin.moderation.note')}
             className="mt-3 h-9 text-[0.8125rem]"
           />
 
@@ -125,22 +128,22 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id:
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => void act('DISMISS')} disabled={busy}>
-              <Check className="size-4" /> Dismiss
+              <Check className="size-4" /> {t('admin.moderation.dismiss')}
             </Button>
 
             {report.target.exists && report.target.type !== 'PROFILE' && !report.target.removed ? (
               <Button variant="ghost" size="sm" onClick={() => void act('REMOVE_CONTENT')} disabled={busy}>
-                <Trash2 className="size-4" /> Remove
+                <Trash2 className="size-4" /> {t('admin.moderation.remove')}
               </Button>
             ) : null}
 
             {report.target.exists && author ? (
               <>
                 <Button variant="ghost" size="sm" onClick={() => void act('WARN')} disabled={busy}>
-                  <AlertTriangle className="size-4" /> Warn
+                  <AlertTriangle className="size-4" /> {t('admin.moderation.warn')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => void act('SUSPEND')} disabled={busy}>
-                  <Ban className="size-4" /> Suspend 7 days
+                  <Ban className="size-4" /> {t('admin.moderation.suspend7')}
                 </Button>
               </>
             ) : null}
@@ -153,6 +156,7 @@ function ReportCard({ report, onDone }: { report: ModerationReport; onDone: (id:
 
 function UserRow({ user, canModerate }: { user: AdminUser; canModerate: boolean }) {
   const router = useRouter();
+  const t = useT();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -168,7 +172,7 @@ function UserRow({ user, canModerate }: { user: AdminUser; canModerate: boolean 
       setStatus(result.status as AdminUser['status']);
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'That did not work.');
+      setError(cause instanceof Error ? cause.message : t('admin.moderation.failed'));
     } finally {
       setBusy(false);
     }
@@ -184,16 +188,16 @@ function UserRow({ user, canModerate }: { user: AdminUser; canModerate: boolean 
           {user.profile ? (
             <span className="text-ink-subtle truncate text-xs">@{user.profile.username}</span>
           ) : null}
-          {user.role !== 'USER' ? <Badge>{user.role.toLowerCase()}</Badge> : null}
+          {user.role !== 'USER' ? <Badge>{t(`admin.roles.${user.role}`)}</Badge> : null}
           {status === 'SUSPENDED' ? (
-            <Badge style={{ color: 'var(--danger)' }}>suspended</Badge>
+            <Badge style={{ color: 'var(--danger)' }}>{t('admin.moderation.suspended')}</Badge>
           ) : status === 'PENDING' ? (
-            <Badge>unverified</Badge>
+            <Badge>{t('admin.moderation.unverified')}</Badge>
           ) : null}
         </div>
         <p className="text-ink-subtle mt-0.5 truncate text-xs">
-          {user.email} · joined {when(user.createdAt)}
-          {user.lastLoginAt ? ` · last in ${when(user.lastLoginAt)}` : ' · never signed in'}
+          {user.email} · {t('admin.moderation.joined', { when: when(user.createdAt, t) })}
+          {user.lastLoginAt ? t('admin.moderation.lastIn', { when: when(user.lastLoginAt, t) }) : t('admin.moderation.never')}
           {user.suspendedReason ? ` · ${user.suspendedReason}` : ''}
         </p>
         {error ? <p className="text-danger mt-1 text-xs">{error}</p> : null}
@@ -201,7 +205,7 @@ function UserRow({ user, canModerate }: { user: AdminUser; canModerate: boolean 
 
       {canModerate ? (
         <Button variant="ghost" size="sm" onClick={() => void toggle()} disabled={busy}>
-          {status === 'SUSPENDED' ? 'Reinstate' : 'Suspend'}
+          {status === 'SUSPENDED' ? t('admin.moderation.reinstate') : t('admin.moderation.suspend')}
         </Button>
       ) : null}
     </Card>
@@ -219,6 +223,7 @@ export function AdminBoard({
   audit: AuditEntry[];
   viewerRole: string;
 }) {
+  const t = useT();
   const [tab, setTab] = useState<'reports' | 'users' | 'audit'>('reports');
   const [reports, setReports] = useState(queue.reports);
   const [search, setSearch] = useState('');
@@ -236,9 +241,9 @@ export function AdminBoard({
   });
 
   const tabs = [
-    { value: 'reports' as const, label: 'Reports', count: reports.length },
-    { value: 'users' as const, label: 'Accounts', count: users.length },
-    { value: 'audit' as const, label: 'What we did', count: audit.length },
+    { value: 'reports' as const, count: reports.length },
+    { value: 'users' as const, count: users.length },
+    { value: 'audit' as const, count: audit.length },
   ];
 
   return (
@@ -256,7 +261,7 @@ export function AdminBoard({
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
-            {entry.label}
+            {t(`admin.moderation.tabs.${entry.value}`)}
             <span
               className={cn(
                 'grid min-w-4.5 place-items-center rounded-full px-1 text-[0.625rem] font-semibold',
@@ -274,8 +279,8 @@ export function AdminBoard({
           <EmptyState
             className="mt-8"
             icon={<ShieldCheck className="size-6" />}
-            title="Nothing waiting"
-            description="Reports people file land here. An empty queue means there is nothing to answer for right now."
+            title={t('admin.moderation.nothingTitle')}
+            description={t('admin.moderation.nothingBody')}
           />
         ) : (
           <div className="mt-6 space-y-3">
@@ -295,7 +300,7 @@ export function AdminBoard({
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name, username or email"
+            placeholder={t('admin.moderation.search')}
           />
 
           <div className="mt-4 space-y-2">
@@ -315,8 +320,8 @@ export function AdminBoard({
           <EmptyState
             className="mt-8"
             icon={<Gavel className="size-6" />}
-            title="No moderator actions yet"
-            description="Every removal, warning and suspension gets written here with who did it."
+            title={t('admin.moderation.noActionsTitle')}
+            description={t('admin.moderation.noActionsBody')}
           />
         ) : (
           <div className="mt-6 space-y-2">
@@ -327,14 +332,14 @@ export function AdminBoard({
                   <p className="truncate text-[0.8125rem]">
                     <span className="font-medium">{entry.action.replace('moderation.', '')}</span>
                     {entry.entityType ? (
-                      <span className="text-ink-subtle"> on {entry.entityType.toLowerCase()}</span>
+                      <span className="text-ink-subtle">{t('admin.moderation.onEntity', { entity: entry.entityType.toLowerCase() })}</span>
                     ) : null}
                   </p>
                   <p className="text-ink-subtle truncate text-xs">
                     {entry.actor
                       ? `${entry.actor.username ? `@${entry.actor.username}` : entry.actor.email}`
                       : 'system'}{' '}
-                    · {when(entry.createdAt)}
+                    · {when(entry.createdAt, t)}
                   </p>
                 </div>
               </Card>
