@@ -91,68 +91,80 @@ export class LedgerService {
   }
 
   async post(draft: PostDraft, options: { allowNegative?: string[] } = {}) {
+    return this.prisma.$transaction((tx) => this.postWithin(tx, draft, options));
+  }
+
+  async postWithin(
+    tx: Prisma.TransactionClient,
+    draft: PostDraft,
+    options: { allowNegative?: string[] } = {},
+  ) {
     this.validate(draft);
 
     const allowNegative = new Set(options.allowNegative ?? []);
     const walletIds = [...new Set(draft.entries.map((entry) => entry.walletId))].sort();
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM wallets WHERE id = ANY(${walletIds}::text[]) ORDER BY id FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM wallets WHERE id = ANY(${walletIds}::text[]) ORDER BY id FOR UPDATE`;
 
-      const wallets = await tx.wallet.findMany({ where: { id: { in: walletIds } } });
+    const wallets = await tx.wallet.findMany({ where: { id: { in: walletIds } } });
 
-      if (wallets.length !== walletIds.length) {
-        throw new NotFoundException('One of those wallets does not exist');
+    if (wallets.length !== walletIds.length) {
+      throw new NotFoundException('One of those wallets does not exist');
+    }
+
+    for (const wallet of wallets) {
+      if (wallet.currency !== draft.currency) {
+        throw new BadRequestException(
+          `That wallet holds ${wallet.currency}, not ${draft.currency}`,
+        );
       }
+    }
 
-      for (const wallet of wallets) {
-        if (wallet.currency !== draft.currency) {
-          throw new BadRequestException(
-            `That wallet holds ${wallet.currency}, not ${draft.currency}`,
-          );
-        }
+    const net = new Map<string, number>();
+
+    for (const entry of draft.entries) {
+      const delta = entry.direction === 'CREDIT' ? entry.amountMinor : -entry.amountMinor;
+      net.set(entry.walletId, (net.get(entry.walletId) ?? 0) + delta);
+    }
+
+    for (const [walletId, delta] of net) {
+      if (delta >= 0 || allowNegative.has(walletId)) continue;
+
+      const balance = await this.balanceOf(walletId, tx);
+
+      if (balance + delta < 0) {
+        throw new BadRequestException('There is not enough in that wallet');
       }
+    }
 
-      const net = new Map<string, number>();
-
-      for (const entry of draft.entries) {
-        const delta = entry.direction === 'CREDIT' ? entry.amountMinor : -entry.amountMinor;
-        net.set(entry.walletId, (net.get(entry.walletId) ?? 0) + delta);
-      }
-
-      for (const [walletId, delta] of net) {
-        if (delta >= 0 || allowNegative.has(walletId)) continue;
-
-        const balance = await this.balanceOf(walletId, tx);
-
-        if (balance + delta < 0) {
-          throw new BadRequestException('There is not enough in that wallet');
-        }
-      }
-
-      return tx.walletTransaction.create({
-        data: {
-          reference: draft.reference ?? this.reference(),
-          kind: draft.kind,
-          currency: draft.currency,
-          memo: draft.memo,
-          reversalOfId: draft.reversalOfId,
-          entries: {
-            create: draft.entries.map((entry) => ({
-              walletId: entry.walletId,
-              direction: entry.direction,
-              amountMinor: entry.amountMinor,
-              currency: draft.currency,
-            })),
-          },
+    return tx.walletTransaction.create({
+      data: {
+        reference: draft.reference ?? this.reference(),
+        kind: draft.kind,
+        currency: draft.currency,
+        memo: draft.memo,
+        reversalOfId: draft.reversalOfId,
+        entries: {
+          create: draft.entries.map((entry) => ({
+            walletId: entry.walletId,
+            direction: entry.direction,
+            amountMinor: entry.amountMinor,
+            currency: draft.currency,
+          })),
         },
-        include: { entries: true },
-      });
+      },
+      include: { entries: true },
     });
   }
 
   async reverse(transactionId: string, memo?: string) {
-    const original = await this.prisma.walletTransaction.findUnique({
+    return this.prisma.$transaction((tx) => this.reverseWithin(tx, transactionId, memo));
+  }
+
+  async reverseWithin(tx: Prisma.TransactionClient, transactionId: string, memo?: string) {
+    await tx.$queryRaw`SELECT id FROM wallet_transactions WHERE id = ${transactionId} FOR UPDATE`;
+
+    const original = await tx.walletTransaction.findUnique({
       where: { id: transactionId },
       include: { entries: true, reversedBy: { select: { id: true } } },
     });
@@ -165,7 +177,8 @@ export class LedgerService {
 
     const treasury = await this.treasury(original.currency);
 
-    const reversal = await this.post(
+    const reversal = await this.postWithin(
+      tx,
       {
         kind: original.kind,
         currency: original.currency,
@@ -180,10 +193,7 @@ export class LedgerService {
       { allowNegative: [treasury.id] },
     );
 
-    await this.prisma.walletTransaction.update({
-      where: { id: original.id },
-      data: { status: 'REVERSED' },
-    });
+    await tx.walletTransaction.update({ where: { id: original.id }, data: { status: 'REVERSED' } });
 
     return reversal;
   }

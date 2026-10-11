@@ -333,6 +333,8 @@ export class EventsService {
         await this.notifications.notify({
           userId: attendee.profile.userId,
           category: 'EVENTS',
+          key: 'eventMoved',
+          vars: { event: event.title, at: startAt.toISOString() },
           title: `${event.title} moved`,
           body: startAt.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }),
           href: `/events/${event.slug}`,
@@ -347,8 +349,8 @@ export class EventsService {
     const me = await this.people.profileFor(userId);
 
     const event = await this.prisma.event.findFirst({
-      where: { slug: slug.toLowerCase(), deletedAt: null },
-      include: { attendees: { select: { profileId: true, status: true } }, host: { select: { userId: true } } },
+      where: { AND: [{ slug: slug.toLowerCase() }, await this.visibleWhere(me.id)] },
+      include: { host: { select: { userId: true } } },
     });
 
     if (!event) throw new NotFoundException('No such event');
@@ -357,26 +359,38 @@ export class EventsService {
       throw new BadRequestException('A host cannot decline their own event');
     }
 
-    if (status === 'GOING' && event.capacity) {
-      const going = event.attendees.filter(
-        (attendee) => attendee.status === 'GOING' && attendee.profileId !== me.id,
-      ).length;
+    const ended = event.endAt ? event.endAt < new Date() : event.startAt < new Date();
 
-      if (going >= event.capacity) {
-        throw new BadRequestException('This event is full');
-      }
+    if (ended && status !== 'DECLINED') {
+      throw new BadRequestException('This event has already happened');
     }
 
-    await this.prisma.eventAttendee.upsert({
-      where: { eventId_profileId: { eventId: event.id, profileId: me.id } },
-      create: { eventId: event.id, profileId: me.id, status },
-      update: { status },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM events WHERE id = ${event.id} FOR UPDATE`;
+
+      if (status === 'GOING' && event.capacity) {
+        const going = await tx.eventAttendee.count({
+          where: { eventId: event.id, status: 'GOING', profileId: { not: me.id } },
+        });
+
+        if (going >= event.capacity) {
+          throw new BadRequestException('This event is full');
+        }
+      }
+
+      await tx.eventAttendee.upsert({
+        where: { eventId_profileId: { eventId: event.id, profileId: me.id } },
+        create: { eventId: event.id, profileId: me.id, status },
+        update: { status },
+      });
     });
 
     if (status === 'GOING' && event.hostId !== me.id) {
       await this.notifications.notify({
         userId: event.host.userId,
         category: 'EVENTS',
+        key: 'eventGoing',
+        vars: { name: me.displayName, event: event.title },
         title: `${me.displayName} is going to ${event.title}`,
         href: `/events/${event.slug}`,
       });
@@ -389,14 +403,30 @@ export class EventsService {
     const me = await this.people.profileFor(userId);
 
     const event = await this.prisma.event.findFirst({
-      where: { slug: slug.toLowerCase(), deletedAt: null },
-      select: { id: true, slug: true, title: true, hostId: true, startAt: true },
+      where: { AND: [{ slug: slug.toLowerCase() }, await this.visibleWhere(me.id)] },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        hostId: true,
+        startAt: true,
+        visibility: true,
+        attendees: { where: { profileId: me.id }, select: { status: true } },
+      },
     });
 
     if (!event) throw new NotFoundException('No such event');
 
+    if (event.visibility !== 'PUBLIC' && event.hostId !== me.id && event.attendees[0]?.status !== 'GOING') {
+      throw new ForbiddenException('Only the host and confirmed guests can invite people to this event');
+    }
+
     const profiles = await this.prisma.profile.findMany({
-      where: { username: { in: usernames.map((name) => name.toLowerCase()) } },
+      where: {
+        username: { in: usernames.map((name) => name.toLowerCase()) },
+        id: { not: me.id },
+        user: { deletedAt: null },
+      },
       select: { id: true, userId: true },
     });
 
@@ -404,9 +434,19 @@ export class EventsService {
     const invitable = profiles.filter((profile) => !blocked.includes(profile.id));
 
     for (const profile of invitable) {
+      await this.prisma.eventAttendee.upsert({
+        where: { eventId_profileId: { eventId: event.id, profileId: profile.id } },
+        create: { eventId: event.id, profileId: profile.id, status: 'INVITED' },
+        update: {},
+      });
+    }
+
+    for (const profile of invitable) {
       await this.notifications.notify({
         userId: profile.userId,
         category: 'EVENTS',
+        key: 'eventInvite',
+        vars: { name: me.displayName, event: event.title, at: new Date(event.startAt).toISOString() },
         title: `${me.displayName} invited you to ${event.title}`,
         body: new Date(event.startAt).toLocaleString('en-GB', {
           dateStyle: 'medium',
@@ -495,7 +535,7 @@ export class EventsService {
     const me = await this.people.profileFor(userId);
 
     const event = await this.prisma.event.findFirst({
-      where: { slug: slug.toLowerCase(), deletedAt: null },
+      where: { AND: [{ slug: slug.toLowerCase() }, await this.visibleWhere(me.id)] },
       include: EVENT_INCLUDE,
     });
 
@@ -530,6 +570,8 @@ export class EventsService {
       await this.notifications.notify({
         userId: attendee.profile.userId,
         category: 'EVENTS',
+        key: 'eventCancelled',
+        vars: { event: event.title },
         title: `${event.title} was cancelled`,
         href: '/events',
       });

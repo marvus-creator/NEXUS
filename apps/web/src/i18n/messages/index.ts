@@ -1,6 +1,7 @@
 import { apiErrors, auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
+import { ask } from './ask';
 import { admin } from './admin';
 import { interests, onboarding } from './onboarding';
 import { privacy, profile, publicProfile, security } from './account';
@@ -10,6 +11,7 @@ import { goals, tasks } from './planner';
 import { discover, places } from './places';
 import { market, orders, wallet } from './market';
 import { chat, notifications } from './inbox';
+import { notify } from './notify';
 import { enums } from './enums';
 import { events } from './events';
 import { home } from './home';
@@ -41,6 +43,7 @@ export const messages = {
   circles,
   chat,
   notifications,
+  notify,
   market,
   orders,
   wallet,
@@ -58,6 +61,7 @@ export const messages = {
   onboarding,
   interests,
   admin,
+  ask,
 } as const;
 
 export { apiErrors };

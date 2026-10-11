@@ -61,7 +61,7 @@ DEMO_HOST_EMAIL="you@example.com" DEMO_HOST_PASSWORD="<your password>" \
 node scripts/seed-demo.mjs
 ```
 
-Then update the Malvyn persona in `apps/web/src/components/auth/demo-personas.tsx` to your live email (or set `NEXT_PUBLIC_DEMO_LOGINS=off` on Vercel to hide the one-click logins).
+The one-click demo logins on the sign-in page are **off unless you set `NEXT_PUBLIC_DEMO_LOGINS=on`** on Vercel. They only ever sign in to the ordinary `@demo.nexus.rw` demo people, never an admin. If you turn them on for a presentation, remember that anyone can use those demo accounts, so turn it off again afterwards.
 
 ## Good to know
 

@@ -139,6 +139,7 @@ export class AuthService {
     await this.notifications.notify({
       userId: user.id,
       category: 'SYSTEM',
+      key: 'welcome',
       title: 'Welcome to Nexus',
       body: 'Build your Nexus in five short steps and this place becomes yours.',
       href: '/onboarding',

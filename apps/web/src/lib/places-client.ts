@@ -57,7 +57,7 @@ export type EventSummary = {
   goingCount: number;
   interestedCount: number;
   spotsLeft: number | null;
-  myStatus: 'GOING' | 'INTERESTED' | 'DECLINED' | null;
+  myStatus: 'GOING' | 'INTERESTED' | 'DECLINED' | 'INVITED' | null;
   checkedIn: boolean;
   checkedInCount: number;
   rating: number | null;

@@ -213,6 +213,16 @@ async function main() {
       await new Promise((resolve) => setTimeout(resolve, 900));
     }
 
+    if (flags.eval) {
+      await session.send('Runtime.evaluate', { expression: String(flags.eval), awaitPromise: true });
+      await new Promise((resolve) => setTimeout(resolve, 900));
+    }
+
+    if (flags.type) {
+      await session.send('Input.insertText', { text: String(flags.type) });
+      await new Promise((resolve) => setTimeout(resolve, Number(flags.typeWait ?? 1600)));
+    }
+
     const metrics = await session.send('Page.getLayoutMetrics');
     const fullHeight = Math.ceil(metrics.cssContentSize?.height ?? height);
 

@@ -8,6 +8,9 @@ export type NotifyInput = {
   title: string;
   body?: string;
   href?: string;
+  key?: string;
+  vars?: Record<string, string | number>;
+  dedupeKey?: string;
 };
 
 const CHANNEL_FIELD: Record<NotificationCategory, string> = {
@@ -58,9 +61,13 @@ export class NotificationsService {
           title: input.title,
           body: input.body,
           href: input.href,
+          key: input.key,
+          vars: input.vars,
+          dedupeKey: input.dedupeKey,
         },
       });
     } catch (error) {
+      if (input.dedupeKey && (error as { code?: string }).code === 'P2002') return null;
       this.logger.error(`Failed to create notification "${input.title}"`, error as Error);
       return null;
     }

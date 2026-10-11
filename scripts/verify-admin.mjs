@@ -79,15 +79,18 @@ async function makeUser(tag, { verify = true } = {}) {
   return { jar, username };
 }
 
-import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 
-function setRole(email, role) {
-  execFileSync(
-    'docker',
-    ['exec', 'nexus-pg', 'psql', '-U', 'nexus', '-d', 'nexus', '-c',
-      `update users set role = '${role}' where email = '${email}'`],
-    { stdio: 'pipe' },
-  );
+const { Client } = createRequire(new URL('../packages/db/package.json', import.meta.url))('pg');
+
+async function setRole(email, role) {
+  const client = new Client({ connectionString: process.env.DATABASE_URL ?? `postgresql://nexus:nexus@127.0.0.1:${process.env.NEXUS_DB_PORT ?? 5433}/nexus` });
+  await client.connect();
+  try {
+    await client.query('update users set role = $1 where email = $2', [role, email]);
+  } finally {
+    await client.end();
+  }
 }
 
 async function main() {
@@ -103,8 +106,8 @@ async function main() {
   const offender = await makeUser('bad');
   const bystander = await makeUser('byst');
 
-  setRole(`adm.${stamp}@nexus.local`, 'ADMIN');
-  setRole(`mod.${stamp}@nexus.local`, 'MODERATOR');
+  await setRole(`adm.${stamp}@nexus.local`, 'ADMIN');
+  await setRole(`mod.${stamp}@nexus.local`, 'MODERATOR');
 
   const adminJar = new Jar();
   await call('/auth/login', {

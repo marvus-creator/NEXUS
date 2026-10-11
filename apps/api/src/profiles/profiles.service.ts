@@ -127,6 +127,7 @@ export class ProfilesService {
     await this.notifications.notify({
       userId,
       category: 'IMPORTANT',
+      key: 'ready',
       title: 'Your Nexus is ready',
       body: 'Home now works from your real schedule, interests and goals.',
       href: '/home',

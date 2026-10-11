@@ -307,6 +307,8 @@ export class PeopleService {
     await this.notifications.notify({
       userId: target.userId,
       category: 'SOCIAL',
+      key: 'follow',
+      vars: { name: me.displayName },
       title: `${me.displayName} started following you`,
       href: `/u/${me.username}`,
     });
@@ -360,6 +362,8 @@ export class PeopleService {
     await this.notifications.notify({
       userId: target.userId,
       category: 'SOCIAL',
+      key: 'friendRequest',
+      vars: { name: me.displayName },
       title: `${me.displayName} sent you a friend request`,
       body: message ?? undefined,
       href: '/people',
@@ -395,6 +399,8 @@ export class PeopleService {
       await this.notifications.notify({
         userId: request.from.user.id,
         category: 'SOCIAL',
+        key: 'friendAccepted',
+        vars: { name: me.displayName },
         title: `${me.displayName} accepted your friend request`,
         href: `/u/${me.username}`,
       });

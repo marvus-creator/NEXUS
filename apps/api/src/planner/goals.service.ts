@@ -166,6 +166,8 @@ export class GoalsService {
       await this.notifications.notify({
         userId,
         category: 'GOALS',
+        key: 'goalAchieved',
+        vars: { goal: goal.title },
         title: `Goal achieved: ${goal.title}`,
         body: 'Every milestone is done. That one is finished.',
         href: '/goals',

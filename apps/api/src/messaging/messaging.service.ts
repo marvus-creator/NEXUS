@@ -306,6 +306,8 @@ export class MessagingService {
       await this.notifications.notify({
         userId: other.profile.userId,
         category: 'SOCIAL',
+        key: 'message',
+        vars: { name: sender.displayName },
         title: `${sender.displayName} sent you a message`,
         body: preview.slice(0, 120),
         href: `/messages?c=${conversationId}`,

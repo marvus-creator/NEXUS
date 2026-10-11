@@ -13,6 +13,7 @@ export const events = {
     interestedCount: ['{n} interested', '{n} babikunze', '{n} intéressés'],
     spotsLeft: ['{n} spots left', 'Hasigaye imyanya {n}', '{n} places restantes'],
     hostingBadge: ['Hosting', 'Utegura', 'Organisateur'],
+    invitedBadge: ['You’re invited', 'Waratumiwe', 'Vous êtes invité'],
     goingBadge: ['Going', 'Uzajyayo', 'Inscrit'],
   },
   visibility: {
@@ -52,6 +53,14 @@ export const events = {
     ],
   },
   detail: {
+    onCalendarTitle: ['On your calendar', 'Kuri kalendari yawe', 'Dans votre calendrier'],
+    onCalendarBody: [
+      'NEXUS keeps this time free when it plans your day. Add it to your phone too so you get a reminder an hour before.',
+      'NEXUS ntizashyira ikindi muri iki gihe itegura umunsi wawe. Gishyire no kuri telefoni yawe ngo uzibutswe isaha imwe mbere.',
+      'NEXUS garde ce créneau libre quand il planifie votre journée. Ajoutez-le aussi à votre téléphone pour un rappel une heure avant.',
+    ],
+    openCalendar: ['Open my calendar', 'Fungura kalendari yanjye', 'Ouvrir mon calendrier'],
+    addToPhone: ['Add to phone calendar', 'Shyira kuri kalendari ya telefoni', 'Ajouter au calendrier du téléphone'],
     at: ['{date} at {time}', '{date} saa {time}', '{date} à {time}'],
     inMinutes: ['in {n} minutes', 'mu minota {n}', 'dans {n} minutes'],
     inHour: ['in {n} hour', 'mu isaha {n}', 'dans {n} heure'],
@@ -66,6 +75,7 @@ export const events = {
       GOING: ['going', 'azaza', 'participe'],
       INTERESTED: ['interested', 'arabikunze', 'intéressé'],
       DECLINED: ['not going', 'ntazaza', 'ne vient pas'],
+      INVITED: ['invited', 'yatumiwe', 'invité'],
     },
     howWasIt: ['How was it?', 'Byagenze bite?', 'C’était comment ?'],
     stars: ['{n} stars', 'Inyenyeri {n}', '{n} étoiles'],

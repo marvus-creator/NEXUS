@@ -13,7 +13,7 @@ import {
 } from '@nexus/ui';
 import { CalendarDays, Clock, MapPin, Plus, Ticket, Users, X } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { eventImage } from '@/lib/photos';
 import { placesClient, type EventSummary, type PlaceSummary } from '@/lib/places-client';
@@ -184,7 +184,8 @@ export function EventsBoard({
   const t = useT();
   const errorText = useErrorText();
 
-  const [composing, setComposing] = useState(false);
+  const params = useSearchParams();
+  const [composing, setComposing] = useState(params.get('new') === '1');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startAt, setStartAt] = useState('');

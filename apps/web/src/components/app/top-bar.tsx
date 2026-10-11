@@ -10,7 +10,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Input,
   Logo,
   ThemeToggle,
 } from '@nexus/ui';
@@ -20,6 +19,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { TourButton } from './tour';
+import { CommandPalette, useCommandPalette } from './command-palette';
 import { authClient } from '@/lib/auth-client';
 import type { SessionUser } from '@/lib/session';
 import { useT } from '@/i18n/client';
@@ -28,6 +28,7 @@ import { LanguageSwitcher } from './language-switcher';
 export function TopBar({ user, unread }: { user: SessionUser; unread: number }) {
   const router = useRouter();
   const t = useT();
+  const palette = useCommandPalette();
   const [signingOut, setSigningOut] = useState(false);
 
   const name = user.profile?.displayName ?? user.email;
@@ -51,16 +52,22 @@ export function TopBar({ user, unread }: { user: SessionUser; unread: number }) 
           <Logo showWordmark={false} />
         </Link>
 
-        <div data-tour="search" className="max-w-md flex-1">
-          <Input
-            icon={<Search />}
-            placeholder={t('nav.searchPlaceholder')}
+        <div data-tour="search" className="max-w-md min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => palette.setOpen(true)}
             aria-label={t('nav.searchLabel')}
-            className="bg-surface h-10 rounded-xl"
-          />
+            aria-keyshortcuts="Control+K"
+            className="border-line bg-surface text-ink-subtle hover:border-line-strong hover:text-ink-muted flex h-10 w-full items-center gap-2.5 rounded-xl border px-3 text-left text-sm transition"
+          >
+            <Search className="size-4 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{t('nav.searchPlaceholder')}</span>
+            <kbd className="border-line hidden rounded-md border px-1.5 py-0.5 font-mono text-[10px] md:block">Ctrl K</kbd>
+          </button>
         </div>
+        <CommandPalette open={palette.open} onOpenChange={palette.setOpen} />
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>

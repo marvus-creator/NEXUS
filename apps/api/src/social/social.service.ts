@@ -302,6 +302,8 @@ export class SocialService {
         await this.notifications.notify({
           userId: post.profile.user.id,
           category: 'SOCIAL',
+          key: 'reacted',
+          vars: { name: me.displayName },
           title: `${me.displayName} reacted to your post`,
           href: '/feed',
         });
@@ -419,6 +421,8 @@ export class SocialService {
       await this.notifications.notify({
         userId: post.profile.user.id,
         category: 'SOCIAL',
+        key: 'commented',
+        vars: { name: me.displayName },
         title: `${me.displayName} commented on your post`,
         body: body.slice(0, 120),
         href: '/feed',

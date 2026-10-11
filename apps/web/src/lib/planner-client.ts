@@ -32,6 +32,16 @@ export type Task = {
   goalId: string | null;
   goal?: { id: string; title: string; area: string } | null;
   subtasks?: Task[];
+  events?: { id: string; startAt: string; endAt: string }[];
+};
+
+export type SuggestedSlot = {
+  dateKey: string;
+  startMinute: number;
+  endMinute: number;
+  startAt: string;
+  endAt: string;
+  roomMinutes: number;
 };
 
 export type Milestone = {
@@ -87,6 +97,8 @@ export type NotificationItem = {
   href: string | null;
   readAt: string | null;
   createdAt: string;
+  key?: string | null;
+  vars?: Record<string, string | number> | null;
 };
 
 export const plannerClient = {
@@ -116,6 +128,8 @@ export const plannerClient = {
       'POST',
       body,
     ),
+  suggestSlots: (minutes: number) =>
+    request<{ timezone: string; minutes: number; slots: SuggestedSlot[] }>(`/calendar/suggest?minutes=${minutes}&days=3`, 'GET'),
   deleteEvent: (id: string) => request<{ deleted: boolean }>(`/calendar/events/${id}`, 'DELETE'),
 
   markNotificationRead: (id: string) =>

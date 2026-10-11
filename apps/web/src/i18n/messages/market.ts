@@ -95,6 +95,7 @@ export const wallet = {
   fundsFailed: ['Could not add test funds.', 'Ntibyashobotse kongeramo amafaranga y’igerageza.', 'Impossible d’ajouter des fonds de test.'],
   balance: ['Balance', 'Asigaye', 'Solde'],
   send: ['Send', 'Ohereza', 'Envoyer'],
+  sent: ['{amount} sent.', '{amount} byoherejwe.', '{amount} envoyé.'],
   sending: ['Sending…', 'Birimo koherezwa…', 'Envoi…'],
   testFunds: ['Add test funds', 'Ongeramo amafaranga y’igerageza', 'Ajouter des fonds de test'],
   to: ['To', 'Kuri', 'À'],

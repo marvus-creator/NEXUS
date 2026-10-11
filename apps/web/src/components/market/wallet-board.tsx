@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { devGrant, transfer, type WalletEntry, type WalletOverview } from '@/lib/market-client';
 import { useErrorText, useT } from '@/i18n/client';
 import type { Translate } from '@/i18n/types';
@@ -37,6 +37,7 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
 
   const [state, setState] = useState(overview);
   const [sending, setSending] = useState(false);
+  const requestKey = useRef(crypto.randomUUID());
   const [username, setUsername] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -67,9 +68,11 @@ export function WalletBoard({ overview }: { overview: WalletOverview }) {
         username: username.trim().replace(/^@/, ''),
         amount: value,
         memo: memo.trim() || undefined,
+        idempotencyKey: requestKey.current,
       });
 
-      setNotice(`${result.amount.display} sent.`);
+      requestKey.current = crypto.randomUUID();
+      setNotice(t('wallet.sent', { amount: result.amount.display }));
       setUsername('');
       setAmount('');
       setMemo('');

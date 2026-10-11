@@ -6,6 +6,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DAY_START = 7 * 60;
 const DAY_END = 22 * 60;
 const MIN_GAP = 30;
+const SLOT_STEP = 15;
+const SLOT_LEAD = 10;
+const SLOTS_PER_DAY = 2;
+const MAX_SLOTS = 6;
 
 export type LocalParts = {
   dateKey: string;
@@ -37,6 +41,31 @@ export function localParts(date: Date, timezone: string): LocalParts {
     dayOfWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(String(parts.weekday)),
     minutes: hour * 60 + minute,
   };
+}
+
+export function zonedTime(dateKey: string, minutes: number, timezone: string) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  let guess = Date.UTC(
+    year!,
+    month! - 1,
+    day!,
+    Math.floor(minutes / 60),
+    minutes % 60,
+  );
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const parts = localParts(new Date(guess), timezone);
+    const dayShift = Math.round(
+      (Date.parse(parts.dateKey) - Date.parse(dateKey)) / DAY_MS,
+    );
+    const drift = parts.minutes + dayShift * 1440 - minutes;
+
+    if (drift === 0) break;
+
+    guess -= drift * 60_000;
+  }
+
+  return new Date(guess);
 }
 
 type Span = { startMinute: number; endMinute: number };
@@ -257,33 +286,52 @@ export class CalendarService {
       throw new BadRequestException('Give a valid date');
     }
 
-    const parts = localParts(date, profile.timezone);
+    const dateKey = localParts(date, profile.timezone).dateKey;
+    const start = zonedTime(dateKey, 0, profile.timezone);
+    const { days } = await this.range(userId, start.toISOString(), new Date(start.getTime() + DAY_MS).toISOString());
+    const gaps = (days[0]?.gaps ?? []).filter((gap) => gap.minutes >= minimumMinutes);
 
-    const [blocks, events] = await Promise.all([
-      this.prisma.scheduleBlock.findMany({
-        where: { profileId: profile.id, dayOfWeek: parts.dayOfWeek },
-      }),
-      this.prisma.calendarEvent.findMany({
-        where: {
-          profileId: profile.id,
-          startAt: { gte: new Date(date.getTime() - DAY_MS), lt: new Date(date.getTime() + DAY_MS) },
-        },
-      }),
-    ]);
+    return { dateKey, timezone: profile.timezone, gaps };
+  }
 
-    const busy = [
-      ...blocks.map((block) => ({ startMinute: block.startMinute, endMinute: block.endMinute })),
-      ...events
-        .filter((event) => localParts(event.startAt, profile.timezone).dateKey === parts.dateKey)
-        .map((event) => ({
-          startMinute: localParts(event.startAt, profile.timezone).minutes,
-          endMinute: localParts(event.endAt, profile.timezone).minutes,
-        })),
-    ];
+  async suggest(userId: string, rawMinutes = 60, rawDays = 3) {
+    const profile = await this.profileFor(userId);
+    const minutes = Math.min(240, Math.max(15, Math.round(Number(rawMinutes) || 60)));
+    const horizon = Math.min(7, Math.max(1, Math.round(Number(rawDays) || 3)));
+    const now = new Date();
+    const today = localParts(now, profile.timezone);
+    const start = zonedTime(today.dateKey, 0, profile.timezone);
+    const { days } = await this.range(
+      userId,
+      start.toISOString(),
+      new Date(start.getTime() + horizon * DAY_MS).toISOString(),
+    );
+    const earliestToday = Math.ceil((today.minutes + SLOT_LEAD) / SLOT_STEP) * SLOT_STEP;
+    const slots: { dateKey: string; startMinute: number; endMinute: number; startAt: string; endAt: string; roomMinutes: number }[] = [];
 
-    const gaps = gapsAround(busy).filter((gap) => gap.minutes >= minimumMinutes);
+    for (const day of days) {
+      let taken = 0;
 
-    return { dateKey: parts.dateKey, timezone: profile.timezone, gaps };
+      for (const gap of day.gaps) {
+        const from = day.dateKey === today.dateKey ? Math.max(gap.startMinute, earliestToday) : gap.startMinute;
+
+        if (gap.endMinute - from < minutes || taken >= SLOTS_PER_DAY) continue;
+
+        slots.push({
+          dateKey: day.dateKey,
+          startMinute: from,
+          endMinute: from + minutes,
+          startAt: zonedTime(day.dateKey, from, profile.timezone).toISOString(),
+          endAt: zonedTime(day.dateKey, from + minutes, profile.timezone).toISOString(),
+          roomMinutes: gap.endMinute - from,
+        });
+        taken += 1;
+      }
+
+      if (slots.length >= MAX_SLOTS) break;
+    }
+
+    return { timezone: profile.timezone, minutes, slots: slots.slice(0, MAX_SLOTS) };
   }
 
   async create(userId: string, dto: CreateEventDto) {

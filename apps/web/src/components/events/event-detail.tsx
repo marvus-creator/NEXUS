@@ -5,6 +5,7 @@ import { eventImage } from '@/lib/photos';
 import { CoverButton } from '@/components/app/cover-button';
 import {
   CalendarDays,
+  CalendarPlus,
   Check,
   Clock,
   MapPin,
@@ -20,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { placesClient, type EventSummary } from '@/lib/places-client';
 import { useErrorText, useFormatDate, useT } from '@/i18n/client';
+import { buildIcs, downloadIcs } from '@/lib/ics';
 import type { Translate } from '@/i18n/types';
 
 type Attendee = {
@@ -172,6 +174,7 @@ export function EventDetail({
         <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
           <div className="flex flex-wrap items-center gap-2">
             {event.isHost ? <Badge variant="accent">{t('events.status.hosting')}</Badge> : null}
+            {status === 'INVITED' ? <Badge variant="accent">{t('events.status.invitedBadge')}</Badge> : null}
             {event.hasEnded ? <Badge>{t('events.detail.ended')}</Badge> : starts ? <Badge variant="success">{starts}</Badge> : null}
             {event.visibility !== 'PUBLIC' ? (
               <Badge>{t(`events.visibility.${event.visibility}`)}</Badge>
@@ -276,7 +279,7 @@ export function EventDetail({
                         variant={person.status === 'GOING' ? 'accent' : 'neutral'}
                         size="sm"
                       >
-                        {person.status === 'GOING' || person.status === 'INTERESTED' || person.status === 'DECLINED'
+                        {person.status === 'GOING' || person.status === 'INTERESTED' || person.status === 'DECLINED' || person.status === 'INVITED'
                           ? t(`events.detail.attendee.${person.status}`)
                           : person.status.toLowerCase()}
                       </Badge>
@@ -360,6 +363,41 @@ export function EventDetail({
                   {t('events.detail.full')}
                 </p>
               ) : null}
+            </Card>
+          ) : null}
+
+          {(status === 'GOING' || event.isHost) && !event.hasEnded ? (
+            <Card className="p-6">
+              <div className="flex items-center gap-2.5">
+                <CalendarDays className="text-accent size-4" />
+                <h2 className="text-[0.9375rem] font-semibold">{t('events.detail.onCalendarTitle')}</h2>
+              </div>
+              <p className="text-ink-muted mt-2 text-sm leading-relaxed">{t('events.detail.onCalendarBody')}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button asChild size="sm" variant="secondary">
+                  <Link href="/calendar">{t('events.detail.openCalendar')}</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    downloadIcs(
+                      `${event.slug}.ics`,
+                      buildIcs({
+                        uid: event.id,
+                        title: event.title,
+                        startAt: event.startAt,
+                        endAt: event.endAt,
+                        description: event.description,
+                        location: event.place ? [event.place.name, event.place.address, event.place.city].filter(Boolean).join(', ') : event.locationText,
+                        url: `${window.location.origin}/events/${event.slug}`,
+                      }),
+                    )
+                  }
+                >
+                  <CalendarPlus /> {t('events.detail.addToPhone')}
+                </Button>
+              </div>
             </Card>
           ) : null}
 

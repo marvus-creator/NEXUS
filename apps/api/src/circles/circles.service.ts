@@ -280,6 +280,8 @@ export class CirclesService {
       await this.notifications.notify({
         userId: moderator.profile.userId,
         category: 'SOCIAL',
+        key: 'circleRequest',
+        vars: { name: me.displayName, circle: circle.name },
         title: `${me.displayName} asked to join ${circle.name}`,
         href: `/circles/${circle.slug}`,
       });
@@ -373,6 +375,8 @@ export class CirclesService {
       await this.notifications.notify({
         userId: request.profile.userId,
         category: 'SOCIAL',
+        key: 'circleJoined',
+        vars: { circle: request.circle.name },
         title: `You are in ${request.circle.name}`,
         href: `/circles/${request.circle.slug}`,
       });

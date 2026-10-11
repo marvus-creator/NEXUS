@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -60,7 +61,7 @@ export class WalletService {
 
   async transfer(
     userId: string,
-    input: { username: string; amount: number; memo?: string },
+    input: { username: string; amount: number; memo?: string; idempotencyKey?: string },
   ) {
     const profile = await this.profileFor(userId);
 
@@ -94,19 +95,64 @@ export class WalletService {
       throw new BadRequestException('Send an amount above zero');
     }
 
-    const transaction = await this.ledger.post({
-      kind: 'TRANSFER',
-      currency: sender.currency,
-      memo: input.memo,
-      entries: [
-        { walletId: sender.id, direction: 'DEBIT', amountMinor },
-        { walletId: recipient.id, direction: 'CREDIT', amountMinor },
-      ],
-    });
+    const reference = input.idempotencyKey
+      ? `idem_${createHash('sha256').update(`${sender.id}:${input.idempotencyKey}`).digest('hex').slice(0, 32)}`
+      : undefined;
+
+    const replay = async () => {
+      const existing = reference
+        ? await this.prisma.walletTransaction.findUnique({
+            where: { reference },
+            include: { entries: true },
+          })
+        : null;
+
+      if (!existing) return null;
+
+      const sent = existing.entries.find((entry) => entry.walletId === sender.id && entry.direction === 'DEBIT');
+
+      if (!sent || existing.kind !== 'TRANSFER') {
+        throw new BadRequestException('That request key was already used for something else');
+      }
+
+      return {
+        reference: existing.reference,
+        amount: money(sent.amountMinor, existing.currency),
+        to: { username: target.username, displayName: target.displayName },
+        balance: money(await this.ledger.balanceOf(sender.id), sender.currency),
+        replayed: true,
+      };
+    };
+
+    const previous = await replay();
+    if (previous) return previous;
+
+    let transaction;
+
+    try {
+      transaction = await this.ledger.post({
+        kind: 'TRANSFER',
+        currency: sender.currency,
+        memo: input.memo,
+        reference,
+        entries: [
+          { walletId: sender.id, direction: 'DEBIT', amountMinor },
+          { walletId: recipient.id, direction: 'CREDIT', amountMinor },
+        ],
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'P2002') {
+        const raced = await replay();
+        if (raced) return raced;
+      }
+      throw error;
+    }
 
     await this.notifications.notify({
       userId: target.user.id,
       category: 'SYSTEM',
+      key: 'moneyReceived',
+      vars: { name: profile.displayName, amount: money(amountMinor, sender.currency).display },
       title: `${profile.displayName} sent you ${money(amountMinor, sender.currency).display}`,
       body: input.memo ?? undefined,
       href: '/wallet',
@@ -123,6 +169,7 @@ export class WalletService {
       amount: money(amountMinor, sender.currency),
       to: { username: target.username, displayName: target.displayName },
       balance: money(await this.ledger.balanceOf(sender.id), sender.currency),
+      replayed: false,
     };
   }
 

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { plannerClient, type NotificationItem } from '@/lib/planner-client';
 import { useFormatDate, useT } from '@/i18n/client';
+import { useNotificationText } from './notification-text';
 import type { MessageKey } from '@/i18n/types';
 
 const CATEGORY_ORDER = [
@@ -58,6 +59,7 @@ export function NotificationCenter({
 }) {
   const router = useRouter();
   const t = useT();
+  const text = useNotificationText();
   const format = useFormatDate();
   const categoryLabel = (category: string) =>
     category in CATEGORY_LABEL ? t(`notifications.categories.${category}` as MessageKey) : category;
@@ -152,9 +154,9 @@ export function NotificationCenter({
                     >
                       <div className="flex items-start gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium">{item.title}</p>
-                          {item.body ? (
-                            <p className="text-ink-muted mt-1 text-sm leading-relaxed">{item.body}</p>
+                          <p className="text-sm font-medium">{text(item).title}</p>
+                          {text(item).body ? (
+                            <p className="text-ink-muted mt-1 text-sm leading-relaxed">{text(item).body}</p>
                           ) : null}
                           <div className="mt-2 flex items-center gap-3">
                             <span className="text-ink-subtle text-xs">

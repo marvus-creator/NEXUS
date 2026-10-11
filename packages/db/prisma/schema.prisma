@@ -475,6 +475,10 @@ model Notification {
   href   String?
   readAt DateTime? @map("read_at")
 
+  key       String?
+  vars      Json?
+  dedupeKey String? @unique @map("dedupe_key")
+
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -898,6 +902,7 @@ enum AttendeeStatus {
   GOING
   INTERESTED
   DECLINED
+  INVITED
 }
 
 model Place {

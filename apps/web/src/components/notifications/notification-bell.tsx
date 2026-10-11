@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/lib/api';
 import { plannerClient, type NotificationItem } from '@/lib/planner-client';
+import { useNotificationText } from './notification-text';
 import { useT } from '@/i18n/client';
 
 const CATEGORY_TINT: Record<string, string> = {
@@ -28,6 +29,7 @@ const CATEGORY_TINT: Record<string, string> = {
 export function NotificationBell({ initialUnread }: { initialUnread: number }) {
   const router = useRouter();
   const t = useT();
+  const text = useNotificationText();
   const relative = (iso: string) => {
     const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
     if (minutes < 1) return t('time.justNow');
@@ -145,10 +147,10 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
                   style={{ backgroundColor: CATEGORY_TINT[item.category] ?? 'var(--accent)' }}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{item.title}</span>
-                  {item.body ? (
+                  <span className="block text-sm font-medium">{text(item).title}</span>
+                  {text(item).body ? (
                     <span className="text-ink-muted mt-0.5 block text-xs leading-relaxed">
-                      {item.body}
+                      {text(item).body}
                     </span>
                   ) : null}
                   <span className="text-ink-subtle mt-1 block text-[0.6875rem]">

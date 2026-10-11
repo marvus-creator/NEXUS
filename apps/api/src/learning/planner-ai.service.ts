@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import type { PlanEngine } from '@nexus/db';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { gapsAround, localParts } from '../planner/calendar.service.js';
+import { gapsAround, localParts, zonedTime } from '../planner/calendar.service.js';
 import { planWithModel } from './plan-model.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -13,31 +13,6 @@ const MIN_BLOCK = 30;
 const MAX_BLOCK = 90;
 const BUFFER = 10;
 const LATE_CUTOFF = 20 * 60;
-
-export function zonedTime(dateKey: string, minutes: number, timezone: string) {
-  const [year, month, day] = dateKey.split('-').map(Number);
-  let guess = Date.UTC(
-    year!,
-    month! - 1,
-    day!,
-    Math.floor(minutes / 60),
-    minutes % 60,
-  );
-
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    const parts = localParts(new Date(guess), timezone);
-    const dayShift = Math.round(
-      (Date.parse(parts.dateKey) - Date.parse(dateKey)) / DAY_MS,
-    );
-    const drift = parts.minutes + dayShift * 1440 - minutes;
-
-    if (drift === 0) break;
-
-    guess -= drift * 60_000;
-  }
-
-  return new Date(guess);
-}
 
 function minutesOf(date: Date, timezone: string, dateKey: string) {
   const parts = localParts(date, timezone);

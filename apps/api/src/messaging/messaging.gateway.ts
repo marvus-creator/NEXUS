@@ -14,11 +14,13 @@ import { TokensService, ACCESS_COOKIE } from '../auth/tokens.service.js';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MessagingService } from './messaging.service.js';
+import { SecurityStore } from '../common/security-store.service.js';
 
 type SocketState = {
   userId: string;
   profileId: string;
   displayName: string;
+  issuedAtMs: number;
 };
 
 function cookieValue(header: string | undefined, name: string) {
@@ -49,18 +51,23 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     private readonly messaging: MessagingService,
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
+    private readonly revocations: SecurityStore,
   ) {}
 
-  private stateFor(client: Socket) {
+  private async stateFor(client: Socket) {
     const state = this.state.get(client.id);
 
-    if (!state) {
+    if (!state || (await this.revocations.isRevoked(state.userId, state.issuedAtMs))) {
       client.emit('error', { message: 'Not authenticated' });
       client.disconnect(true);
       return null;
     }
 
     return state;
+  }
+
+  private inConversation(client: Socket, conversationId: unknown) {
+    return typeof conversationId === 'string' && client.rooms.has(`conversation:${conversationId}`);
   }
 
   async handleConnection(client: Socket) {
@@ -81,6 +88,13 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
         return;
       }
 
+      const issuedAtMs = payload.issuedAtMs ?? ((payload as { iat?: number }).iat ?? 0) * 1000;
+
+      if (await this.revocations.isRevoked(payload.sub, issuedAtMs)) {
+        client.disconnect(true);
+        return;
+      }
+
       const profile = await this.prisma.profile.findUnique({
         where: { userId: payload.sub },
         select: { id: true, displayName: true },
@@ -95,6 +109,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
         userId: payload.sub,
         profileId: profile.id,
         displayName: profile.displayName,
+        issuedAtMs,
       });
 
       const conversationIds = await this.messaging.conversationIdsFor(profile.id);
@@ -143,7 +158,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { conversationId: string; body: string; replyToId?: string },
   ) {
-    const state = this.stateFor(client);
+    const state = await this.stateFor(client);
 
     if (!state) return;
 
@@ -171,9 +186,9 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { conversationId: string; typing: boolean },
   ) {
-    const state = this.stateFor(client);
+    const state = await this.stateFor(client);
 
-    if (!state) return;
+    if (!state || !this.inConversation(client, data?.conversationId)) return;
 
     client.to(`conversation:${data.conversationId}`).emit('typing', {
       conversationId: data.conversationId,
@@ -188,11 +203,15 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { conversationId: string },
   ) {
-    const state = this.stateFor(client);
+    const state = await this.stateFor(client);
 
-    if (!state) return;
+    if (!state || !this.inConversation(client, data?.conversationId)) return;
 
-    await this.messaging.markRead(state.userId, data.conversationId);
+    try {
+      await this.messaging.markRead(state.userId, data.conversationId);
+    } catch {
+      return;
+    }
 
     client.to(`conversation:${data.conversationId}`).emit('read', {
       conversationId: data.conversationId,
@@ -206,7 +225,7 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { conversationId: string },
   ) {
-    const state = this.stateFor(client);
+    const state = await this.stateFor(client);
 
     if (!state) return;
 

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Matches, MaxLength, Min, MinLength } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { WalletService } from './wallet.service.js';
 
@@ -13,6 +13,8 @@ class TransferDto {
   amount!: number;
 
   @IsOptional() @IsString() @MaxLength(200) memo?: string;
+
+  @IsOptional() @Matches(/^[A-Za-z0-9_-]{8,64}$/) idempotencyKey?: string;
 }
 
 class GrantDto {

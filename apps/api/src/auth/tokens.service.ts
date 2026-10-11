@@ -7,6 +7,7 @@ import type { Response } from 'express';
 import type { Env } from '../config/env.js';
 import { durationToMs } from '../common/util/duration.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { SecurityStore } from '../common/security-store.service.js';
 
 export type AccessTokenPayload = {
   sub: string;
@@ -34,6 +35,7 @@ export class TokensService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService<Env, true>,
     private readonly prisma: PrismaService,
+    private readonly revocations: SecurityStore,
   ) {}
 
   private get isProduction() {
@@ -148,6 +150,7 @@ export class TokensService {
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    await this.revocations.revoke(userId);
   }
 
   setAuthCookies(response: Response, accessToken: string, refresh: IssuedRefreshToken) {

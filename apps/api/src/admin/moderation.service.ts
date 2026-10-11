@@ -264,8 +264,10 @@ export class ModerationService {
       await this.notifications.notify({
         userId: target.author.userId,
         category: 'IMPORTANT',
+        key: 'contentRemoved',
+        vars: { reason: report.reason },
         title: 'Something you posted was removed',
-        body: input.note ?? `Reported as: ${report.reason}`,
+        body: input.note ?? undefined,
       });
     }
 
@@ -273,8 +275,10 @@ export class ModerationService {
       await this.notifications.notify({
         userId: target.author.userId,
         category: 'IMPORTANT',
+        key: 'warning',
+        vars: { reason: report.reason },
         title: 'A warning about your activity',
-        body: input.note ?? `Reported as: ${report.reason}`,
+        body: input.note ?? undefined,
       });
     }
 
@@ -300,8 +304,10 @@ export class ModerationService {
       await this.notifications.notify({
         userId: target.author.userId,
         category: 'IMPORTANT',
+        key: 'suspended',
+        vars: { n: days, reason: report.reason },
         title: `Your account is suspended for ${days} ${days === 1 ? 'day' : 'days'}`,
-        body: input.note ?? `Reported as: ${report.reason}`,
+        body: input.note ?? undefined,
       });
     }
 

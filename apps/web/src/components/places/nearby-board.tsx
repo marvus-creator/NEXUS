@@ -15,7 +15,7 @@ import {
   Wrench,
   X,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { CATEGORY_COLOR, placeImage } from '@/lib/photos';
 import { placesClient, type PlaceSummary } from '@/lib/places-client';
@@ -53,7 +53,10 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const params = useSearchParams();
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => places.find((place) => place.slug === params.get('place'))?.id ?? null,
+  );
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
   const cardRefs = useRef(new Map<string, HTMLDivElement>());

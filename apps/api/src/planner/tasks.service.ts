@@ -90,6 +90,12 @@ export class TasksService {
       include: {
         subtasks: { orderBy: { sortOrder: 'asc' } },
         goal: { select: { id: true, title: true, area: true } },
+        events: {
+          where: { endAt: { gt: now } },
+          orderBy: { startAt: 'asc' },
+          take: 1,
+          select: { id: true, startAt: true, endAt: true },
+        },
       },
       orderBy: [{ status: 'asc' }, { dueAt: { sort: 'asc', nulls: 'last' } }, { sortOrder: 'asc' }],
       take: 200,

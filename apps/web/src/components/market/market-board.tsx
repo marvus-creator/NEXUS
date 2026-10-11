@@ -13,8 +13,8 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { listingImage } from '@/lib/photos';
 import {
   createListing,
@@ -202,7 +202,16 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
   const [category, setCategory] = useState<BusinessCategory | ''>('');
   const [query, setQuery] = useState('');
   const [savedOnly, setSavedOnly] = useState(false);
-  const [composing, setComposing] = useState(false);
+  const params = useSearchParams();
+  const [composing, setComposing] = useState(params.get('new') === '1');
+  const [spotlight, setSpotlight] = useState<string | null>(params.get('listing'));
+
+  useEffect(() => {
+    if (!spotlight) return;
+    document.getElementById(`listing-${spotlight}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const timer = window.setTimeout(() => setSpotlight(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [spotlight]);
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
@@ -400,13 +409,18 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visible.map((listing) => (
-            <ListingCard
+            <div
               key={listing.id}
-              listing={listing}
-              onChange={(next) =>
-                setItems((current) => current.map((entry) => (entry.id === next.id ? next : entry)))
-              }
-            />
+              id={`listing-${listing.slug}`}
+              className={cn('scroll-mt-24 rounded-2xl transition', spotlight === listing.slug && 'ring-accent ring-2 ring-offset-4 ring-offset-[var(--ground)]')}
+            >
+              <ListingCard
+                listing={listing}
+                onChange={(next) =>
+                  setItems((current) => current.map((entry) => (entry.id === next.id ? next : entry)))
+                }
+              />
+            </div>
           ))}
         </div>
       )}

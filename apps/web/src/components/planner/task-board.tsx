@@ -1,13 +1,14 @@
 'use client';
 
 import { Badge, Button, Card, EmptyState, Field, Input, cn } from '@nexus/ui';
-import { CalendarClock, Check, ListTodo, Plus, Repeat, Target, Trash2, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { CalendarCheck, CalendarClock, CalendarSearch, Check, ListTodo, Plus, Repeat, Target, Trash2, X } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { plannerClient, type Goal, type Task } from '@/lib/planner-client';
 import { useErrorText, useFormatDate, useT } from '@/i18n/client';
 import type { Translate } from '@/i18n/types';
 import type { DateStyle } from '@/i18n/config';
+import { FindTime } from './find-time';
 
 const PRIORITY_TINT: Record<Task['priority'], string> = {
   LOW: 'var(--ink-subtle)',
@@ -55,7 +56,8 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
 
   const [tasks, setTasks] = useState(initialTasks);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['value']>('open');
-  const [composing, setComposing] = useState(false);
+  const params = useSearchParams();
+  const [composing, setComposing] = useState(params.get('new') === '1');
   const [title, setTitle] = useState('');
   const [dueAt, setDueAt] = useState('');
   const [priority, setPriority] = useState<Task['priority']>('MEDIUM');
@@ -63,6 +65,8 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
   const [goalId, setGoalId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [finding, setFinding] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const visible = useMemo(() => {
     const now = Date.now();
@@ -131,6 +135,37 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
         current.map((item) => (item.id === task.id ? { ...item, status: task.status } : item)),
       );
     }
+  }
+
+  function booked(task: Task, event: { id: string; startAt: string; endAt: string }, clash: string | null) {
+    setTasks((current) => current.map((item) => (item.id === task.id ? { ...item, events: [event] } : item)));
+    setFinding(null);
+    setNotice(clash ? t('tasks.findTime.clash', { title: clash }) : null);
+    router.refresh();
+  }
+
+  async function unbook(task: Task) {
+    const event = task.events?.[0];
+    if (!event) return;
+
+    setTasks((current) => current.map((item) => (item.id === task.id ? { ...item, events: [] } : item)));
+
+    try {
+      await plannerClient.deleteEvent(event.id);
+      router.refresh();
+    } catch (caught) {
+      setError((caught as Error).message);
+      setTasks((current) => current.map((item) => (item.id === task.id ? { ...item, events: [event] } : item)));
+    }
+  }
+
+  function bookedLabel(startAt: string) {
+    const start = new Date(startAt);
+    const today = new Date();
+    const sameDay = start.toDateString() === today.toDateString();
+    const tomorrow = start.toDateString() === new Date(today.getTime() + 86400000).toDateString();
+    const day = sameDay ? t('tasks.findTime.today') : tomorrow ? t('tasks.findTime.tomorrow') : format(start, 'dayMonthShort');
+    return t('tasks.findTime.booked', { when: `${day} ${format(start, 'time')}` });
   }
 
   async function remove(task: Task) {
@@ -272,6 +307,12 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
         </Card>
       ) : null}
 
+      {notice ? (
+        <p role="status" className="text-warning mt-4 text-sm">
+          {notice}
+        </p>
+      ) : null}
+
       <div className="mt-6 flex flex-col gap-2.5">
         {visible.length === 0 ? (
           <EmptyState
@@ -344,7 +385,35 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                           <Target /> {task.goal.title}
                         </Badge>
                       ) : null}
+
+                      {!done && task.events?.[0] ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Badge variant="success" size="sm">
+                            <CalendarCheck /> {bookedLabel(task.events[0].startAt)}
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => void unbook(task)}
+                            aria-label={t('tasks.findTime.unbook', { title: task.title })}
+                            className="text-ink-subtle hover:text-danger grid size-6 place-items-center rounded-md"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ) : null}
+
+                      {!done && !task.events?.[0] ? (
+                        <button
+                          type="button"
+                          onClick={() => setFinding((current) => (current === task.id ? null : task.id))}
+                          aria-expanded={finding === task.id}
+                          className="text-accent hover:bg-[var(--accent-soft)] inline-flex min-h-6 items-center gap-1 rounded-md px-1.5 text-[0.6875rem] font-medium"
+                        >
+                          <CalendarSearch className="size-3" /> {t('tasks.findTime.button')}
+                        </button>
+                      ) : null}
                     </div>
+
                   </div>
 
                   <button
@@ -356,6 +425,10 @@ export function TaskBoard({ initialTasks, goals }: { initialTasks: Task[]; goals
                     <Trash2 className="size-3.5" />
                   </button>
                 </div>
+
+                {finding === task.id ? (
+                  <FindTime task={task} onBooked={(event, clash) => booked(task, event, clash)} onClose={() => setFinding(null)} />
+                ) : null}
               </Card>
             );
           })

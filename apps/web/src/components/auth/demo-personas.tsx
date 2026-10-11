@@ -10,13 +10,13 @@ import { useErrorText, useT } from '@/i18n/client';
 
 const PERSONAS = [
   {
-    key: 'malvyn',
-    name: 'Malvyn',
-    role: 'malvynRole',
-    blurb: 'malvynBlurb',
-    email: 'malvyn.1789358144@nexus.local',
-    password: 'correct-horse-battery',
-    photo: null,
+    key: 'aline',
+    name: 'Aline',
+    role: 'alineRole',
+    blurb: 'alineBlurb',
+    email: 'aline@demo.nexus.rw',
+    password: 'nexus-demo-2026',
+    photo: PEOPLE.aline,
     tint: '#3B82F6',
   },
   {
@@ -48,7 +48,7 @@ export function DemoPersonas({ next }: { next: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (process.env.NEXT_PUBLIC_DEMO_LOGINS === 'off') return null;
+  if (process.env.NEXT_PUBLIC_DEMO_LOGINS !== 'on') return null;
 
   async function enter(persona: (typeof PERSONAS)[number]) {
     setBusy(persona.key);
@@ -82,16 +82,8 @@ export function DemoPersonas({ next }: { next: string }) {
               busy === persona.key && 'border-accent',
             )}
           >
-            {persona.photo ? (
-              <img src={persona.photo} alt="" className="size-11 rounded-full object-cover" />
-            ) : (
-              <span
-                className="grid size-11 place-items-center rounded-full text-sm font-bold text-white"
-                style={{ background: persona.tint }}
-              >
-                MA
-              </span>
-            )}
+            <img src={persona.photo} alt="" className="size-11 rounded-full object-cover" />
+
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{persona.name}</span>

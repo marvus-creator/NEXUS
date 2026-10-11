@@ -1,9 +1,9 @@
 export const tasks = {
   counts: {
-    open: ['{n} open', '{n} bitarakorwa', '{n} ouvertes'],
-    overdue: ['{n} overdue', '{n} byatinze', '{n} en retard'],
-    dueToday: ['{n} due today', '{n} birangira uyu munsi', '{n} pour aujourd’hui'],
-    done: ['{n} done', '{n} byarangiye', '{n} terminées'],
+    open: ['{n} open', '{n} bitarakorwa', 'Ouvertes : {n}'],
+    overdue: ['{n} overdue', '{n} byatinze', 'En retard : {n}'],
+    dueToday: ['{n} due today', '{n} birangira uyu munsi', 'Pour aujourd’hui : {n}'],
+    done: ['{n} done', '{n} byarangiye', 'Terminées : {n}'],
   },
   filters: {
     open: ['Open', 'Bitarakorwa', 'Ouvertes'],
@@ -49,6 +49,31 @@ export const tasks = {
   reopen: ['Reopen {title}', 'Ongera ufungure {title}', 'Rouvrir {title}'],
   complete: ['Complete {title}', 'Rangiza {title}', 'Terminer {title}'],
   delete: ['Delete {title}', 'Siba {title}', 'Supprimer {title}'],
+  findTime: {
+    button: ['Find time', 'Shaka igihe', 'Trouver un créneau'],
+    title: ['When will you do “{title}”?', 'Uzakora “{title}” ryari?', 'Quand ferez-vous « {title} » ?'],
+    body: [
+      'Free slots around your classes, your calendar and the events you are going to.',
+      'Ibihe by’ubusa hagati y’amasomo yawe, kalendari yawe n’ibirori uzitabira.',
+      'Créneaux libres autour de vos cours, de votre calendrier et des événements où vous allez.',
+    ],
+    length: ['How long?', 'Bizatwara igihe kingana iki?', 'Combien de temps ?'],
+    minutes: ['{n} min', 'Iminota {n}', '{n} min'],
+    today: ['Today', 'Uyu munsi', 'Aujourd’hui'],
+    tomorrow: ['Tomorrow', 'Ejo', 'Demain'],
+    none: [
+      'No free {n}-minute slot in the next 3 days. Try a shorter block.',
+      'Nta gihe cy’ubusa cy’iminota {n} mu minsi 3 iri imbere. Gerageza igihe gito.',
+      'Aucun créneau libre de {n} min dans les 3 prochains jours. Essayez plus court.',
+    ],
+    loading: ['Looking at your week…', 'Turimo kureba icyumweru cyawe…', 'Analyse de votre semaine…'],
+    room: ['free until {time}', 'ubusa kugeza {time}', 'libre jusqu’à {time}'],
+    book: ['Block {time}', 'Fata {time}', 'Réserver {time}'],
+    booked: ['Booked {when}', 'Byashyizwe {when}', 'Réservé {when}'],
+    unbook: ['Remove {title} from your calendar', 'Kura {title} kuri kalendari yawe', 'Retirer {title} de votre calendrier'],
+    clash: ['Booked, but it overlaps “{title}”.', 'Byashyizweho, ariko bihura na “{title}”.', 'Réservé, mais cela chevauche « {title} ».'],
+    close: ['Close', 'Funga', 'Fermer'],
+  },
 } as const;
 
 export const goals = {

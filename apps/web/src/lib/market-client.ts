@@ -181,7 +181,7 @@ export function refundOrder(code: string) {
   return request<Order>(`/orders/${code}/refund`, 'POST');
 }
 
-export function transfer(input: { username: string; amount: number; memo?: string }) {
+export function transfer(input: { username: string; amount: number; memo?: string; idempotencyKey?: string }) {
   return request<{ reference: string; amount: Money; balance: Money }>(
     '/wallet/transfer',
     'POST',

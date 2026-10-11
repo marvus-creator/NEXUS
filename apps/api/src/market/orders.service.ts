@@ -132,6 +132,8 @@ export class OrdersService {
       await this.notifications.notify({
         userId: seller.user.id,
         category: 'SYSTEM',
+        key: 'orderRequest',
+        vars: { name: profile.displayName, n: quantity, item: listing.title },
         title: `${profile.displayName} wants ${quantity} × ${listing.title}`,
         body: input.note ?? undefined,
         href: '/market/orders',
@@ -214,6 +216,8 @@ export class OrdersService {
       await this.notifications.notify({
         userId: buyer.user.id,
         category: 'SYSTEM',
+        key: accept ? 'orderAccepted' : 'orderDeclined',
+        vars: { name: profile.displayName, item: order.listing.title },
         title: accept
           ? `${profile.displayName} accepted your order for ${order.listing.title}`
           : `${profile.displayName} declined your order for ${order.listing.title}`,
@@ -277,20 +281,33 @@ export class OrdersService {
       );
     }
 
-    const transaction = await this.ledger.post({
-      kind: 'ORDER_PAYMENT',
-      currency: order.currency,
-      memo: `Order ${order.code} — ${order.listing.title}`,
-      entries: [
-        { walletId: buyerWallet.id, direction: 'DEBIT', amountMinor: order.totalMinor },
-        { walletId: sellerWallet.id, direction: 'CREDIT', amountMinor: order.totalMinor },
-      ],
-    });
+    const { transaction, updated } = await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM orders WHERE id = ${order.id} FOR UPDATE`;
 
-    const updated = await this.prisma.order.update({
-      where: { id: order.id },
-      data: { paidTransactionId: transaction.id, status: 'FULFILLED', fulfilledAt: new Date() },
-      include: ORDER_INCLUDE,
+      const fresh = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
+
+      if (fresh.paidTransactionId) throw new BadRequestException('That order is already paid');
+      if (fresh.status !== 'ACCEPTED') {
+        throw new BadRequestException('Only an accepted order can be paid');
+      }
+
+      const posted = await this.ledger.postWithin(tx, {
+        kind: 'ORDER_PAYMENT',
+        currency: fresh.currency,
+        memo: `Order ${fresh.code} — ${order.listing.title}`,
+        entries: [
+          { walletId: buyerWallet.id, direction: 'DEBIT', amountMinor: fresh.totalMinor },
+          { walletId: sellerWallet.id, direction: 'CREDIT', amountMinor: fresh.totalMinor },
+        ],
+      });
+
+      const paid = await tx.order.update({
+        where: { id: fresh.id },
+        data: { paidTransactionId: posted.id, status: 'FULFILLED', fulfilledAt: new Date() },
+        include: ORDER_INCLUDE,
+      });
+
+      return { transaction: posted, updated: paid };
     });
 
     const seller = await this.prisma.profile.findUnique({
@@ -302,6 +319,8 @@ export class OrdersService {
       await this.notifications.notify({
         userId: seller.user.id,
         category: 'SYSTEM',
+        key: 'orderPaid',
+        vars: { name: profile.displayName, amount: money(order.totalMinor, order.currency).display, item: order.listing.title },
         title: `${profile.displayName} paid ${money(order.totalMinor, order.currency).display} for ${order.listing.title}`,
         href: '/wallet',
       });
@@ -327,15 +346,26 @@ export class OrdersService {
     if (order.sellerId !== profile.id) throw new ForbiddenException('Only the seller can refund');
     if (!order.paidTransactionId) throw new BadRequestException('That order was never paid');
 
-    const reversal = await this.ledger.reverse(
-      order.paidTransactionId,
-      `Refund for order ${order.code}`,
-    );
+    const { reversal, updated } = await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM orders WHERE id = ${order.id} FOR UPDATE`;
 
-    const updated = await this.prisma.order.update({
-      where: { id: order.id },
-      data: { status: 'CANCELLED', paidTransactionId: null },
-      include: ORDER_INCLUDE,
+      const fresh = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
+
+      if (!fresh.paidTransactionId) throw new BadRequestException('That order was never paid');
+
+      const reversed = await this.ledger.reverseWithin(
+        tx,
+        fresh.paidTransactionId,
+        `Refund for order ${fresh.code}`,
+      );
+
+      const cancelled = await tx.order.update({
+        where: { id: fresh.id },
+        data: { status: 'CANCELLED', paidTransactionId: null },
+        include: ORDER_INCLUDE,
+      });
+
+      return { reversal: reversed, updated: cancelled };
     });
 
     const buyer = await this.prisma.profile.findUnique({
@@ -347,6 +377,8 @@ export class OrdersService {
       await this.notifications.notify({
         userId: buyer.user.id,
         category: 'SYSTEM',
+        key: 'orderRefunded',
+        vars: { code: order.code },
         title: `Order ${order.code} was refunded`,
         href: '/wallet',
       });

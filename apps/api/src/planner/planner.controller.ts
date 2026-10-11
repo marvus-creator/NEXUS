@@ -108,6 +108,15 @@ export class CalendarController {
     return this.calendar.freeSlots(userId, date, minutes ? Number(minutes) : 30);
   }
 
+  @Get('suggest')
+  suggest(
+    @CurrentUser('sub') userId: string,
+    @Query('minutes') minutes?: string,
+    @Query('days') days?: string,
+  ) {
+    return this.calendar.suggest(userId, minutes ? Number(minutes) : 60, days ? Number(days) : 3);
+  }
+
   @Post('events')
   create(@CurrentUser('sub') userId: string, @Body() dto: CreateEventDto) {
     return this.calendar.create(userId, dto);

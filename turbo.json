@@ -11,7 +11,8 @@
     "NEXT_PUBLIC_API_URL",
     "WEB_ORIGIN",
     "API_INTERNAL_URL",
-    "NEXUS_LITE"
+    "NEXUS_LITE",
+    "NEXT_PUBLIC_DEMO_LOGINS"
   ],
   "tasks": {
     "dev": {
