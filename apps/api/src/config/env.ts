@@ -11,7 +11,7 @@ export const envSchema = z.object({
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
   API_PUBLIC_URL: z.string().url().default('http://localhost:4000'),
   DATABASE_URL: z.string().min(1),
-  REDIS_URL: z.string().min(1),
+  REDIS_URL: z.string().default(''),
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_TTL: z.string().default('15m'),

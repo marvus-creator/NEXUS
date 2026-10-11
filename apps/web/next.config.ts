@@ -7,6 +7,7 @@ loadEnv({ path: path.resolve(process.cwd(), '../../.env'), quiet: true });
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@nexus/ui'],
+  experimental: process.env.NEXUS_LITE === '1' ? { cpus: 2, workerThreads: false } : {},
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],

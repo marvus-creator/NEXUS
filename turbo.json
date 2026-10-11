@@ -10,7 +10,8 @@
     "JWT_REFRESH_SECRET",
     "NEXT_PUBLIC_API_URL",
     "WEB_ORIGIN",
-    "API_INTERNAL_URL"
+    "API_INTERNAL_URL",
+    "NEXUS_LITE"
   ],
   "tasks": {
     "dev": {

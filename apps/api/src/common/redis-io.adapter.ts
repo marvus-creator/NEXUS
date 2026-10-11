@@ -18,6 +18,11 @@ export class RedisIoAdapter extends IoAdapter {
   }
 
   async connect() {
+    if (!this.redisUrl) {
+      this.logger.log('No REDIS_URL set, realtime runs single-instance');
+      return;
+    }
+
     try {
       const publisher = new Redis(this.redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
       const subscriber = publisher.duplicate();

@@ -7,8 +7,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = new Set(process.argv.slice(2));
 const shell = process.platform === 'win32';
 
-function run(cmd, cmdArgs, cwd) {
-  const r = spawnSync(cmd, cmdArgs, { cwd, stdio: 'inherit', shell });
+function run(cmd, cmdArgs, cwd, env = {}) {
+  const r = spawnSync(cmd, cmdArgs, { cwd, stdio: 'inherit', shell, env: { ...process.env, ...env } });
   if (r.status !== 0) {
     console.error(`\n[lite] "${cmd} ${cmdArgs.join(' ')}" failed`);
     process.exit(r.status ?? 1);
@@ -47,16 +47,14 @@ for (const port of [3000, 4000]) {
   }
 }
 
-const docker = spawnSync('docker', ['info'], { stdio: 'ignore', shell });
-if (docker.status !== 0) {
-  console.error('[lite] Docker is not running. Start Docker Desktop, then run this again.');
-  process.exit(1);
-}
-run('docker', ['compose', 'up', '-d', '--wait'], root);
+run('node', ['scripts/db.mjs', 'start'], root);
 
 if (!args.has('--no-build')) {
   console.log('[lite] building api and web (skip next time with --no-build)');
-  run('pnpm', ['turbo', 'run', 'build', '--filter=@nexus/api', '--filter=@nexus/web'], root);
+  run('pnpm', ['turbo', 'run', 'build', '--filter=@nexus/api', '--filter=@nexus/web', '--concurrency=1'], root, {
+    NEXUS_LITE: '1',
+    NODE_OPTIONS: '--max-old-space-size=2048',
+  });
 }
 
 const children = [];
