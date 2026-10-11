@@ -110,6 +110,8 @@ async function main() {
 
   const second = await call('/wallet/transfer', { method: 'POST', jar: buyer.jar, body: { username: seller.username, amount: 1000, idempotencyKey: `test-${stamp}-other` } });
   record('a new key is a new transfer', second.status < 300 && !references.has(second.body?.reference));
+  const reused = await call('/wallet/transfer', { method: 'POST', jar: buyer.jar, body: { username: seller.username, amount: 2500, idempotencyKey: key } });
+  record('reusing a key for a different amount is refused, not replayed', reused.status === 409, `status ${reused.status}`);
 
   const start = new Date(Date.now() + 4 * 86400000).toISOString();
   const tiny = await call('/events', { method: 'POST', jar: seller.jar, body: { title: `One seat ${stamp}`, startAt: start, capacity: 2, visibility: 'PUBLIC' } });

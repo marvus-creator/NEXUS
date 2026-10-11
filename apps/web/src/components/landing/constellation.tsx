@@ -21,7 +21,7 @@ const NODES: Node[] = [
   { id: 'aline', x: 30, y: 26, kind: 'person', label: 'Aline', sub: 'alineSub', img: PEOPLE.aline },
   { id: 'kevin', x: 70, y: 24, kind: 'person', label: 'Kevin', sub: 'kevinSub', img: PEOPLE.kevin },
   { id: 'eric', x: 76, y: 70, kind: 'person', label: 'Eric', sub: 'ericSub', img: PEOPLE.eric },
-  { id: 'grace', x: 24, y: 72, kind: 'person', label: 'Grace', sub: 'Founder, Nyamirambo', img: PEOPLE.grace },
+  { id: 'grace', x: 24, y: 72, kind: 'person', label: 'Grace', sub: 'graceSub', img: PEOPLE.grace },
   { id: 'crit', x: 12, y: 40, kind: 'event', label: 'Design Critique Night', sub: 'Tue 18:30', img: IMG.designNight },
   { id: 'meetup', x: 88, y: 42, kind: 'event', label: 'Kigali Tech Meetup', sub: 'Thu 18:00', img: IMG.techMeetup },
   { id: 'football', x: 90, y: 88, kind: 'event', label: 'Sunday Football', sub: 'Sun 07:00', img: IMG.football },
@@ -48,9 +48,9 @@ const LINKS: [string, string, string][] = [
 
 const TINT = { you: '#3B82F6', person: '#FF7A59', event: '#F5A524', place: '#22C55E' } as const;
 
-const SUB_KEYS = new Set(['alineSub', 'kevinSub', 'ericSub', 'workspace', 'sport', 'store']);
+const SUB_KEYS = new Set(['alineSub', 'kevinSub', 'ericSub', 'graceSub', 'workspace', 'sport', 'store']);
 
-type SubKey = 'alineSub' | 'kevinSub' | 'ericSub' | 'workspace' | 'sport' | 'store';
+type SubKey = 'alineSub' | 'kevinSub' | 'ericSub' | 'graceSub' | 'workspace' | 'sport' | 'store';
 
 function find(id: string) {
   return NODES.find((node) => node.id === id)!;

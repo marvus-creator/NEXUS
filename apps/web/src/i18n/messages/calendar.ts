@@ -1,4 +1,9 @@
 export const calendar = {
+  legend: {
+    fixed: ['Fixed', 'Bihoraho', 'Fixe'],
+    events: ['Events', 'Ibirori', 'Événements'],
+    free: ['Free', 'Ubusa', 'Libre'],
+  },
   clash: ['Added, but it overlaps “{title}”.', 'Byongeweho, ariko bigongana na “{title}”.', 'Ajouté, mais chevauche « {title} ».'],
   previous: ['Previous week', 'Icyumweru gishize', 'Semaine précédente'],
   next: ['Next week', 'Icyumweru gitaha', 'Semaine suivante'],

@@ -5,6 +5,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { PrismaService } from '../prisma/prisma.service.js';
 import { TokensService } from '../auth/tokens.service.js';
 import { SecurityStore } from '../common/security-store.service.js';
+import { likeSafe } from '../common/like.js';
 
 const RANK: Record<UserRole, number> = { USER: 0, BUSINESS: 1, MODERATOR: 2, ADMIN: 3 };
 
@@ -345,9 +346,9 @@ export class ModerationService {
         ...(term.length >= 2
           ? {
               OR: [
-                { email: { contains: term, mode: 'insensitive' } },
-                { profile: { username: { contains: term, mode: 'insensitive' } } },
-                { profile: { displayName: { contains: term, mode: 'insensitive' } } },
+                { email: { contains: likeSafe(term), mode: 'insensitive' } },
+                { profile: { username: { contains: likeSafe(term), mode: 'insensitive' } } },
+                { profile: { displayName: { contains: likeSafe(term), mode: 'insensitive' } } },
               ],
             }
           : {}),

@@ -14,6 +14,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService<Env, true>);
 
+  app.set('query parser', (raw: string) => {
+    const params: Record<string, string> = {};
+    for (const [key, value] of new URLSearchParams(raw)) {
+      if (!(key in params)) params[key] = value;
+    }
+    return params;
+  });
+
   app.use(helmet());
   app.use('/uploads', (_request: unknown, response: { setHeader: (name: string, value: string) => void }, next: () => void) => {
     response.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');

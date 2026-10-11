@@ -55,8 +55,11 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
         slug: true,
         title: true,
         startAt: true,
-        host: { select: { userId: true } },
-        attendees: { where: { status: 'GOING' }, select: { profile: { select: { userId: true } } } },
+        host: { select: { userId: true, user: { select: { deletedAt: true } } } },
+        attendees: {
+          where: { status: 'GOING', profile: { user: { deletedAt: null } } },
+          select: { profile: { select: { userId: true } } },
+        },
       },
       take: 200,
     });
@@ -64,7 +67,8 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
     let sent = 0;
 
     for (const event of events) {
-      const people = new Set([event.host.userId, ...event.attendees.map((row) => row.profile.userId)]);
+      const people = new Set(event.attendees.map((row) => row.profile.userId));
+      if (!event.host.user.deletedAt) people.add(event.host.userId);
 
       for (const userId of people) {
         const created = await this.notifications.notify({
@@ -89,6 +93,7 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
         taskId: { not: null },
         startAt: { gt: now, lte: new Date(now.getTime() + BLOCK_LEAD) },
         task: { status: { in: ['TODO', 'DOING'] } },
+        profile: { user: { deletedAt: null } },
       },
       select: {
         id: true,

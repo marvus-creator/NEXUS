@@ -69,3 +69,6 @@ The one-click demo logins on the sign-in page are **off unless you set `NEXT_PUB
 - Live chat uses long-polling through Vercel. It is real-time, just not over WebSockets.
 - Emails only reach your own address until you verify a domain in Resend.
 - AI planning stays rule-based until the Anthropic account has credit; nothing breaks without it.
+- Redis is optional. Without `REDIS_URL`, rate limits, "sign out everywhere" and chat fan-out live in the API's memory, which is correct for a single API instance. Add Redis before you run more than one.
+- The API sends reminders an hour before events and shortly before booked task blocks, checking once a minute (`NEXUS_REMINDER_MS`, set `0` to turn it off). On the free Render plan the server sleeps, so reminders only go out while it is awake.
+- Notifications created before the translation update are stored in English. To translate them, run `node scripts/backfill-notification-keys.mjs` with `DATABASE_URL` pointing at the database: it only reports what it would change. Add `--write` to apply it. It fills empty fields only and never deletes anything.

@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { isSupportedCurrency, money, toMinor } from '../common/util/money.js';
 import { LedgerService } from '../wallet/ledger.service.js';
 import { BusinessesService } from './businesses.service.js';
+import { likeSafe } from '../common/like.js';
 
 function slugify(value: string) {
   return value
@@ -138,8 +139,8 @@ export class ListingsService {
         ...(term.length >= 2
           ? {
               OR: [
-                { title: { contains: term, mode: 'insensitive' } },
-                { description: { contains: term, mode: 'insensitive' } },
+                { title: { contains: likeSafe(term), mode: 'insensitive' } },
+                { description: { contains: likeSafe(term), mode: 'insensitive' } },
               ],
             }
           : {}),

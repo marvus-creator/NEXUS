@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { randomBytes } from 'node:crypto';
 import type { BusinessCategory, BusinessRole, BusinessStatus } from '@nexus/db';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { likeSafe } from '../common/like.js';
 
 const RANK: Record<BusinessRole, number> = { OWNER: 3, MANAGER: 2, STAFF: 1 };
 
@@ -78,9 +79,9 @@ export class BusinessesService {
         ...(options.query && options.query.trim().length >= 2
           ? {
               OR: [
-                { name: { contains: options.query.trim(), mode: 'insensitive' } },
-                { tagline: { contains: options.query.trim(), mode: 'insensitive' } },
-                { description: { contains: options.query.trim(), mode: 'insensitive' } },
+                { name: { contains: likeSafe(options.query.trim()), mode: 'insensitive' } },
+                { tagline: { contains: likeSafe(options.query.trim()), mode: 'insensitive' } },
+                { description: { contains: likeSafe(options.query.trim()), mode: 'insensitive' } },
               ],
             }
           : {}),

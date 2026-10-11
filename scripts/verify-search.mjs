@@ -133,6 +133,14 @@ async function main() {
 
   const injection = await find(ann.jar, `%' OR 1=1 --`);
   record('special characters are treated as plain text', injection.status === 200);
+  const wildcard = await find(ann.jar, '%%');
+  const underscore = await find(ann.jar, '__');
+  record('% and _ are not wildcards that list everything', wildcard.body?.total === 0 && underscore.body?.total === 0, `${wildcard.body?.total} / ${underscore.body?.total}`);
+
+  const doubled = await call(`/search?q=${word}&q=other&kinds=event&kinds=place`, { jar: ann.jar });
+  record('repeated query parameters are a clean 200, not a crash', doubled.status === 200, `status ${doubled.status}`);
+  const doubledPeople = await call(`/people/search?q=${ann.username}&q=x`, { jar: cal.jar });
+  record('people search survives repeated parameters too', doubledPeople.status < 500, `status ${doubledPeople.status}`);
 
   const kinds = await find(ann.jar, word, 'event');
   record('the kinds filter limits result types', kinds.hits.length > 0 && kinds.hits.every((hit) => hit.kind === 'event'));

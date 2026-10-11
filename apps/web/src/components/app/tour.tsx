@@ -133,7 +133,7 @@ export function TourButton() {
         {step ? (
           <motion.div
             key="tour"
-            className="fixed inset-0 z-[120]"
+            className="fixed inset-0 z-[120] overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

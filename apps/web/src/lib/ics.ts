@@ -1,3 +1,5 @@
+const CRLF = '\r\n';
+
 function stamp(date: Date) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 }
@@ -7,14 +9,25 @@ function escape(value: string) {
 }
 
 function fold(line: string) {
+  const encoder = new TextEncoder();
   const parts: string[] = [];
-  let rest = line;
-  while (rest.length > 74) {
-    parts.push(rest.slice(0, 74));
-    rest = ` ${rest.slice(74)}`;
+  let current = '';
+  let size = 0;
+
+  for (const character of Array.from(line)) {
+    const bytes = encoder.encode(character).length;
+    const limit = parts.length === 0 ? 75 : 74;
+    if (size + bytes > limit) {
+      parts.push(current);
+      current = '';
+      size = 0;
+    }
+    current += character;
+    size += bytes;
   }
-  parts.push(rest);
-  return parts.join('\r\n');
+
+  parts.push(current);
+  return parts.join(`${CRLF} `);
 }
 
 export function buildIcs(input: {
@@ -52,7 +65,7 @@ export function buildIcs(input: {
     'END:VCALENDAR',
   ].filter((line): line is string => line !== null);
 
-  return lines.map(fold).join('\r\n') + '\r\n';
+  return lines.map(fold).join(CRLF) + CRLF;
 }
 
 export function downloadIcs(filename: string, content: string) {

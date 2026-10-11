@@ -3,6 +3,7 @@ import type { Prisma } from '@nexus/db';
 import { AuditService } from '../audit/audit.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { likeSafe } from '../common/like.js';
 
 export type RelationshipState = {
   isSelf: boolean;
@@ -170,10 +171,10 @@ export class PeopleService {
         user: { deletedAt: null, status: { not: 'DEACTIVATED' } },
         privacy: { is: { profileVisibility: { not: 'PRIVATE' } } },
         OR: [
-          { username: { contains: term, mode: 'insensitive' } },
-          { displayName: { contains: term, mode: 'insensitive' } },
-          { occupation: { contains: term, mode: 'insensitive' } },
-          { city: { contains: term, mode: 'insensitive' } },
+          { username: { contains: likeSafe(term), mode: 'insensitive' } },
+          { displayName: { contains: likeSafe(term), mode: 'insensitive' } },
+          { occupation: { contains: likeSafe(term), mode: 'insensitive' } },
+          { city: { contains: likeSafe(term), mode: 'insensitive' } },
           { skills: { hasSome: [term.toLowerCase()] } },
         ],
       },

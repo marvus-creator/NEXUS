@@ -3,6 +3,7 @@ import type { Prisma } from '@nexus/db';
 import { money } from '../common/util/money.js';
 import { PeopleService } from '../people/people.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { likeSafe } from '../common/like.js';
 
 export type SearchKind = 'person' | 'event' | 'circle' | 'place' | 'listing' | 'post';
 
@@ -46,7 +47,7 @@ export class SearchService {
     ]);
     const circleIds = memberships.map((membership) => membership.circleId);
     const wanted = (kind: SearchKind) => !kinds || kinds.length === 0 || kinds.includes(kind);
-    const contains = { contains: term, mode: 'insensitive' as const };
+    const contains = { contains: likeSafe(term), mode: 'insensitive' as const };
 
     const [people, events, circles, places, listings, posts] = await Promise.all([
       wanted('person') ? this.people.search(userId, term, PER_GROUP) : [],

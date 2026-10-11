@@ -12,6 +12,7 @@ import { money } from '../common/util/money.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { LedgerService } from '../wallet/ledger.service.js';
+import { likeSafe } from '../common/like.js';
 
 const RANK: Record<UserRole, number> = { USER: 0, BUSINESS: 1, MODERATOR: 2, ADMIN: 3 };
 
@@ -79,11 +80,11 @@ export class ControlService {
       ...(term.length >= 2
         ? {
             OR: [
-              { email: { contains: term, mode: 'insensitive' } },
-              { profile: { username: { contains: term, mode: 'insensitive' } } },
-              { profile: { displayName: { contains: term, mode: 'insensitive' } } },
-              { profile: { occupation: { contains: term, mode: 'insensitive' } } },
-              { profile: { bio: { contains: term, mode: 'insensitive' } } },
+              { email: { contains: likeSafe(term), mode: 'insensitive' } },
+              { profile: { username: { contains: likeSafe(term), mode: 'insensitive' } } },
+              { profile: { displayName: { contains: likeSafe(term), mode: 'insensitive' } } },
+              { profile: { occupation: { contains: likeSafe(term), mode: 'insensitive' } } },
+              { profile: { bio: { contains: likeSafe(term), mode: 'insensitive' } } },
             ],
           }
         : {}),
@@ -403,7 +404,7 @@ export class ControlService {
   async content(type: ContentType, options: { query?: string; state?: 'live' | 'removed' | 'all' }) {
     const term = options.query?.trim() ?? '';
     const deleted = options.state === 'removed' ? { deletedAt: { not: null } } : options.state === 'all' ? {} : { deletedAt: null };
-    const contains = (field: string) => (term.length >= 2 ? { [field]: { contains: term, mode: 'insensitive' } } : {});
+    const contains = (field: string) => (term.length >= 2 ? { [field]: { contains: likeSafe(term), mode: 'insensitive' } } : {});
 
     if (type === 'posts') {
       const rows = await this.prisma.post.findMany({

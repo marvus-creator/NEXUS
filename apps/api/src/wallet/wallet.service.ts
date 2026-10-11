@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -113,6 +113,12 @@ export class WalletService {
 
       if (!sent || existing.kind !== 'TRANSFER') {
         throw new BadRequestException('That request key was already used for something else');
+      }
+
+      const received = existing.entries.find((entry) => entry.walletId === recipient.id && entry.direction === 'CREDIT');
+
+      if (!received || sent.amountMinor !== amountMinor) {
+        throw new ConflictException('That request key was already used for a different transfer');
       }
 
       return {

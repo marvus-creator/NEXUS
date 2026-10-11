@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import type { PlaceCategory, Prisma } from '@nexus/db';
 import { PeopleService } from '../people/people.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { likeSafe } from '../common/like.js';
 
 const EARTH_RADIUS_KM = 6371;
 
@@ -79,9 +80,9 @@ export class PlacesService {
     if (options.query && options.query.trim().length >= 2) {
       const term = options.query.trim();
       where.OR = [
-        { name: { contains: term, mode: 'insensitive' } },
-        { description: { contains: term, mode: 'insensitive' } },
-        { address: { contains: term, mode: 'insensitive' } },
+        { name: { contains: likeSafe(term), mode: 'insensitive' } },
+        { description: { contains: likeSafe(term), mode: 'insensitive' } },
+        { address: { contains: likeSafe(term), mode: 'insensitive' } },
       ];
     }
 

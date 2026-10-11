@@ -142,6 +142,13 @@ async function main() {
   const again = await call('/calendar/suggest?minutes=90', { jar: me.jar });
   record('a booked slot is never suggested again', (again.body?.slots ?? []).every((slot) => !overlaps(slot, pick.startAt, pick.endAt)));
 
+  const overlap = await call('/calendar/events', {
+    method: 'POST',
+    jar: me.jar,
+    body: { title: 'Gym', kind: 'PERSONAL', startAt: kigali(tomorrow, 14), endAt: kigali(tomorrow, 15) },
+  });
+  record('booking over an event you are going to warns about the clash', overlap.body?.clashesWith?.title === `Long meetup ${stamp}`, JSON.stringify(overlap.body?.clashesWith ?? null));
+
   const stranger = await makeUser('cstr', admin);
   const foreign = await call('/calendar/events', {
     method: 'POST',

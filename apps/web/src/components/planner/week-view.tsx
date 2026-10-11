@@ -129,9 +129,9 @@ export function WeekView({
 
         <div className="text-ink-muted flex flex-wrap items-center gap-3 text-xs">
           {[
-            { label: 'Fixed', tint: 'var(--module-learn)' },
-            { label: 'Events', tint: 'var(--accent)' },
-            { label: 'Free', tint: 'var(--module-nearby)' },
+            { label: t('calendar.legend.fixed'), tint: 'var(--module-learn)' },
+            { label: t('calendar.legend.events'), tint: 'var(--accent)' },
+            { label: t('calendar.legend.free'), tint: 'var(--module-nearby)' },
           ].map((item) => (
             <span key={item.label} className="inline-flex items-center gap-1.5">
               <span className="size-2 rounded-full" style={{ backgroundColor: item.tint }} />

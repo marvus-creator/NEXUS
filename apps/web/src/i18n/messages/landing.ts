@@ -62,6 +62,7 @@ export const landing = {
     alineSub: ['Product designer', 'Umushushanyi w’ibicuruzwa', 'Designer produit'],
     kevinSub: ['12 mutual friends', 'Inshuti 12 muhuriyeho', '12 amis en commun'],
     ericSub: ['Sunday football', 'Umupira wo ku cyumweru', 'Foot du dimanche'],
+    graceSub: ['Founder, Nyamirambo', 'Washinze ikigo, Nyamirambo', 'Fondatrice, Nyamirambo'],
     workspace: ['Workspace', 'Aho gukorera', 'Espace de travail'],
     sport: ['Sport', 'Siporo', 'Sport'],
     store: ['Store', 'Iduka', 'Boutique'],

@@ -130,12 +130,14 @@ export function Sidebar({
             />
           </div>
         ) : null}
+      </nav>
 
+      <div className="px-3 pt-2 pb-3">
         {collapsed ? (
           <Link
             href={aiItem.href}
             title={t('nav.items.ai')}
-            className="bg-surface-raised mt-5 flex h-10 items-center justify-center rounded-[10px]"
+            className="bg-surface-raised flex h-10 items-center justify-center rounded-[10px]"
           >
             <Spark className="size-5" />
           </Link>
@@ -143,19 +145,19 @@ export function Sidebar({
           <Link
             href={aiItem.href}
             className={cn(
-              'ai-border ai-glow bg-surface-raised mt-6 block rounded-2xl p-4 text-left',
+              'ai-border ai-glow bg-surface-raised block rounded-2xl p-3.5 text-left',
               isActive(pathname, aiItem.href) && 'bg-surface-hover',
             )}
           >
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Spark /> <span className="text-ai-gradient">{t('nav.items.ai')}</span>
             </div>
-            <p className="text-ink-muted mt-1.5 text-xs leading-relaxed">
+            <p className="text-ink-muted mt-1.5 text-xs leading-relaxed [@media(max-height:820px)]:hidden">
               {t('nav.aiBlurb')}
             </p>
           </Link>
         )}
-      </nav>
+      </div>
 
       <div
         className={cn('border-line flex items-center gap-2 border-t p-3', collapsed && 'flex-col')}

@@ -10,6 +10,7 @@ const SLOT_STEP = 15;
 const SLOT_LEAD = 10;
 const SLOTS_PER_DAY = 2;
 const MAX_SLOTS = 6;
+const UNTIMED_EVENT_MS = 2 * 60 * 60 * 1000;
 
 export type LocalParts = {
   dateKey: string;
@@ -361,6 +362,21 @@ export class CalendarService {
       select: { id: true, title: true },
     });
 
+    const attending = clash
+      ? null
+      : await this.prisma.eventAttendee.findFirst({
+          where: {
+            profileId: profile.id,
+            status: 'GOING',
+            event: {
+              deletedAt: null,
+              startAt: { lt: endAt },
+              OR: [{ endAt: { gt: startAt } }, { endAt: null, startAt: { gt: new Date(startAt.getTime() - UNTIMED_EVENT_MS) } }],
+            },
+          },
+          select: { event: { select: { id: true, title: true } } },
+        });
+
     const event = await this.prisma.calendarEvent.create({
       data: {
         profileId: profile.id,
@@ -375,7 +391,7 @@ export class CalendarService {
       },
     });
 
-    return { event, clashesWith: clash };
+    return { event, clashesWith: clash ?? attending?.event ?? null };
   }
 
   async update(userId: string, id: string, dto: UpdateEventDto) {
