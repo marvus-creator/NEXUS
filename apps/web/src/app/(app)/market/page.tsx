@@ -20,13 +20,10 @@ export default async function MarketPage() {
   return (
     <div>
       <PageHero
-        eyebrow={t('pages.market.eyebrow')}
-        tint="var(--module-events)"
-        image={IMG.bags}
         title={t('pages.market.title')}
         description={t('pages.market.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <MarketBoard listings={listings} city={city} />

@@ -55,7 +55,7 @@ export default async function ControlOverview() {
                   <tile.icon className="size-4" />
                 </span>
               </div>
-              <div className="num font-display mt-3 text-4xl font-extrabold tracking-tight">{tile.value}</div>
+              <div className="num mt-3 text-3xl font-semibold tracking-tight">{tile.value}</div>
             </Card>
           </Link>
         ))}

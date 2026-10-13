@@ -11,9 +11,9 @@ const STORAGE_KEY = 'nexus-theme';
 const ThemeContext = React.createContext<{
   theme: Theme;
   setTheme: (theme: Theme) => void;
-}>({ theme: 'dark', setTheme: () => {} });
+}>({ theme: 'system', setTheme: () => {} });
 
-export const themeScript = `(function(){try{var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('${STORAGE_KEY}')||'dark';var m=window.matchMedia('(prefers-color-scheme: light)').matches;if(t==='light'||(t==='system'&&m)){document.documentElement.classList.add('light')}}catch(e){}})();`;
+export const themeScript = `(function(){try{var q=new URLSearchParams(location.search).get('theme');var t=q||localStorage.getItem('${STORAGE_KEY}')||'system';var m=window.matchMedia('(prefers-color-scheme: light)').matches;if(t==='light'||(t==='system'&&m)){document.documentElement.classList.add('light')}}catch(e){}})();`;
 
 function applyTheme(theme: Theme) {
   const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -22,14 +22,22 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = React.useState<Theme>('dark');
+  const [theme, setThemeState] = React.useState<Theme>('system');
 
   React.useEffect(() => {
     const override = new URLSearchParams(window.location.search).get('theme') as Theme | null;
-    const stored = override ?? (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? 'dark';
+    const stored = override ?? (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? 'system';
     setThemeState(stored);
     applyTheme(stored);
   }, []);
+
+  React.useEffect(() => {
+    if (theme !== 'system') return;
+    const media = window.matchMedia('(prefers-color-scheme: light)');
+    const sync = () => applyTheme('system');
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, [theme]);
 
   const setTheme = React.useCallback((next: Theme) => {
     setThemeState(next);

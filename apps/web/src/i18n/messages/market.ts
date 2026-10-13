@@ -1,4 +1,7 @@
 export const market = {
+  negotiable: ['negotiable', 'biraganirwaho', 'négociable'],
+  fromBusiness: ['Only from {name}', 'Ibya {name} gusa', 'Uniquement {name}'],
+  showAll: ['Show everything', 'Erekana byose', 'Tout afficher'],
   left: ['{n} left', 'hasigaye {n}', '{n} restants'],
   everything: ['Everything', 'Byose', 'Tout'],
   remove: ['Remove from saved', 'Kuraho mu byabitswe', 'Retirer des enregistrements'],

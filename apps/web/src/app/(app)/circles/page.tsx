@@ -19,13 +19,10 @@ export default async function CirclesPage() {
   return (
     <div>
       <PageHero
-        eyebrow={t('pages.circles.eyebrow')}
-        tint="var(--accent)"
-        image={IMG.cowork1}
         title={t('pages.circles.title')}
         description={t('pages.circles.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <CirclesBoard discover={discover} mine={mine} />

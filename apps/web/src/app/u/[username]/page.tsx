@@ -1,6 +1,5 @@
 import { Avatar, Badge, Button, Card, Logo } from '@nexus/ui';
 import { interestCategory, interestLabel } from '@/i18n/interests';
-import { IMG } from '@/lib/photos';
 import { MapPin } from 'lucide-react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -83,9 +82,8 @@ export default async function PublicProfilePage({
       </header>
 
       <div className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
-        <div className="relative h-44 overflow-hidden rounded-3xl sm:h-60">
-          <img src={profile.coverUrl ?? IMG.kigaliSunset} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,0),rgba(11,13,16,.55))]" />
+        <div className="bg-surface-raised border-line relative h-32 overflow-hidden rounded-xl border sm:h-44">
+          {profile.coverUrl ? <img src={profile.coverUrl} alt="" className="absolute inset-0 size-full object-cover" /> : null}
         </div>
 
         <div className="relative -mt-12 flex flex-col gap-4 px-4 sm:flex-row sm:items-end">

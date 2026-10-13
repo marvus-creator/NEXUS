@@ -169,7 +169,7 @@ export function OrdersBoard({ buying, selling }: { buying: Order[]; selling: Ord
             className={cn(
               'flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors',
               scope === value
-                ? 'border-transparent bg-accent text-white'
+                ? 'border-transparent bg-accent text-accent-ink'
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
@@ -178,7 +178,7 @@ export function OrdersBoard({ buying, selling }: { buying: Order[]; selling: Ord
               <span
                 className={cn(
                   'grid size-4.5 place-items-center rounded-full text-[0.625rem] font-semibold',
-                  scope === value ? 'bg-white/25' : 'bg-accent text-white',
+                  scope === value ? 'bg-white/25' : 'bg-accent text-accent-ink',
                 )}
               >
                 {pendingSales}

@@ -96,49 +96,48 @@ function ListingCard({
   }
 
   return (
-    <Card className="group flex flex-col overflow-hidden">
-      <div className="relative aspect-[4/3] overflow-hidden">
+    <Card className="flex flex-col overflow-hidden">
+      {listingImage({ title: listing.title, id: listing.id, imageUrl: listing.coverUrl }) ? (
         <img
-          src={listingImage({ title: listing.title, id: listing.id, imageUrl: listing.coverUrl })}
+          src={listingImage({ title: listing.title, id: listing.id, imageUrl: listing.coverUrl })!}
           alt=""
-          className="size-full object-cover transition duration-700 group-hover:scale-105"
+          className="aspect-[4/3] w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
-          {listing.kind === 'SERVICE' ? (
-            <Wrench className="size-3" />
-          ) : (
-            <Package className="size-3" />
-          )}
-          <span>{t(`enums.business.${listing.category}`)}</span>
-        </span>
+      ) : null}
+
+      <div className="flex items-center gap-1.5 px-4 pt-4">
+        <Badge variant="neutral" size="sm">
+          {listing.kind === 'SERVICE' ? <Wrench className="size-3" /> : <Package className="size-3" />}
+          {t(`enums.business.${listing.category}`)}
+        </Badge>
+        {soldOut ? (
+          <Badge variant="warning" size="sm">
+            {t('market.soldOut')}
+          </Badge>
+        ) : null}
         <button
           type="button"
           onClick={() => void toggleSave()}
           disabled={busy}
           aria-label={listing.saved ? t('market.remove') : t('market.saveListing')}
-          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/70 disabled:opacity-50"
+          aria-pressed={listing.saved}
+          className="text-ink-subtle hover:text-ink hover:bg-surface-raised ml-auto grid size-8 place-items-center rounded-lg transition-colors disabled:opacity-50"
         >
-          <Bookmark className={cn('size-4', listing.saved && 'fill-current text-[#60A5FA]')} />
+          <Bookmark className={cn('size-4', listing.saved && 'text-accent fill-current')} />
         </button>
-        {soldOut ? (
-          <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-black">
-            {t('market.soldOut')}
-          </span>
-        ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col px-4 pt-2 pb-4">
         <div className="min-w-0 flex-1">
-          <h3 className="line-clamp-2 min-w-0 text-[0.9375rem] font-semibold leading-snug">
+          <h3 className="line-clamp-2 min-w-0 text-[0.9375rem] font-medium leading-snug">
             {listing.title}
           </h3>
 
-          <p className="num text-accent mt-1.5 text-[1.0625rem] font-semibold">
+          <p className="num mt-1.5 text-[1.0625rem] font-semibold">
             {listing.price.display}
             {listing.negotiable ? (
               <span className="text-ink-subtle ml-1.5 font-sans text-xs font-normal">
-                negotiable
+                {t('market.negotiable')}
               </span>
             ) : null}
           </p>
@@ -152,7 +151,7 @@ function ListingCard({
           <div className="text-ink-subtle mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
             {listing.business ? (
               <Link
-                href={`/market/business/${listing.business.slug}`}
+                href={`/market?business=${listing.business.slug}`}
                 className="hover:text-ink flex items-center gap-1 transition-colors"
               >
                 <Store className="size-3.5" />
@@ -183,7 +182,7 @@ function ListingCard({
               <Check className="size-3.5" /> {t('market.orderSent')}
             </p>
           ) : (
-            <Button size="sm" className="w-full" onClick={() => void order()} disabled={busy}>
+            <Button size="sm" variant="secondary" className="w-full" onClick={() => void order()} disabled={busy}>
               <ShoppingBag className="size-4" /> {t('market.requestToBuy')}
             </Button>
           )}
@@ -205,6 +204,8 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
   const params = useSearchParams();
   const [composing, setComposing] = useState(params.get('new') === '1');
   const [spotlight, setSpotlight] = useState<string | null>(params.get('listing'));
+  const businessSlug = params.get('business');
+  const businessName = businessSlug ? listings.find((listing) => listing.business?.slug === businessSlug)?.business?.name ?? businessSlug : null;
 
   useEffect(() => {
     if (!spotlight) return;
@@ -222,6 +223,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
   const [error, setError] = useState<string | null>(null);
 
   const visible = items.filter((listing) => {
+    if (businessSlug && listing.business?.slug !== businessSlug) return false;
     if (category && listing.category !== category) return false;
     if (savedOnly && !listing.saved) return false;
 
@@ -298,6 +300,16 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
         </Button>
       </div>
 
+      {businessName ? (
+        <div className="border-line bg-surface mt-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm">
+          <Store className="text-ink-muted size-4" />
+          <span className="flex-1">{t('market.fromBusiness', { name: businessName })}</span>
+          <Link href="/market" className="text-accent font-medium hover:underline">
+            {t('market.showAll')}
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap gap-2">
         {CATEGORIES.map((entry) => (
           <button
@@ -307,7 +319,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
             className={cn(
               'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
               category === entry.value
-                ? 'bg-accent border-transparent text-white'
+                ? 'bg-accent text-accent-ink border-transparent'
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >
@@ -321,7 +333,7 @@ export function MarketBoard({ listings, city }: { listings: Listing[]; city: str
           className={cn(
             'ml-auto flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
             savedOnly
-              ? 'bg-accent border-transparent text-white'
+              ? 'bg-accent text-accent-ink border-transparent'
               : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
           )}
         >

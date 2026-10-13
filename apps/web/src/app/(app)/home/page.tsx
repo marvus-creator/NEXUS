@@ -18,9 +18,11 @@ import {
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Spark } from '@/components/landing/bits';
+import { HeroChip } from '@/components/app/page-hero';
 import { getCircles } from '@/lib/community-server';
 import { getProgress } from '@/lib/learning-server';
-import { circleImage, eventImage, IMG, placeImage } from '@/lib/photos';
+import { CATEGORY_COLOR, circleImage, placeImage } from '@/lib/photos';
+import { Thumb } from '@/components/app/thumb';
 import { getCalendar, getGoals, getTaskCounts, getTasks } from '@/lib/planner-server';
 import { getEvents, getPlaces } from '@/lib/places-server';
 import { getSession } from '@/lib/session';
@@ -57,18 +59,6 @@ function greeting(timezone: string): 'morning' | 'afternoon' | 'evening' {
   if (hour < 12) return 'morning';
   if (hour < 18) return 'afternoon';
   return 'evening';
-}
-
-function heroImage(timezone: string) {
-  const hour = Number(
-    new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: timezone }).format(
-      new Date(),
-    ),
-  );
-  if (hour < 11) return IMG.hills;
-  if (hour < 17) return IMG.kigaliAerial;
-  if (hour < 20) return IMG.kigaliSunset;
-  return IMG.kigaliRooftops;
 }
 
 function SectionTitle({
@@ -241,21 +231,17 @@ export default async function HomePage() {
     : [];
 
   const aiCard = (
-    <div
-      data-tour="ai"
-      className="ai-border ai-glow bg-surface relative overflow-hidden rounded-[18px] p-5"
-    >
-      <div className="absolute -right-16 -top-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(168,85,247,.25),transparent_65%)]" />
-      <div className="relative flex items-center gap-2 text-sm font-semibold">
-        <Spark className="size-5" />
-        <span className="text-ai-gradient">Nexus AI</span>
-        <Badge variant="ai" className="ml-auto">
+    <Card data-tour="ai" className="p-5">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Spark className="size-4" />
+        <span>{t('home.ai.name')}</span>
+        <Badge variant="neutral" className="ml-auto">
           {t('home.ai.suggestion')}
         </Badge>
       </div>
       {bestGap ? (
-        <p className="relative mt-3 text-[17px] font-medium leading-snug">
-          <span className="text-accent">
+        <p className="mt-3 text-[15px] leading-snug">
+          <span className="font-medium">
             {t('home.ai.free', { duration: duration(bestGap.minutes), time: label(bestGap.startMinute) })}
           </span>
           {aiFocus
@@ -265,14 +251,10 @@ export default async function HomePage() {
             : ''}
         </p>
       ) : (
-        <p className="relative mt-3 text-[17px] font-medium leading-snug">
-          {todayCount > 0
-            ? t('home.ai.full')
-            : t('home.ai.addWeek')}
-        </p>
+        <p className="mt-3 text-[15px] leading-snug">{todayCount > 0 ? t('home.ai.full') : t('home.ai.addWeek')}</p>
       )}
-      <p className="text-ink-muted relative mt-2 text-[13px]">{aiDetail}</p>
-      <div className="relative mt-4 flex flex-wrap gap-2">
+      <p className="text-ink-muted mt-2 text-[13px]">{aiDetail}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
         <Button size="sm" asChild>
           <Link href="/ai">{t('nav.items.ai')}</Link>
         </Button>
@@ -280,66 +262,42 @@ export default async function HomePage() {
           <Link href="/calendar">{t('home.ai.openCalendar')}</Link>
         </Button>
       </div>
-    </div>
+    </Card>
   );
 
   return (
     <div>
-      <div className="relative overflow-hidden">
-        <img
-          src={heroImage(timezone)}
-          className="absolute inset-0 size-full object-cover"
-          alt="Kigali"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.25)_0%,rgba(11,13,16,.5)_62%,var(--ground)_100%)]" />
-        <div
-          data-tour="greeting"
-          className="relative mx-auto max-w-[1240px] px-4 pb-20 pt-10 md:px-8 md:pb-24 md:pt-16"
-        >
-          <div className="flex items-center gap-2 text-sm font-medium text-white/85">
-            <CalendarDays className="size-4" /> {todayLabel} · Kigali
-          </div>
-          <h1 className="t-d2 mt-2 text-white drop-shadow-sm">
-            {t(`home.greeting.${greeting(timezone)}`)}, {firstName}.
-          </h1>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="flex items-center gap-1.5 rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-              <Flame className="text-module-events size-3.5" />{' '}
-              <span className="num">{t('home.chips.streak', { n: streak })}</span>
-            </span>
-            <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-              {t(todayCount === 1 ? 'home.chips.thingToday' : 'home.chips.thingsToday', { n: todayCount })}
-            </span>
-            <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-              {t(counts.open === 1 ? 'home.chips.openTask' : 'home.chips.openTasks', { n: counts.open })}
-            </span>
-            {myEvents.length > 0 ? (
-              <span className="rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-                {t(myEvents.length === 1 ? 'home.chips.eventAhead' : 'home.chips.eventsAhead', { n: myEvents.length })}
-              </span>
-            ) : null}
-          </div>
+      <header data-tour="greeting" className="mx-auto max-w-[1240px] px-4 pt-8 md:px-8 md:pt-12">
+        <p className="text-ink-muted flex items-center gap-2 text-sm">
+          <CalendarDays className="size-4" /> {todayLabel}
+          {profile?.city ? ` · ${profile.city}` : ''}
+        </p>
+        <h1 className="t-h1 mt-2">
+          {t(`home.greeting.${greeting(timezone)}`)}, {firstName}
+        </h1>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <HeroChip>
+            <Flame className="text-module-events size-3.5" />
+            <span className="num">{t('home.chips.streak', { n: streak })}</span>
+          </HeroChip>
+          <HeroChip>{t(todayCount === 1 ? 'home.chips.thingToday' : 'home.chips.thingsToday', { n: todayCount })}</HeroChip>
+          <HeroChip>{t(counts.open === 1 ? 'home.chips.openTask' : 'home.chips.openTasks', { n: counts.open })}</HeroChip>
+          {myEvents.length > 0 ? (
+            <HeroChip>{t(myEvents.length === 1 ? 'home.chips.eventAhead' : 'home.chips.eventsAhead', { n: myEvents.length })}</HeroChip>
+          ) : null}
         </div>
-      </div>
+      </header>
 
-      <div className="relative mx-auto -mt-12 max-w-[1240px] px-4 pb-10 md:-mt-14 md:px-8">
+      <div className="mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
         {priorities.length > 0 ? (
-          <Card
-            data-tour="needs"
-            className="border-danger/30 relative mb-6 flex flex-col gap-4 overflow-hidden p-4 sm:flex-row sm:items-center md:p-5"
-            tint="#EF4444"
-          >
-            <span className="bg-danger/15 text-danger grid size-11 shrink-0 place-items-center rounded-xl">
-              <AlertTriangle className="size-5" />
+          <Card data-tour="needs" className="mb-6 flex flex-col gap-4 p-4 sm:flex-row sm:items-center md:p-5">
+            <span className="bg-accent-soft text-accent grid size-10 shrink-0 place-items-center rounded-lg">
+              <AlertTriangle className="size-[18px]" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="t-eyebrow text-danger">{t('home.priorities.needsYou')}</div>
-              <div className="mt-1 font-semibold">
-                {priorities.map((item) => item.title).join(' · ')}
-              </div>
-              <div className="text-ink-muted mt-0.5 truncate text-[13px]">
-                {priorities[0]!.blurb}
-              </div>
+              <div className="text-ink-muted text-xs font-medium">{t('home.priorities.needsYou')}</div>
+              <div className="mt-0.5 font-medium">{priorities.map((item) => item.title).join(' · ')}</div>
+              <div className="text-ink-muted mt-0.5 truncate text-[13px]">{priorities[0]!.blurb}</div>
             </div>
             <div className="flex shrink-0 gap-2">
               {priorities.length > 1 ? (
@@ -518,26 +476,16 @@ export default async function HomePage() {
                           href={`/events/${event.slug}`}
                           className="hover:bg-surface-raised flex items-center gap-3 rounded-xl p-2 transition"
                         >
-                          <div className="relative size-14 shrink-0 overflow-hidden rounded-xl">
-                            <img
-                              src={eventImage(event)}
-                              alt=""
-                              className="size-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/35" />
-                            <div className="absolute inset-0 grid place-items-center text-center leading-none text-white">
-                              <div>
-                                <div className="font-mono text-[9px] font-semibold uppercase">
-                                  {date(start, 'monthShort', timezone)}
-                                </div>
-                                <div className="font-display text-lg font-extrabold">
-                                  {start.getDate()}
-                                </div>
+                          <div className="border-line grid size-12 shrink-0 place-items-center rounded-lg border text-center leading-none">
+                            <div>
+                              <div className="text-ink-muted text-[10px] font-medium uppercase">
+                                {date(start, 'monthShort', timezone)}
                               </div>
+                              <div className="num mt-0.5 text-base font-semibold">{start.getDate()}</div>
                             </div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold">{event.title}</div>
+                            <div className="truncate text-sm font-medium">{event.title}</div>
                             <div className="text-ink-muted mt-0.5 truncate text-xs">
                               {date(start, 'time', timezone)}
                               {event.place
@@ -546,7 +494,7 @@ export default async function HomePage() {
                                   ? ` · ${event.locationText}`
                                   : ''}
                             </div>
-                            <div className="text-module-events mt-0.5 text-xs font-medium">
+                            <div className="text-ink-subtle mt-0.5 text-xs">
                               {event.isHost
                                 ? t('home.events.hosting')
                                 : event.myStatus === 'GOING'
@@ -575,22 +523,22 @@ export default async function HomePage() {
                   {t('home.places.empty')}
                 </p>
               ) : (
-                <div className="no-scrollbar -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+                <div className="grid gap-1 sm:grid-cols-2">
                   {places.slice(0, 6).map((place) => (
                     <Link
                       key={place.id}
-                      href="/nearby"
-                      className="group relative h-44 w-56 shrink-0 overflow-hidden rounded-2xl"
+                      href={`/nearby?place=${place.slug}`}
+                      className="hover:bg-surface-raised flex items-center gap-3 rounded-lg p-2 transition-colors"
                     >
-                      <img
+                      <Thumb
                         src={placeImage(place)}
-                        alt=""
-                        className="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
+                        icon={MapPin}
+                        tint={CATEGORY_COLOR[place.category]}
+                        className="size-10 shrink-0 rounded-lg"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                      <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                        <div className="truncate font-semibold">{place.name}</div>
-                        <div className="flex items-center gap-1.5 text-xs text-white/75">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">{place.name}</div>
+                        <div className="text-ink-muted flex items-center gap-1.5 text-xs">
                           <span>{t(`enums.place.${place.category as PlaceKey}`)}</span>
                           {place.rating !== null ? (
                             <>
@@ -611,15 +559,14 @@ export default async function HomePage() {
           <div className="min-w-0 space-y-5">
             <div className="hidden lg:block">{aiCard}</div>
 
-            <Card data-tour="streak" className="relative overflow-hidden p-5">
-              <div className="bg-module-events/15 absolute -right-8 -top-8 size-32 rounded-full blur-2xl" />
+            <Card data-tour="streak" className="p-5">
               <div className="relative flex items-center justify-between">
                 <div>
                   <div className="text-ink-muted flex items-center gap-1.5 text-sm">
                     <Flame className="text-module-events size-4" />
                     {t('home.streak.title')}
                   </div>
-                  <div className="num font-display mt-1 text-5xl font-extrabold tracking-tighter">
+                  <div className="num mt-1 text-4xl font-semibold tracking-tight">
                     {streak}
                     <span className="text-ink-muted ml-1 text-lg">
                       {streak === 1 ? t('home.streak.day') : t('home.streak.days')}
@@ -716,11 +663,7 @@ export default async function HomePage() {
                       href={`/circles/${circle.slug}`}
                       className="hover:bg-surface-raised flex items-center gap-3 rounded-xl p-1.5 transition"
                     >
-                      <img
-                        src={circleImage(circle)}
-                        alt=""
-                        className="size-11 rounded-xl object-cover"
-                      />
+                      <Thumb src={circleImage(circle)} icon={Users} className="size-10 shrink-0 rounded-lg" />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-semibold">{circle.name}</div>
                         <div className="text-ink-muted flex items-center gap-1 text-xs">

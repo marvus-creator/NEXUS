@@ -20,13 +20,10 @@ export default async function OrdersPage() {
     <div>
       <PageHero
         width="max-w-3xl"
-        eyebrow={t('pages.orders.eyebrow')}
-        tint="var(--module-events)"
-        image={IMG.beads}
         title={t('pages.orders.title')}
         description={t('pages.orders.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-3xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-3xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <OrdersBoard buying={buying} selling={selling} />

@@ -20,13 +20,10 @@ export default async function NearbyPage() {
   return (
     <div>
       <PageHero
-        eyebrow={t('pages.nearby.eyebrow')}
-        tint="var(--module-nearby)"
-        image={IMG.kigaliRooftops}
         title={city ? t('pages.nearby.titleCity', { city }) : t('pages.nearby.title')}
         description={t('pages.nearby.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <NearbyBoard places={places} city={city} />

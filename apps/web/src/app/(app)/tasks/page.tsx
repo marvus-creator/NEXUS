@@ -21,13 +21,10 @@ export default async function TasksPage() {
     <div>
       <PageHero
         width="max-w-4xl"
-        eyebrow={t('pages.tasks.eyebrow')}
-        tint="var(--module-events)"
-        image={IMG.cowork4}
         title={t('pages.tasks.title')}
         description={t('pages.tasks.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-4xl px-4 pb-10 md:px-8">
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Badge size="sm">{t('tasks.counts.open', { n: counts.open })}</Badge>

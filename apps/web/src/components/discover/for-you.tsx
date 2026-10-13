@@ -42,18 +42,18 @@ export type ForYouFeed = {
 const KIND = {
   EVENT: { icon: CalendarDays, tint: 'var(--module-events)', label: 'Event', href: '/events/' },
   PLACE: { icon: MapPin, tint: 'var(--module-nearby)', label: 'Place', href: '/nearby' },
-  CIRCLE: { icon: UsersRound, tint: '#60A5FA', label: 'Circle', href: '/circles/' },
+  CIRCLE: { icon: UsersRound, tint: 'var(--module-home)', label: 'Circle', href: '/circles/' },
   PERSON: { icon: UserPlus, tint: 'var(--module-people)', label: 'Person', href: '/u/' },
-  LISTING: { icon: ShoppingBag, tint: '#C084FC', label: 'Listing', href: '/market' },
+  LISTING: { icon: ShoppingBag, tint: 'var(--module-discover)', label: 'Listing', href: '/market' },
 } as const;
 
 function hrefFor(item: Recommendation) {
   if (item.kind === 'EVENT') return `/events/${item.slug}`;
   if (item.kind === 'CIRCLE') return `/circles/${item.slug}`;
   if (item.kind === 'PERSON') return `/u/${item.slug}`;
-  if (item.kind === 'LISTING') return '/market';
+  if (item.kind === 'LISTING') return `/market?listing=${item.slug}`;
 
-  return '/nearby';
+  return `/nearby?place=${item.slug}`;
 }
 
 function imageFor(item: Recommendation) {
@@ -99,87 +99,48 @@ function RecommendationCard({ item, featured }: { item: Recommendation; featured
 
   const rating =
     item.kind === 'PLACE' && typeof item.meta.rating === 'number' ? item.meta.rating : null;
-  const initials = item.title
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
     <Link
       href={hrefFor(item)}
       className={cn(
-        'group relative block overflow-hidden rounded-2xl',
-        featured ? 'h-[440px] sm:col-span-2' : 'h-[360px]',
+        'border-line bg-surface hover:border-line-strong flex flex-col overflow-hidden rounded-xl border transition-colors',
+        featured && 'sm:col-span-2',
       )}
     >
-      {image ? (
-        <img
-          src={image}
-          alt=""
-          className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
-        />
-      ) : (
-        <div
-          className="absolute inset-0 grid place-items-center"
-          style={{
-            background: `radial-gradient(120% 90% at 30% 20%, color-mix(in oklab, ${kind.tint} 55%, #0b0d10), #0b0d10)`,
-          }}
-        >
-          <span className="font-display text-7xl font-extrabold text-white/85">{initials}</span>
+      {image ? <img src={image} alt="" className={cn('w-full object-cover', featured ? 'h-56' : 'h-40')} /> : null}
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <div className="flex items-center gap-2">
+          <span className="text-ink-muted inline-flex items-center gap-1.5 text-xs font-medium">
+            <Icon className="size-3.5" style={{ color: kind.tint }} />
+            {t(`discover.kind.${item.kind}`)}
+          </span>
+          {price ? <span className="num ml-auto text-sm font-semibold">{price}</span> : null}
         </div>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-
-      <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-semibold text-white backdrop-blur-md">
-        <Icon className="size-3.5" style={{ color: kind.tint }} />
-        {t(`discover.kind.${item.kind}`)}
-      </span>
-      {price ? (
-        <span className="num absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-semibold text-black">
-          {price}
-        </span>
-      ) : null}
-
-      <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-5">
-        {item.reasons[0] ? (
-          <div
-            className="flex items-center gap-1.5 text-[12.5px] font-semibold"
-            style={{ color: kind.tint }}
-          >
-            <Sparkles className="size-3.5 shrink-0" />
-            <span className="line-clamp-1 first-letter:uppercase">{translateReason(item.reasons[0], t)}</span>
-          </div>
-        ) : null}
-        <h3
-          className={cn(
-            'font-display mt-1 font-bold leading-tight tracking-tight',
-            featured ? 'text-3xl sm:text-4xl' : 'text-2xl',
-          )}
-        >
+        <h3 className={cn('mt-2 font-semibold leading-snug tracking-tight', featured ? 'text-xl sm:text-2xl' : 'text-base')}>
           {item.title}
         </h3>
         {when || item.subtitle ? (
-          <p className="mt-1 line-clamp-1 text-sm text-white/75">
-            {[when, item.subtitle].filter(Boolean).join(' · ')}
+          <p className="text-ink-muted mt-1 line-clamp-1 text-sm">{[when, item.subtitle].filter(Boolean).join(' · ')}</p>
+        ) : null}
+        {item.reasons[0] ? (
+          <p className="text-ink-muted mt-3 flex items-center gap-1.5 text-xs">
+            <Sparkles className="text-accent size-3.5 shrink-0" />
+            <span className="line-clamp-1 first-letter:uppercase">{translateReason(item.reasons[0], t)}</span>
           </p>
         ) : null}
-        <div className="mt-3 flex items-center gap-3 text-xs text-white/80">
+        <div className="text-ink-subtle mt-auto flex items-center gap-3 pt-3 text-xs">
           {rating !== null ? (
             <span className="flex items-center gap-1">
               <Star className="fill-module-events text-module-events size-3.5" />
-              <span className="num font-semibold">{rating}</span>
+              <span className="num font-medium">{rating}</span>
             </span>
           ) : null}
           {item.kind === 'EVENT' && typeof item.meta.goingCount === 'number' ? (
             <span className="num">{t('events.status.goingCount', { n: item.meta.goingCount })}</span>
           ) : null}
           {item.kind === 'CIRCLE' && typeof item.meta.members === 'number' ? (
-            <span className="num">{t('circles.memberMany', { n: item.meta.members })}</span>
-          ) : null}
-          {item.reasons[1] ? (
-            <span className="line-clamp-1 text-white/60">{translateReason(item.reasons[1], t)}</span>
+            <span className="num">{t(item.meta.members === 1 ? 'circles.memberOne' : 'circles.memberMany', { n: item.meta.members })}</span>
           ) : null}
         </div>
       </div>
@@ -223,10 +184,7 @@ export function ForYou({ feed }: { feed: ForYouFeed }) {
       </div>
 
       {explaining ? (
-        <Card
-          className="mt-3 p-4"
-          style={{ background: 'color-mix(in oklab, var(--module-ai) 7%, var(--surface))' }}
-        >
+        <Card className="bg-surface-raised mt-3 p-4">
           <p className="text-ink-muted text-[0.8125rem] leading-relaxed">{feed.note}</p>
 
           {feed.topCategories.length > 0 ? (

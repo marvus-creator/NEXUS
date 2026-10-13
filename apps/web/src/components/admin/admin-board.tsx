@@ -257,7 +257,7 @@ export function AdminBoard({
             className={cn(
               'flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors',
               tab === entry.value
-                ? 'border-transparent bg-accent text-white'
+                ? 'border-transparent bg-accent text-accent-ink'
                 : 'border-border text-ink-muted hover:text-ink hover:border-ink-subtle',
             )}
           >

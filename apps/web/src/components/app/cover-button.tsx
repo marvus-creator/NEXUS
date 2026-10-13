@@ -69,13 +69,13 @@ export function CoverButton({ target, className }: { target: Target; className?:
         type="button"
         disabled={busy}
         onClick={() => input.current?.click()}
-        className="flex h-9 items-center gap-1.5 rounded-full border border-white/20 bg-black/45 px-3.5 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-black/60"
+        className="border-line bg-surface/90 text-ink hover:bg-surface-raised flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium backdrop-blur transition-colors"
       >
         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
         {busy ? t('social.picker.uploading') : t('social.picker.changeCover')}
       </button>
       {error ? (
-        <span className="rounded-md bg-black/70 px-2 py-1 text-[11px] text-red-300">{error}</span>
+        <span className="bg-surface text-danger rounded-md px-2 py-1 text-[11px]">{error}</span>
       ) : null}
     </div>
   );

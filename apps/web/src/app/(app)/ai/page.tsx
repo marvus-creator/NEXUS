@@ -22,13 +22,10 @@ export default async function AiPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow={t('pages.ai.eyebrow')}
-        tint="var(--module-ai)"
-        image={IMG.kigaliAerial}
         title={t('pages.ai.title')}
         description={t('pages.ai.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         {plan ? (

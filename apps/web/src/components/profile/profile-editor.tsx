@@ -119,13 +119,7 @@ export function ProfileEditor({
           {profile.coverUrl ? (
             <img src={profile.coverUrl} alt="" className="absolute inset-0 size-full object-cover" />
           ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(120deg, color-mix(in oklab, var(--accent) 22%, var(--surface)) 0%, color-mix(in oklab, var(--module-ai) 18%, var(--surface)) 55%, var(--surface) 100%)',
-              }}
-            />
+            <div className="bg-surface-raised absolute inset-0" />
           )}
           <CoverButton target={{ kind: 'profile' }} className="absolute top-3 right-3" />
         </div>

@@ -13,6 +13,7 @@ import {
   Users,
   Wifi,
   WifiOff,
+  UsersRound,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -20,6 +21,7 @@ import { io, type Socket } from 'socket.io-client';
 import { API_URL } from '@/lib/api';
 import { communityClient, type ChatMessage, type ConversationSummary } from '@/lib/community-client';
 import { circleImage } from '@/lib/photos';
+import { Thumb } from '@/components/app/thumb';
 import { useErrorText, useFormatDate, useT } from '@/i18n/client';
 
 const QUICK_REACTIONS = ['👍', '🎉', '🔥', '❤️'];
@@ -320,7 +322,7 @@ export function ChatView({
                     </span>
                   )}
                   {thread.kind === 'CIRCLE' ? (
-                    <span className="bg-accent ring-surface absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full text-white ring-2">
+                    <span className="bg-accent ring-surface absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full text-accent-ink ring-2">
                       <Users className="size-2.5" />
                     </span>
                   ) : null}
@@ -344,7 +346,7 @@ export function ChatView({
                         : t('chat.sayHello')}
                     </p>
                     {thread.unread > 0 ? (
-                      <span className="bg-accent num grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white">
+                      <span className="bg-accent num grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-[11px] font-bold text-accent-ink">
                         {thread.unread}
                       </span>
                     ) : null}
@@ -368,10 +370,10 @@ export function ChatView({
           </button>
           {active ? (
             active.kind === 'CIRCLE' ? (
-              <img
+              <Thumb
                 src={circleImage({ name: active.circle?.name ?? active.title, slug: active.circle?.slug })}
-                alt=""
-                className="size-10 rounded-xl object-cover"
+                icon={UsersRound}
+                className="size-10 rounded-lg"
               />
             ) : otherOf(active)?.avatarUrl ? (
               <img src={otherOf(active)!.avatarUrl!} alt="" className="size-10 rounded-full object-cover" />
@@ -399,10 +401,6 @@ export function ChatView({
 
         <div
           className="min-h-0 flex-1 overflow-y-auto px-3 py-4 md:px-6"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--accent) 7%, transparent), transparent 45%), radial-gradient(circle at 90% 100%, color-mix(in oklab, var(--module-ai) 6%, transparent), transparent 40%)',
-          }}
         >
           {loading ? (
             <div className="space-y-3">
@@ -475,7 +473,7 @@ export function ChatView({
                         className={cn(
                           'relative px-3.5 py-2 text-[14.5px] leading-relaxed shadow-sm',
                           message.isOwn
-                            ? 'rounded-[20px] bg-[linear-gradient(135deg,#3B82F6,#2563EB)] text-white'
+                            ? 'bg-accent text-accent-ink rounded-[18px]'
                             : 'bg-surface-raised border-line rounded-[20px] border',
                           message.isOwn && lastOfGroup && 'rounded-br-md',
                           !message.isOwn && lastOfGroup && 'rounded-bl-md',
@@ -485,7 +483,7 @@ export function ChatView({
                         <span
                           className={cn(
                             'num float-right mt-1 ml-3 translate-y-1 text-[10px]',
-                            message.isOwn ? 'text-white/70' : 'text-ink-subtle',
+                            message.isOwn ? 'text-accent-ink/70' : 'text-ink-subtle',
                           )}
                         >
                           {timeLabel(message.createdAt)}
@@ -578,7 +576,7 @@ export function ChatView({
             onClick={() => void send()}
             disabled={!draft.trim()}
             aria-label={t('chat.send')}
-            className="bg-accent grid size-12 shrink-0 place-items-center rounded-full text-white shadow-[0_6px_20px_-6px_rgba(59,130,246,.8)] transition hover:brightness-110 disabled:opacity-40 disabled:shadow-none"
+            className="bg-accent grid size-12 shrink-0 place-items-center rounded-full text-accent-ink transition hover:brightness-110 disabled:opacity-40 disabled:shadow-none"
           >
             <Send className="size-5" />
           </button>

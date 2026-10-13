@@ -20,13 +20,10 @@ export default async function PeoplePage() {
     <div>
       <PageHero
         width="max-w-6xl"
-        eyebrow={t('pages.people.eyebrow')}
-        tint="var(--module-people)"
-        image={IMG.nyamirambo}
         title={t('pages.people.title')}
         description={t('pages.people.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-6xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <PeopleBoard connections={connections} suggestions={suggestions} />

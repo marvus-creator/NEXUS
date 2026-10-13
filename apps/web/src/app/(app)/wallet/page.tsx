@@ -22,13 +22,10 @@ export default async function WalletPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow={t('pages.wallet.eyebrow')}
-        tint="var(--accent)"
-        image={IMG.downtown}
         title={t('pages.wallet.title')}
         description={t('pages.wallet.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         {overview ? (

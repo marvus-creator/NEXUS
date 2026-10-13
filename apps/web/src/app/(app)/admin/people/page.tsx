@@ -76,7 +76,7 @@ export default async function PeoplePage({
           placeholder={t('admin.directory.city')}
           className={`${select} w-28`}
         />
-        <button className="bg-accent h-10 rounded-xl px-4 text-sm font-semibold text-white">{t('admin.directory.apply')}</button>
+        <button className="bg-accent h-10 rounded-xl px-4 text-sm font-semibold text-accent-ink">{t('admin.directory.apply')}</button>
         {viewer?.role === 'ADMIN' ? (
           <a
             href={`${API_BASE}/admin/control/people.csv`}

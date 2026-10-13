@@ -43,13 +43,10 @@ export default async function SettingsPage() {
     <div>
       <PageHero
         width="max-w-3xl"
-        eyebrow={t('pages.settings.eyebrow')}
-        tint="var(--ink-muted)"
-        image={IMG.hills}
         title={t('pages.settings.title')}
         description={t('pages.settings.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-3xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-3xl px-4 pb-10 md:px-8">
 
       <section className="mt-10">
         <h2 className="text-lg font-semibold tracking-tight">{t('language.label')}</h2>

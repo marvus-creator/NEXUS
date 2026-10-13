@@ -20,13 +20,10 @@ export default async function NotificationsPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow={t('pages.notifications.eyebrow')}
-        tint="var(--accent)"
-        image={IMG.kigaliRooftops}
         title={t('pages.notifications.title')}
         description={t('pages.notifications.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <NotificationCenter

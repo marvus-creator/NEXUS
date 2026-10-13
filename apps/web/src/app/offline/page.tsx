@@ -19,7 +19,7 @@ export default async function OfflinePage() {
         </p>
         <a
           href="/home"
-          className="bg-accent mt-8 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-white"
+          className="bg-accent mt-8 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-accent-ink"
         >
           {t('common.tryAgain')}
         </a>

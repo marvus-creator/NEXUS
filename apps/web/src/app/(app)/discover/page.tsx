@@ -32,13 +32,10 @@ export default async function DiscoverPage() {
   return (
     <div>
       <PageHero
-        eyebrow={t('pages.discover.eyebrow')}
-        tint="var(--module-discover)"
-        image={IMG.kigaliAerial}
         title={city ? t('pages.discover.titleCity', { city }) : t('pages.discover.title')}
         description={total > 0 ? (labels.length > 0 ? t('pages.discover.countRanked', { n: total, interests: labels.slice(0, 3).join(', ') + (labels.length > 3 ? ` ${t('pages.discover.andMore')}` : '') }) : t('pages.discover.count', { n: total })) : t('pages.discover.empty')}
       />
-      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-9">
         <DiscoverBoard data={{ places, events, circles, people }} feed={feed} />

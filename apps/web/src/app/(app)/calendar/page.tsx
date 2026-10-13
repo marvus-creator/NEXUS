@@ -51,13 +51,10 @@ export default async function CalendarPage({
     <div>
       <PageHero
         width="max-w-6xl"
-        eyebrow={t('pages.calendar.eyebrow')}
-        tint="var(--accent)"
-        image={IMG.hills}
         title={t('pages.calendar.title')}
         description={t('pages.calendar.description', { range: rangeLabel, timezone: calendar.timezone })}
       />
-      <div className="relative mx-auto -mt-6 max-w-6xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-6xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <WeekView days={calendar.days} weekStartIso={from.toISOString()} todayKey={todayKey} />

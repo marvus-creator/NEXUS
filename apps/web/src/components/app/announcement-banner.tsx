@@ -2,7 +2,7 @@ import { Megaphone } from 'lucide-react';
 import { getPlatformStatus } from '@/lib/control-server';
 
 const TONE = {
-  info: 'bg-accent text-white',
+  info: 'bg-accent text-accent-ink',
   success: 'bg-success text-black',
   warning: 'bg-module-events text-black',
 } as const;

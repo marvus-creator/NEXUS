@@ -212,36 +212,33 @@ export function CirclesBoard({
             const Icon = VISIBILITY_ICON[circle.visibility];
 
             return (
-              <Card key={circle.id} className="group flex flex-col overflow-hidden">
-                <Link
-                  href={`/circles/${circle.slug}`}
-                  className="relative block h-36 overflow-hidden"
-                >
-                  <img
-                    src={circleImage(circle)}
-                    alt=""
-                    className="size-full object-cover transition duration-700 group-hover:scale-105"
-                  />
-                  <div className="from-surface absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
-                  <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold capitalize text-white backdrop-blur-md">
+              <Card key={circle.id} className="flex flex-col overflow-hidden">
+                {circleImage(circle) ? (
+                  <Link href={`/circles/${circle.slug}`} className="block h-32 overflow-hidden">
+                    <img src={circleImage(circle)!} alt="" className="size-full object-cover" />
+                  </Link>
+                ) : null}
+
+                <div className="flex flex-wrap gap-1.5 px-5 pt-4">
+                  <Badge variant="neutral" size="sm">
                     <Icon className="size-3" />
                     {circle.visibility === 'INVITE_ONLY'
                       ? t('circles.visibility.INVITE_ONLY')
                       : t(`circles.visibility.${circle.visibility as 'PUBLIC' | 'PRIVATE'}`)}
-                  </span>
+                  </Badge>
                   {circle.myRole ? (
-                    <span className="bg-accent absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize text-white">
+                    <Badge variant="accent" size="sm">
                       {t(`enums.circleRole.${circle.myRole}`)}
-                    </span>
+                    </Badge>
                   ) : null}
-                </Link>
+                </div>
 
                 <div className="flex flex-1 flex-col px-5 pb-5">
-                  <div className="-mt-4 flex items-start gap-3">
-                    <span className="bg-surface border-line text-accent relative flex size-11 shrink-0 items-center justify-center rounded-xl border">
-                      <UsersRound className="size-5" />
+                  <div className="mt-3 flex items-start gap-3">
+                    <span className="bg-surface-raised text-ink-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
+                      <UsersRound className="size-[18px]" />
                     </span>
-                    <div className="min-w-0 flex-1 pt-4">
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/circles/${circle.slug}`}
                         className="font-display block truncate text-lg font-bold tracking-tight hover:underline"

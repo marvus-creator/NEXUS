@@ -21,13 +21,10 @@ export default async function LearnPage() {
     <div>
       <PageHero
         width="max-w-4xl"
-        eyebrow={t('pages.learn.eyebrow')}
-        tint="var(--module-learn)"
-        image={IMG.cowork3}
         title={t('pages.learn.title')}
         description={active.length > 0 ? t('pages.learn.active') : t('pages.learn.empty')}
       />
-      <div className="relative mx-auto -mt-6 max-w-4xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-4xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <LearnBoard paths={paths} />

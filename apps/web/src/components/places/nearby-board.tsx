@@ -18,6 +18,8 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { CATEGORY_COLOR, placeImage } from '@/lib/photos';
+import { Thumb } from '@/components/app/thumb';
+import type { messages } from '@/i18n/messages';
 import { placesClient, type PlaceSummary } from '@/lib/places-client';
 import { PlacesMap } from './places-map';
 import { ImagePicker } from '@/components/app/image-picker';
@@ -83,7 +85,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
     return true;
   });
 
-  async function useMyLocation() {
+  async function locateMe() {
     if (!navigator.geolocation) {
       setError(t('places.noGeo'));
       return;
@@ -176,7 +178,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
-        <Button variant="secondary" loading={locating} onClick={() => void useMyLocation()}>
+        <Button variant="secondary" loading={locating} onClick={() => void locateMe()}>
           <Navigation /> {located ? t('places.distancesOn') : t('places.useLocation')}
         </Button>
         <Button
@@ -349,14 +351,15 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                       selectedId === place.id ? 'bg-accent/[0.08]' : 'hover:bg-surface-raised',
                     )}
                   >
-                    <img
+                    <Thumb
                       src={placeImage(place)}
-                      alt=""
-                      className="size-[76px] shrink-0 rounded-xl object-cover"
+                      icon={MapPin}
+                      tint={CATEGORY_COLOR[place.category]}
+                      className="size-14 shrink-0 rounded-lg"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="truncate font-semibold">{place.name}</p>
+                        <p className="truncate font-medium">{place.name}</p>
                         {place.distanceKm !== null ? (
                           <span className="num text-ink-muted shrink-0 text-xs">
                             {place.distanceKm < 1
@@ -370,7 +373,7 @@ export function NearbyBoard({ places, city }: { places: PlaceSummary[]; city: st
                           className="size-1.5 shrink-0 rounded-full"
                           style={{ background: CATEGORY_COLOR[place.category] }}
                         />
-                        <span className="capitalize">{place.category.toLowerCase()}</span>
+                        <span>{t(`enums.place.${place.category as keyof typeof messages.enums.place}`)}</span>
                         {place.address ? <span className="truncate">· {place.address}</span> : null}
                       </p>
                       <div className="mt-1.5 flex items-center gap-3 text-xs">

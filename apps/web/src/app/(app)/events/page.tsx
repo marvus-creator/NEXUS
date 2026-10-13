@@ -26,13 +26,10 @@ export default async function EventsPage({
   return (
     <div>
       <PageHero
-        eyebrow={t('pages.events.eyebrow')}
-        tint="var(--module-events)"
-        image={IMG.concert}
         title={t('pages.events.title')}
         description={t('pages.events.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-[1240px] px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <EventsBoard events={events} scope={scope} places={places} />

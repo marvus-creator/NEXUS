@@ -145,7 +145,7 @@ export function Sidebar({
           <Link
             href={aiItem.href}
             className={cn(
-              'ai-border ai-glow bg-surface-raised block rounded-2xl p-3.5 text-left',
+              'border border-line bg-surface-raised block rounded-2xl p-3.5 text-left',
               isActive(pathname, aiItem.href) && 'bg-surface-hover',
             )}
           >

@@ -25,7 +25,7 @@ export function Avatar({ src, name = '', size = 'md', ring, className, ...props 
   const initials = name
     .split(' ')
     .filter(Boolean)
-    .slice(0, 2)
+    .slice(0, size === 'xs' ? 1 : 2)
     .map((part) => part[0]?.toUpperCase())
     .join('');
 
@@ -69,11 +69,17 @@ export function AvatarStack({
           name={person.name}
           src={person.src}
           size={size}
-          className="ring-ground -ml-2 ring-2 first:ml-0"
+          className={cn('ring-surface ring-2 first:ml-0', size === 'xs' ? '-ml-1.5' : '-ml-2')}
         />
       ))}
       {overflow > 0 ? (
-        <span className="bg-surface-raised text-ink-muted ring-ground -ml-2 flex size-8 items-center justify-center rounded-full text-xs font-medium ring-2">
+        <span
+          className={cn(
+            'bg-surface-raised text-ink-muted ring-surface flex items-center justify-center rounded-full font-medium ring-2',
+            sizes[size],
+            size === 'xs' ? '-ml-1.5 text-[0.5625rem]' : '-ml-2',
+          )}
+        >
           +{overflow}
         </span>
       ) : null}

@@ -5,7 +5,6 @@ import { Check, Search, UserMinus, UserPlus, UserX, Users, X } from 'lucide-reac
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { IMG } from '@/lib/photos';
 import { socialClient, type Connections, type PersonSummary } from '@/lib/social-client';
 import { useT } from '@/i18n/client';
 import { translateReason } from '@/i18n/reasons';
@@ -18,23 +17,6 @@ const TABS = [
   { value: 'followers' },
   { value: 'search' },
 ] as const;
-
-const COVERS = [
-  IMG.nyamirambo,
-  IMG.kigaliRooftops,
-  IMG.designNight,
-  IMG.techMeetup,
-  IMG.cafeCozy,
-  IMG.football,
-  IMG.hills,
-  IMG.cowork1,
-];
-
-function cover(username: string) {
-  let hash = 0;
-  for (const char of username) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return COVERS[hash % COVERS.length]!;
-}
 
 function PersonRow({
   person,
@@ -54,38 +36,25 @@ function PersonRow({
         : null;
 
   return (
-    <Card className="group flex flex-col overflow-hidden">
-      <Link href={`/u/${person.username}`} className="relative block h-24 overflow-hidden">
-        <img
-          src={cover(person.username)}
-          alt=""
-          className="size-full object-cover transition duration-700 group-hover:scale-105"
-        />
-        <div className="from-surface absolute inset-0 bg-gradient-to-t to-transparent" />
-      </Link>
-
-      <div className="-mt-9 flex flex-1 flex-col px-4 pb-4">
-        <Link href={`/u/${person.username}`} className="relative w-fit">
+    <Card className="flex flex-col p-4">
+      <div className="flex flex-1 flex-col">
+        <Link href={`/u/${person.username}`} className="w-fit">
           {person.avatarUrl ? (
-            <img
-              src={person.avatarUrl}
-              alt={person.displayName}
-              className="ring-surface size-[60px] rounded-full object-cover ring-4"
-            />
+            <img src={person.avatarUrl} alt={person.displayName} className="size-12 rounded-full object-cover" />
           ) : (
-            <span className="ring-surface bg-surface-raised grid size-[60px] place-items-center rounded-full text-lg font-bold ring-4">
+            <span className="bg-surface-raised text-ink-muted grid size-12 place-items-center rounded-full text-sm font-semibold">
               {person.displayName.slice(0, 2).toUpperCase()}
             </span>
           )}
         </Link>
-        <Link href={`/u/${person.username}`} className="mt-2 truncate font-semibold hover:underline">
+        <Link href={`/u/${person.username}`} className="mt-3 truncate font-medium hover:underline">
           {person.displayName}
         </Link>
         <p className="text-ink-subtle truncate text-xs">
           @{person.username}
           {person.occupation ? ` · ${person.occupation}` : ''}
         </p>
-        <p className="text-module-people mt-1.5 line-clamp-2 min-h-[2rem] text-xs font-medium">
+        <p className="text-ink-muted mt-1.5 line-clamp-2 min-h-[2rem] text-xs">
           {reason ?? ''}
         </p>
         <div className="mt-3 flex flex-wrap gap-2 [&>*]:flex-1">{actions}</div>

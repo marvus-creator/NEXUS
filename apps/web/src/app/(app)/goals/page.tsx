@@ -20,13 +20,10 @@ export default async function GoalsPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow={t('pages.goals.eyebrow')}
-        tint="var(--module-nearby)"
-        image={IMG.kigaliSunset}
         title={t('pages.goals.title')}
         description={t('pages.goals.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <GoalBoard initialGoals={goals} />

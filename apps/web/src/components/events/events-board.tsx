@@ -56,53 +56,66 @@ function Faces({ event, size = 28 }: { event: EventSummary; size?: number }) {
   );
 }
 
+function DateTile({ startAt, large = false }: { startAt: string; large?: boolean }) {
+  const format = useFormatDate();
+  const start = new Date(startAt);
+
+  return (
+    <div
+      className={cn(
+        'border-line grid shrink-0 place-items-center rounded-lg border text-center leading-none',
+        large ? 'size-16' : 'size-12',
+      )}
+    >
+      <div>
+        <div className="text-ink-muted text-[10px] font-medium uppercase">{format(start, 'monthShort')}</div>
+        <div className={cn('num mt-0.5 font-semibold', large ? 'text-2xl' : 'text-base')}>{start.getDate()}</div>
+      </div>
+    </div>
+  );
+}
+
 export function FeaturedEvent({ event }: { event: EventSummary }) {
   const t = useT();
   const format = useFormatDate();
   const eventWhen = useEventWhen();
   const where = event.place?.name ?? event.locationText;
+  const cover = eventImage(event);
 
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group relative block h-[380px] overflow-hidden rounded-3xl"
+      className="border-line bg-surface hover:border-line-strong group block overflow-hidden rounded-xl border transition-colors"
     >
-      <img
-        src={eventImage(event)}
-        alt=""
-        className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.03]"
-      />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,13,16,.92)_0%,rgba(11,13,16,.55)_45%,transparent_80%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-      <div className="relative flex h-full max-w-xl flex-col justify-end p-6 text-white md:p-10">
-        <span className="bg-module-events/20 text-module-events border-module-events/30 mb-4 w-fit rounded-full border px-3 py-1 text-xs font-semibold">
-          {t('events.featured', { day: format(event.startAt, 'weekday') })}
-        </span>
-        <h2 className="t-d2">{event.title}</h2>
-        {event.description ? (
-          <p className="mt-3 line-clamp-2 text-white/75">{event.description}</p>
-        ) : null}
-        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
-          <span className="bg-accent inline-flex h-11 items-center rounded-xl px-5 font-semibold text-white shadow-[0_6px_20px_-6px_rgba(59,130,246,.75)]">
-            {event.myStatus === 'GOING' || event.isHost ? t('events.viewDetails') : t('events.rsvp')}
-          </span>
-          <Faces event={event} size={32} />
-          <span className="text-white/85">{statusLine(event, t)}</span>
-          {event.spotsLeft !== null ? (
-            <span className="bg-module-events/90 num rounded-md px-2 py-1 text-xs font-semibold text-black">
-              {t('events.status.spotsLeft', { n: event.spotsLeft })}
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/70">
-          <span className="inline-flex items-center gap-1.5">
-            <Clock className="size-3.5" /> {eventWhen(event.startAt, event.endAt)}
-          </span>
-          {where ? (
+      {cover ? <img src={cover} alt="" className="h-48 w-full object-cover md:h-56" /> : null}
+      <div className="flex flex-col gap-5 p-6 md:flex-row md:items-start md:p-8">
+        <DateTile startAt={event.startAt} large />
+        <div className="min-w-0 flex-1">
+          <p className="text-ink-muted text-xs font-medium">{t('events.featured', { day: format(event.startAt, 'weekday') })}</p>
+          <h2 className="t-h1 mt-1">{event.title}</h2>
+          {event.description ? <p className="text-ink-muted mt-2 line-clamp-2 max-w-2xl">{event.description}</p> : null}
+          <div className="text-ink-muted mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="size-3.5" /> {where}
+              <Clock className="size-4" /> {eventWhen(event.startAt, event.endAt)}
             </span>
-          ) : null}
+            {where ? (
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="size-4" /> {where}
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
+            <span className="bg-accent text-accent-ink group-hover:bg-accent-strong inline-flex h-10 items-center rounded-lg px-4 font-medium transition-colors">
+              {event.myStatus === 'GOING' || event.isHost ? t('events.viewDetails') : t('events.rsvp')}
+            </span>
+            <Faces event={event} size={32} />
+            <span className="text-ink-muted">{statusLine(event, t)}</span>
+            {event.spotsLeft !== null ? (
+              <Badge variant="warning" size="sm">
+                {t('events.status.spotsLeft', { n: event.spotsLeft })}
+              </Badge>
+            ) : null}
+          </div>
         </div>
       </div>
     </Link>
@@ -113,58 +126,49 @@ export function EventCard({ event }: { event: EventSummary }) {
   const t = useT();
   const format = useFormatDate();
   const where = event.place?.name ?? event.locationText;
-  const start = new Date(event.startAt);
+  const cover = eventImage(event);
 
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group relative block h-[400px] overflow-hidden rounded-2xl"
+      className="border-line bg-surface hover:border-line-strong flex flex-col overflow-hidden rounded-xl border transition-colors"
     >
-      <img
-        src={eventImage(event)}
-        alt=""
-        className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-      <div className="absolute left-4 top-4 rounded-xl bg-white/95 px-3 py-2 text-center text-black">
-        <div className="font-mono text-[10px] font-semibold uppercase">
-          {format(start, 'monthShort')}
+      {cover ? <img src={cover} alt="" className="h-36 w-full object-cover" /> : null}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start gap-3">
+          <DateTile startAt={event.startAt} />
+          <div className="min-w-0 flex-1">
+            <div className="line-clamp-2 font-medium leading-snug">{event.title}</div>
+            <div className="text-ink-muted mt-1 line-clamp-1 text-sm">
+              {format(event.startAt, 'time')}
+              {where ? ` · ${where}` : ''}
+            </div>
+          </div>
         </div>
-        <div className="font-display text-2xl font-extrabold leading-none">{start.getDate()}</div>
-      </div>
-      <div className="absolute right-4 top-4 flex gap-1.5">
-        {event.isHost ? (
-          <span className="bg-accent rounded-full px-2.5 py-1 text-[11.5px] font-semibold text-white">
-            {t('events.status.hostingBadge')}
-          </span>
-        ) : null}
-        {event.myStatus === 'GOING' && !event.isHost ? (
-          <span className="bg-success rounded-full px-2.5 py-1 text-[11.5px] font-semibold text-black">
-            {t('events.status.goingBadge')}
-          </span>
-        ) : null}
-        {event.visibility !== 'PUBLIC' ? (
-          <span className="rounded-full bg-black/55 px-2.5 py-1 text-[11.5px] font-semibold text-white backdrop-blur-md">
-            {t(`events.visibility.${event.visibility}`)}
-          </span>
-        ) : null}
-      </div>
-      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-        <div className="text-module-events text-xs font-semibold">{statusLine(event, t)}</div>
-        <div className="font-display mt-1 text-2xl font-bold leading-tight tracking-tight">
-          {event.title}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {event.isHost ? (
+            <Badge variant="accent" size="sm">
+              {t('events.status.hostingBadge')}
+            </Badge>
+          ) : null}
+          {event.myStatus === 'GOING' && !event.isHost ? (
+            <Badge variant="success" size="sm">
+              {t('events.status.goingBadge')}
+            </Badge>
+          ) : null}
+          {event.visibility !== 'PUBLIC' ? (
+            <Badge variant="neutral" size="sm">
+              {t(`events.visibility.${event.visibility}`)}
+            </Badge>
+          ) : null}
         </div>
-        <div className="mt-1 line-clamp-1 text-sm text-white/70">
-          {format(start, 'time')}
-          {where ? ` · ${where}` : ''}
-        </div>
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <Faces event={event} />
-          {event.spotsLeft !== null ? (
-            <span className="num text-xs text-white/80">{t('events.status.spotsLeft', { n: event.spotsLeft })}</span>
-          ) : (
-            <span className="num text-xs text-white/80">{t('events.status.goingCount', { n: event.goingCount })}</span>
-          )}
+          <span className="num text-ink-muted text-xs">
+            {event.spotsLeft !== null
+              ? t('events.status.spotsLeft', { n: event.spotsLeft })
+              : t('events.status.goingCount', { n: event.goingCount })}
+          </span>
         </div>
       </div>
     </Link>

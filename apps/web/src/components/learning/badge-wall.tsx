@@ -85,15 +85,12 @@ function Medal({ badge, size = 'md' }: { badge: BadgeItem; size?: 'sm' | 'md' })
         !earned && 'grayscale',
       )}
       style={{
-        background: earned
-          ? `radial-gradient(circle at 30% 25%, color-mix(in oklab, ${tint} 55%, white), ${tint} 55%, color-mix(in oklab, ${tint} 60%, black))`
-          : 'var(--surface-raised)',
-        boxShadow: earned
-          ? `0 0 0 3px color-mix(in oklab, ${tint} 25%, transparent), 0 8px 24px -8px ${tint}`
-          : 'inset 0 0 0 1px var(--line)',
+        background: earned ? `color-mix(in oklab, ${tint} 16%, var(--surface))` : 'var(--surface-raised)',
+        color: earned ? tint : undefined,
+        boxShadow: earned ? `inset 0 0 0 1px color-mix(in oklab, ${tint} 35%, transparent)` : 'inset 0 0 0 1px var(--border)',
       }}
     >
-      <Icon className={cn(size === 'md' ? 'size-6' : 'size-4.5', earned ? 'text-white' : 'text-ink-subtle')} />
+      <Icon className={cn(size === 'md' ? 'size-6' : 'size-4.5', earned ? '' : 'text-ink-subtle')} />
       {!earned ? (
         <span className="bg-surface border-line absolute -right-0.5 -bottom-0.5 grid size-5 place-items-center rounded-full border">
           <Lock className="text-ink-subtle size-2.5" />
@@ -118,11 +115,11 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-line flex flex-wrap items-center gap-4 border-b p-6">
-        <span className="grid size-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#F59E0B,#F97316)] text-white shadow-[0_10px_30px_-10px_#F97316]">
+        <span className="bg-surface-raised text-module-events grid size-11 place-items-center rounded-lg">
           <Award className="size-6" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-xl font-bold tracking-tight">{t('badges.title')}</h2>
+          <h2 className="text-lg font-semibold tracking-tight">{t('badges.title')}</h2>
           <p className="text-ink-muted text-sm">
             {t('badges.summary', { earned: set.earned, total: set.total })}
           </p>
@@ -134,7 +131,7 @@ export function BadgeWall({ set }: { set: BadgeSet }) {
           </div>
           <div className="bg-surface-raised h-2 overflow-hidden rounded-full">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,#F59E0B,#F97316)]"
+              className="bg-module-events h-full rounded-full"
               style={{ width: `${percent}%` }}
             />
           </div>

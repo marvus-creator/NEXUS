@@ -23,13 +23,10 @@ export default async function ProgressPage() {
     <div>
       <PageHero
         width="max-w-5xl"
-        eyebrow={t('pages.progress.eyebrow')}
-        tint="var(--module-events)"
-        image={IMG.footballNight}
         title={t('pages.progress.title')}
         description={t('pages.progress.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-5xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-5xl px-4 pb-10 md:px-8">
 
       {badges ? (
         <div className="mt-8">

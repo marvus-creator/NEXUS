@@ -121,21 +121,22 @@ export function CircleRoom({
     }
   }
 
+  const canEdit = circle.myRole === 'OWNER' || circle.myRole === 'ADMIN';
+
   return (
     <div>
-      <div className="relative h-52 overflow-hidden rounded-3xl sm:h-64">
-        <img src={circleImage(circle)} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.1),rgba(11,13,16,.75))]" />
-        {circle.myRole === 'OWNER' || circle.myRole === 'ADMIN' ? (
-          <CoverButton target={{ kind: 'circle', slug: circle.slug }} className="absolute top-4 right-4" />
-        ) : null}
-      </div>
+      {circleImage(circle) ? (
+        <div className="relative mb-6 overflow-hidden rounded-xl">
+          <img src={circleImage(circle)!} alt="" className="h-44 w-full object-cover sm:h-56" />
+          {canEdit ? <CoverButton target={{ kind: 'circle', slug: circle.slug }} className="absolute top-4 right-4" /> : null}
+        </div>
+      ) : null}
 
-      <div className="relative -mt-16 px-4 sm:px-6">
+      <div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
-            <h1 className="t-d2 text-white drop-shadow">{circle.name}</h1>
-            <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80">
+            <h1 className="t-h1">{circle.name}</h1>
+            <p className="text-ink-muted mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
               <span className="inline-flex items-center gap-1.5">
                 <VisibilityIcon className="size-3.5" />
                 {t(`circles.visibility.${circle.visibility}`)}
@@ -148,6 +149,7 @@ export function CircleRoom({
           </div>
 
           <div className="flex shrink-0 gap-2">
+            {canEdit && !circleImage(circle) ? <CoverButton target={{ kind: 'circle', slug: circle.slug }} /> : null}
             {circle.myRole ? (
               <>
                 <Button asChild variant="secondary" size="sm">

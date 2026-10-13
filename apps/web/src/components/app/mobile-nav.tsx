@@ -122,7 +122,7 @@ export function MobileNav() {
               <div className="flex flex-col gap-6 px-5 pb-8 pt-3">
                 <Link
                   href={aiItem.href}
-                  className="ai-border ai-glow bg-surface-raised rounded-2xl p-4"
+                  className="border border-line bg-surface-raised rounded-2xl p-4"
                 >
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <Spark /> <span className="text-ai-gradient">{t('nav.items.ai')}</span>

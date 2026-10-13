@@ -160,6 +160,22 @@ async function main() {
       print('Runtime.exceptionThrown', (p) => `[exception] ${p.exceptionDetails.exception?.description ?? p.exceptionDetails.text}`);
     }
 
+    if (flags.network) {
+      const urls = new Map();
+      session.listeners.set('Network.requestWillBeSent', [(p) => urls.set(p.requestId, p.request.url)]);
+      session.listeners.set('Network.responseReceived', [
+        (p) => {
+          if (p.response.status >= 400) console.log(`[http ${p.response.status}] ${p.response.url}`);
+        },
+      ]);
+      session.listeners.set('Network.loadingFailed', [
+        (p) => {
+          if (!p.canceled) console.log(`[failed] ${urls.get(p.requestId) ?? p.requestId} ${p.errorText}`);
+        },
+      ]);
+      await session.send('Network.enable');
+    }
+
     await session.send('Page.enable');
     await session.send('Runtime.enable');
     await session.send('Emulation.setDeviceMetricsOverride', {

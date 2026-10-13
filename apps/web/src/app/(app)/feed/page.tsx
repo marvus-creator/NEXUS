@@ -26,13 +26,10 @@ export default async function FeedPage({
     <div>
       <PageHero
         width="max-w-2xl"
-        eyebrow={t('pages.feed.eyebrow')}
-        tint="var(--accent)"
-        image={IMG.crowd}
         title={t('pages.feed.title')}
         description={t('pages.feed.description')}
       />
-      <div className="relative mx-auto -mt-6 max-w-2xl px-4 pb-10 md:px-8">
+      <div className="relative mx-auto mt-6 max-w-2xl px-4 pb-10 md:px-8">
 
       <div className="mt-8">
         <FeedBoard initialPosts={posts} scope={scope} user={user} />

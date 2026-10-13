@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PersonActions } from '@/components/admin/person-actions';
 import { getDossier } from '@/lib/control-server';
-import { IMG } from '@/lib/photos';
 import { getSession } from '@/lib/session';
 import { getI18n } from '@/i18n/server';
 import { messages } from '@/i18n/messages';
@@ -75,41 +74,37 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <ArrowLeft className="size-4" /> {t('admin.dossier.all')}
       </Link>
 
-      <div className="border-line relative overflow-hidden rounded-3xl border">
-        <img src={profile?.coverUrl ?? IMG.kigaliRooftops} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.35),rgba(11,13,16,.9))]" />
-        <div className="relative flex flex-wrap items-end gap-5 p-6 pt-24 text-white md:p-8 md:pt-32">
-          {profile?.avatarUrl ? (
-            <img src={profile.avatarUrl} alt="" className="size-24 rounded-2xl object-cover ring-4 ring-black/40" />
-          ) : (
-            <span className="grid size-24 place-items-center rounded-2xl bg-white/15 text-3xl font-bold backdrop-blur">
-              {(profile?.displayName ?? person.email).slice(0, 2).toUpperCase()}
-            </span>
-          )}
-          <div className="min-w-0 flex-1">
-            <h2 className="t-d2">{profile?.displayName ?? person.email}</h2>
-            <p className="mt-1 text-white/75">
-              {profile ? `@${profile.username} · ` : ''}
-              {profile?.occupation ?? (profile?.userType ? userType(profile.userType) : '')}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              <Badge variant="accent">{t(`admin.roles.${person.role}`)}</Badge>
-              <Badge variant={person.deletedAt ? 'neutral' : person.status === 'ACTIVE' ? 'success' : person.status === 'SUSPENDED' ? 'danger' : 'warning'}>
-                {status}
+      <div className="border-line bg-surface flex flex-wrap items-center gap-5 rounded-xl border p-6">
+        {profile?.avatarUrl ? (
+          <img src={profile.avatarUrl} alt="" className="size-16 rounded-xl object-cover" />
+        ) : (
+          <span className="bg-surface-raised text-ink-muted grid size-16 place-items-center rounded-xl text-xl font-semibold">
+            {(profile?.displayName ?? person.email).slice(0, 2).toUpperCase()}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 className="t-h1">{profile?.displayName ?? person.email}</h2>
+          <p className="text-ink-muted mt-1">
+            {profile ? `@${profile.username} · ` : ''}
+            {profile?.occupation ?? (profile?.userType ? userType(profile.userType) : '')}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Badge variant="accent">{t(`admin.roles.${person.role}`)}</Badge>
+            <Badge variant={person.deletedAt ? 'neutral' : person.status === 'ACTIVE' ? 'success' : person.status === 'SUSPENDED' ? 'danger' : 'warning'}>
+              {status}
+            </Badge>
+            {profile?.city ? (
+              <Badge variant="neutral">
+                <MapPin className="size-3" /> {profile.city}
               </Badge>
-              {profile?.city ? (
-                <span className="flex items-center gap-1 rounded-full bg-white/15 px-2.5 text-[11.5px] font-semibold backdrop-blur">
-                  <MapPin className="size-3" /> {profile.city}
-                </span>
-              ) : null}
-            </div>
+            ) : null}
           </div>
-          {profile ? (
-            <Link href={`/u/${profile.username}`} className="rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur hover:bg-white/25">
-              {t('admin.dossier.viewPublic')}
-            </Link>
-          ) : null}
         </div>
+        {profile ? (
+          <Link href={`/u/${profile.username}`} className="border-line hover:bg-surface-raised rounded-lg border px-4 py-2 text-sm font-medium">
+            {t('admin.dossier.viewPublic')}
+          </Link>
+        ) : null}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">

@@ -207,7 +207,7 @@ export function PersonActions({ person, viewerRole, viewerId }: { person: Dossie
                 onClick={() => run(`role-${role}`, () => setUserRole(person.id, role), t('admin.actions.roleChanged', { role: t(`admin.roles.${role}`) }))}
                 className={cn(
                   'rounded-full border px-3 py-1 text-xs font-medium capitalize transition',
-                  role === person.role ? 'bg-accent border-transparent text-white' : 'border-line text-ink-muted hover:text-ink',
+                  role === person.role ? 'bg-accent border-transparent text-accent-ink' : 'border-line text-ink-muted hover:text-ink',
                 )}
               >
                 {t(`admin.roles.${role}`)}

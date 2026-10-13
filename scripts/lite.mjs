@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -93,3 +94,19 @@ start('web', 'pnpm', ['exec', 'next', 'start', '--port', '3000'], path.join(root
 
 const ok = (await waitFor('http://localhost:4000/api/v1/health', 'API')) && (await waitFor('http://localhost:3000', 'web'));
 if (ok) console.log('\n[lite] NEXUS is up: http://localhost:3000  (Ctrl+C to stop)\n');
+
+if (ok && /^NEXT_PUBLIC_DEMO_LOGINS\s*=\s*"?on"?\s*$/m.test(readEnvFile())) {
+  const seed = spawn('node', ['scripts/seed-demo.mjs'], { cwd: root, shell, env: process.env });
+  seed.stdout.on('data', (d) => {
+    const done = d.toString().split(/\r?\n/).find((line) => line.includes('[seed] done'));
+    if (done) console.log(`[lite] demo world refreshed ${done.replace('[seed] done', '').trim()}`);
+  });
+}
+
+function readEnvFile() {
+  try {
+    return readFileSync(path.join(root, '.env'), 'utf8');
+  } catch {
+    return '';
+  }
+}

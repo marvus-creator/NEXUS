@@ -155,33 +155,35 @@ export function EventDetail({
     }
   }
 
+  const cover = eventImage(event);
+
   return (
     <div>
-      <div className="relative h-[340px] overflow-hidden rounded-3xl sm:h-[420px]">
-        <img src={eventImage(event)} alt="" className="absolute inset-0 size-full object-cover" />
-        {event.isHost ? (
-          <CoverButton target={{ kind: 'event', slug: event.slug }} className="absolute top-5 right-5 z-10" />
-        ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.15)_0%,rgba(11,13,16,.35)_45%,rgba(11,13,16,.92)_100%)]" />
-        <div className="absolute top-5 left-5 rounded-2xl bg-white/95 px-4 py-2.5 text-center text-black shadow-lg">
-          <div className="font-mono text-[11px] font-semibold uppercase">
-            {format(event.startAt, 'monthShort')}
-          </div>
-          <div className="font-display text-3xl leading-none font-extrabold">
-            {new Date(event.startAt).getDate()}
+      {cover ? (
+        <div className="relative overflow-hidden rounded-xl">
+          <img src={cover} alt="" className="h-52 w-full object-cover sm:h-64" />
+          {event.isHost ? (
+            <CoverButton target={{ kind: 'event', slug: event.slug }} className="absolute top-4 right-4 z-10" />
+          ) : null}
+        </div>
+      ) : null}
+
+      <header className={cn('flex flex-col gap-5 sm:flex-row sm:items-start', cover && 'mt-6')}>
+        <div className="border-line grid size-16 shrink-0 place-items-center rounded-lg border text-center leading-none">
+          <div>
+            <div className="text-ink-muted text-[11px] font-medium uppercase">{format(event.startAt, 'monthShort')}</div>
+            <div className="num mt-0.5 text-2xl font-semibold">{new Date(event.startAt).getDate()}</div>
           </div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             {event.isHost ? <Badge variant="accent">{t('events.status.hosting')}</Badge> : null}
             {status === 'INVITED' ? <Badge variant="accent">{t('events.status.invitedBadge')}</Badge> : null}
             {event.hasEnded ? <Badge>{t('events.detail.ended')}</Badge> : starts ? <Badge variant="success">{starts}</Badge> : null}
-            {event.visibility !== 'PUBLIC' ? (
-              <Badge>{t(`events.visibility.${event.visibility}`)}</Badge>
-            ) : null}
+            {event.visibility !== 'PUBLIC' ? <Badge>{t(`events.visibility.${event.visibility}`)}</Badge> : null}
           </div>
-          <h1 className="t-d2 mt-3 max-w-3xl">{event.title}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/80">
+          <h1 className="t-h1 mt-2 max-w-3xl">{event.title}</h1>
+          <div className="text-ink-muted mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" /> {when(event.startAt, event.endAt)}
             </span>
@@ -195,7 +197,8 @@ export function EventDetail({
             </span>
           </div>
         </div>
-      </div>
+        {event.isHost && !cover ? <CoverButton target={{ kind: 'event', slug: event.slug }} /> : null}
+      </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex min-w-0 flex-col gap-6">

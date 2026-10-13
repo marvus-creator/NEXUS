@@ -40,6 +40,7 @@ export const home = {
     ],
   },
   ai: {
+    name: ['NEXUS planner', 'Igenamigambi rya NEXUS', 'Planificateur NEXUS'],
     suggestion: ['Suggestion', 'Igitekerezo', 'Suggestion'],
     free: ['You have {duration} free from {time}.', 'Ufite {duration} y’ubusa guhera {time}.', 'Vous avez {duration} de libre dès {time}.'],
     enoughTask: [' Enough to get “{task}” done.', ' Bihagije ngo urangize “{task}”.', ' Assez pour finir « {task} ».'],

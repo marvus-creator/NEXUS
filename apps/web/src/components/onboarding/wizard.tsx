@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, Eyebrow, Field, Input, Logo, cn } from '@nexus/ui';
-import { IMG } from '@/lib/photos';
 import {
   ArrowLeft,
   ArrowRight,
@@ -60,7 +59,6 @@ const HELP = [
   { value: 'OPPORTUNITIES', label: 'Opportunities' },
 ] as const;
 
-const STEP_IMAGES = [IMG.hero, IMG.designNight, IMG.kigaliSunset, IMG.cowork2, IMG.techMeetup];
 
 function Chip({
   active,
@@ -339,29 +337,17 @@ export function OnboardingWizard({
         </div>
       </div>
 
-      <aside className="sticky top-0 hidden h-dvh overflow-hidden lg:block">
-        {STEP_IMAGES.map((image, index) => (
-          <img
-            key={image}
-            src={image}
-            alt=""
-            className={cn(
-              'absolute inset-0 size-full object-cover transition-opacity duration-700',
-              index === step - 1 ? 'opacity-100' : 'opacity-0',
-            )}
-          />
-        ))}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,13,16,.25),rgba(11,13,16,.55)_50%,rgba(11,13,16,.92))]" />
-        <div className="relative flex h-full flex-col justify-end p-10">
-          <p className="t-eyebrow text-white/70">{t('onboarding.shaping')}</p>
-          <div className="mt-4 rounded-3xl border border-white/15 bg-black/35 p-6 text-white backdrop-blur-xl">
+      <aside className="border-line bg-surface-raised sticky top-0 hidden h-dvh overflow-hidden border-l lg:block">
+        <div className="relative flex h-full flex-col justify-center p-10">
+          <p className="t-eyebrow text-ink-muted">{t('onboarding.shaping')}</p>
+          <div className="mt-4 border-line bg-surface rounded-xl border p-6">
             <div className="flex items-center gap-3">
-              <span className="bg-accent grid size-12 place-items-center rounded-full text-lg font-bold">
+              <span className="bg-accent text-accent-ink grid size-12 place-items-center rounded-full text-lg font-semibold">
                 {displayName.slice(0, 1).toUpperCase()}
               </span>
               <div className="min-w-0">
                 <div className="truncate text-lg font-semibold">{displayName}</div>
-                <div className="truncate text-sm text-white/70">
+                <div className="truncate text-sm text-ink-muted">
                   {[occupation || (USER_TYPES.some((type) => type.value === userType) ? t(`onboarding.types.${userType as (typeof USER_TYPES)[number]['value']}`) : ''), city]
                     .filter(Boolean)
                     .join(' · ') || t('onboarding.tellUs')}
@@ -370,12 +356,12 @@ export function OnboardingWizard({
             </div>
 
             <div className="mt-5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
+              <div className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 {t('onboarding.interests')}
               </div>
               <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
                 {interests.length === 0 ? (
-                  <span className="text-sm text-white/50">
+                  <span className="text-sm text-ink-muted">
                     {t('onboarding.pickFew')}
                   </span>
                 ) : (
@@ -386,7 +372,7 @@ export function OnboardingWizard({
                     .map((interest) => (
                       <span
                         key={interest.slug}
-                        className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium"
+                        className="rounded-full bg-surface-raised px-2.5 py-1 text-xs font-medium"
                       >
                         {interestLabel(t, interest.slug, interest.label)}
                       </span>
@@ -396,17 +382,17 @@ export function OnboardingWizard({
             </div>
 
             <div className="mt-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-white/60">
+              <div className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 {t('onboarding.goalsTitle')}
               </div>
               <div className="mt-2 flex min-h-8 flex-wrap gap-1.5">
                 {goals.length === 0 ? (
-                  <span className="text-sm text-white/50">{t('onboarding.thisYear')}</span>
+                  <span className="text-sm text-ink-muted">{t('onboarding.thisYear')}</span>
                 ) : (
                   GOALS.filter((goal) => goals.includes(goal.value)).map((goal) => (
                     <span
                       key={goal.value}
-                      className="bg-accent/80 rounded-full px-2.5 py-1 text-xs font-medium"
+                      className="bg-accent-soft text-accent rounded-full px-2.5 py-1 text-xs font-medium"
                     >
                       {t(`onboarding.goals.${goal.value}`)}
                     </span>
@@ -421,9 +407,9 @@ export function OnboardingWizard({
                 [goals.length, t('onboarding.countGoals')],
                 [blocks.length, t('onboarding.countBlocks')],
               ].map(([value, label]) => (
-                <div key={label as string} className="rounded-2xl bg-white/10 px-2 py-3">
+                <div key={label as string} className="rounded-2xl bg-surface-raised px-2 py-3">
                   <div className="num text-xl font-bold">{value}</div>
-                  <div className="text-[11px] text-white/60">{label}</div>
+                  <div className="text-[11px] text-ink-muted">{label}</div>
                 </div>
               ))}
             </div>
