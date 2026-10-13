@@ -9,7 +9,7 @@ export const events = {
     hosting: ['You are hosting', 'Ni wowe utegura', 'Vous organisez'],
     going: ['You are going', 'Uzajyayo', 'Vous y allez'],
     interested: ['You are interested', 'Birakunejeje', 'Vous êtes intéressé'],
-    goingCount: ['{n} going', '{n} bazajyayo', '{n} participants'],
+    goingCount: ['{n} going', '{n} bazajyayo', 'Participants : {n}'],
     interestedCount: ['{n} interested', '{n} babikunze', '{n} intéressés'],
     spotsLeft: ['{n} spots left', 'Hasigaye imyanya {n}', '{n} places restantes'],
     hostingBadge: ['Hosting', 'Utegura', 'Organisateur'],
